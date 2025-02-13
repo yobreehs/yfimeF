@@ -4,41 +4,110 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Build
+import android.widget.Toast
+import app.revanced.extension.shared.Logger
 import de.robv.android.xposed.XposedBridge
+import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
+import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.FieldData
 import org.luckypray.dexkit.result.MethodData
 import org.luckypray.dexkit.wrap.DexClass
 import org.luckypray.dexkit.wrap.DexField
 import org.luckypray.dexkit.wrap.DexMethod
+import kotlin.reflect.KFunction0
 
 @SuppressLint("CommitPrefEdits")
-open class Cache(val app: Application) {
-    open val moduleRel = 1
-    lateinit var pref: SharedPreferences
-    lateinit var map: MutableMap<String, String>
+abstract class Cache(val app: Application, val lpparam: LoadPackageParam) {
+    abstract val hooks: Array<KFunction0<Unit>>
+    private val moduleRel = BuildConfig.VERSION_CODE
+    private lateinit var pref: SharedPreferences
+    private lateinit var map: MutableMap<String, String>
+    lateinit var dexkit: DexKitBridge
+    private var cached: Boolean = false
+
+    fun Hook() {
+        loadCache()
+
+        if (!cached) dexkit = createDexKit(lpparam)
+
+        val success = applyHooks(app, *hooks)
+
+        if (success) saveCache()
+        else clearCache()
+
+        if (!cached) dexkit.close()
+    }
+
+    private fun createDexKit(lpparam: LoadPackageParam): DexKitBridge {
+        System.loadLibrary("dexkit")
+        return DexKitBridge.create(lpparam.classLoader, true)
+    }
+
+    private fun applyHooks(app: Application, vararg hooks: KFunction0<Unit>): Boolean {
+        val fails = mutableListOf<KFunction0<Unit>>()
+        hooks.forEach { hook ->
+            runCatching(hook).onFailure { err ->
+                XposedBridge.log(err)
+                fails.add(hook)
+            }
+        }
+
+        val isAllSuccess = fails.isEmpty()
+        if (isAllSuccess) {
+            if (BuildConfig.DEBUG)
+                Toast.makeText(
+                    app,
+                    "apply hooks success",
+                    Toast.LENGTH_LONG
+                ).show()
+        } else {
+            Toast.makeText(
+                app,
+                "Error while apply following Hooks:\n${fails.joinToString(", ") { it.name }}",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+        if (BuildConfig.DEBUG or !isAllSuccess)
+            XposedBridge.log("${lpparam.appInfo.packageName} version: ${getAppVersion()}")
+
+        return isAllSuccess
+    }
+
+    private fun getAppVersion(): String {
+        val packageInfo = app.packageManager.getPackageInfo(app.packageName, 0)
+        val versionName = packageInfo.versionName
+        val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            packageInfo.longVersionCode
+        } else {
+            @Suppress("DEPRECATION")
+            packageInfo.versionCode
+        }
+        return "$versionName ($versionCode)"
+    }
 
     @Suppress("UNCHECKED_CAST")
-    fun loadCache(): Boolean {
+    private fun loadCache() {
         pref = app.getSharedPreferences("xprevanced", Context.MODE_PRIVATE)
         val packageInfo = app.packageManager.getPackageInfo(app.packageName, 0)
 
         val id = "${packageInfo.lastUpdateTime}-$moduleRel"
         val cachedId = pref.getString("id", null)
+        cached = cachedId.equals(id)
 
-        XposedBridge.log("cache ID: $id")
-        XposedBridge.log("cached ID: ${cachedId ?: ""}")
+        Logger.printInfo { "cache ID: $id" }
+        Logger.printInfo { "cached ID: ${cachedId ?: ""}" }
+        Logger.printInfo { "Using cached keys: $cached" }
 
-        if (!cachedId.equals(id)) {
-            map = mutableMapOf("id" to id)
-            return false
+        map = if (cached) {
+            pref.all.toMutableMap() as MutableMap<String, String>
         } else {
-            map = pref.all.toMutableMap() as MutableMap<String, String>
-            return true
+            mutableMapOf("id" to id)
         }
     }
 
-    fun saveCache() {
+    private fun saveCache() {
         val edit = pref.edit()
         map.forEach { k, v ->
             edit.putString(k, v)
@@ -46,38 +115,42 @@ open class Cache(val app: Application) {
         edit.commit()
     }
 
+    private fun clearCache() {
+        pref.edit().clear().apply()
+    }
+
     fun getDexClass(key: String, f: () -> ClassData): DexClass {
         return map[key]?.let { DexClass(it) } ?: f().apply {
-            map[key] = this.descriptor
-            XposedBridge.log("$key Matches: ${this.toDexType()}")
+            map[key] = descriptor
+            Logger.printInfo { "$key Matches: ${toDexType()}" }
         }.toDexType()
     }
 
     fun getDexMethod(key: String, f: () -> MethodData): DexMethod {
         return map[key]?.let { DexMethod(it) } ?: f().apply {
-            map[key] = this.descriptor
-            XposedBridge.log("$key Matches: ${this.toDexMethod()}")
+            map[key] = descriptor
+            Logger.printInfo { "$key Matches: ${toDexMethod()}" }
         }.toDexMethod()
     }
 
     fun getDexField(key: String, f: () -> FieldData): DexField {
         return map[key]?.let { DexField(it) } ?: f().apply {
-            map[key] = this.descriptor
-            XposedBridge.log("$key Matches: ${this.toDexField()}")
+            map[key] = descriptor
+            Logger.printInfo { "$key Matches: ${toDexField()}" }
         }.toDexField()
     }
 
     fun getString(key: String, f: () -> String): String {
         return map[key] ?: f().also {
             map[key] = it
-            XposedBridge.log("$key Matches: ${it}")
+            Logger.printInfo { "$key Matches: $it" }
         }
     }
 
     fun getNumber(key: String, f: () -> Number): Number {
         return map[key]?.let { return Integer.parseInt(it) } ?: f().also {
             map[key] = it.toString()
-            XposedBridge.log("$key Matches: ${it}")
+            Logger.printInfo { "$key Matches: $it" }
         }
     }
 
@@ -104,7 +177,7 @@ open class Cache(val app: Application) {
             is FieldData -> value.toDexField()
             else -> value
         }
-        XposedBridge.log("$key Matches: $str")
+        Logger.printInfo { "$key Matches: $str" }
         map[key] = str.toString()
     }
 }

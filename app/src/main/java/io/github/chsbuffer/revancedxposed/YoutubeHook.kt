@@ -4,41 +4,28 @@ import android.app.Application
 import android.content.ClipData
 import android.content.Intent
 import android.view.View
-import app.revanced.extension.shared.Utils
+import app.revanced.extension.shared.Logger
+import app.revanced.extension.youtube.patches.components.AdsFilter
 import app.revanced.extension.youtube.patches.components.LithoFilterPatch
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
-import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.result.FieldUsingType
-import java.lang.reflect.Member
 import java.lang.reflect.Modifier
 import java.nio.ByteBuffer
 
-class YoutubeHook(app: Application, val lpparam: LoadPackageParam) : Cache(app) {
-    lateinit var dexkit: DexKitBridge
+class YoutubeHook(app: Application, lpparam: LoadPackageParam) : Cache(app, lpparam) {
+    override val hooks = arrayOf(
+        ::VideoAds,
+        ::BackgroundPlayback,
+        ::RemoveTrackingQueryParameter,
+        ::HideAds,
+        ::LithoFilter,
+    )
+
     val classLoader: ClassLoader = lpparam.classLoader
-
-    fun Hook() {
-        val cached = loadCache()
-        if (!cached) dexkit = createDexKit(lpparam)
-
-        try {
-            VideoAds()
-            BackgroundPlayback()
-            RemoveTrackingQueryParameter()
-            HideAds()
-            LithoFilter()
-            saveCache()
-        } catch (err: Exception) {
-            pref.edit().clear().apply()
-            throw err
-        } finally {
-            if (!cached) dexkit.close()
-        }
-    }
 
     fun VideoAds() {
 
@@ -62,7 +49,6 @@ class YoutubeHook(app: Application, val lpparam: LoadPackageParam) : Cache(app) 
     }
 
     fun BackgroundPlayback() {
-
         val prefBackgroundAndOfflineCategoryId = getNumber("prefBackgroundAndOfflineCategoryId") {
             app.resources.getIdentifier(
                 "pref_background_and_offline_category", "string", app.packageName
@@ -274,8 +260,8 @@ class YoutubeHook(app: Application, val lpparam: LoadPackageParam) : Cache(app) 
             setString("conversionContextClass", conversionContextClass)
             setString("identifierFieldData",
                 conversionContextClass.methods.single { it.methodName == "toString" }.usingFields.filter {
-                        it.usingType == FieldUsingType.Read && it.field.typeSign == "Ljava/lang/String;"
-                    }[1].field
+                    it.usingType == FieldUsingType.Read && it.field.typeSign == "Ljava/lang/String;"
+                }[1].field
             )
             setString("pathBuilderFieldData",
                 conversionContextClass.fields.single { it.typeSign == "Ljava/lang/StringBuilder;" })
@@ -334,6 +320,9 @@ class YoutubeHook(app: Application, val lpparam: LoadPackageParam) : Cache(app) 
     }
 
     fun HideAds() {
+        // TODO: Hide end screen store banner
+
+        // Hide ad views
         val adAttributionId = getNumber("adAttributionId") {
             app.resources.getIdentifier("ad_attribution", "id", app.packageName)
         }
@@ -345,21 +334,10 @@ class YoutubeHook(app: Application, val lpparam: LoadPackageParam) : Cache(app) 
             object : XC_MethodHook() {
                 override fun afterHookedMethod(param: MethodHookParam) {
                     if (param.args[0].equals(adAttributionId)) {
-                        XposedBridge.log("Hide Ad Attribution View")
-                        Utils.hideViewByLayoutParams(param.result as View)
+                        Logger.printInfo { "Hide Ad Attribution View" }
+                        AdsFilter.hideAdAttributionView(param.result as View)
                     }
                 }
             })
-    }
-}
-
-class ScopedHook(val hookMethod: Member, val callback: XC_MethodHook) : XC_MethodHook() {
-    lateinit var Unhook: XC_MethodHook.Unhook
-    override fun beforeHookedMethod(param: MethodHookParam?) {
-        Unhook = XposedBridge.hookMethod(hookMethod, callback)
-    }
-
-    override fun afterHookedMethod(param: MethodHookParam?) {
-        Unhook.unhook()
     }
 }

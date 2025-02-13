@@ -1,23 +1,16 @@
 package io.github.chsbuffer.revancedxposed
 
-import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
-import org.luckypray.dexkit.DexKitBridge
-import org.luckypray.dexkit.util.OpCodeUtil
+import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XposedBridge
+import java.lang.reflect.Member
 
-fun createDexKit(lpparam: LoadPackageParam): DexKitBridge {
-    System.loadLibrary("dexkit")
-    return DexKitBridge.create(lpparam.classLoader, true)
-}
+class ScopedHook(val hookMethod: Member, val callback: XC_MethodHook) : XC_MethodHook() {
+    lateinit var Unhook: XC_MethodHook.Unhook
+    override fun beforeHookedMethod(param: MethodHookParam?) {
+        Unhook = XposedBridge.hookMethod(hookMethod, callback)
+    }
 
-
-fun opCodesOf(
-    vararg opNames: String?,
-): Collection<Int> {
-    return opNames.map {
-        if (it == null) {
-            -1
-        } else {
-            OpCodeUtil.getOpCode(it)
-        }
+    override fun afterHookedMethod(param: MethodHookParam?) {
+        Unhook.unhook()
     }
 }

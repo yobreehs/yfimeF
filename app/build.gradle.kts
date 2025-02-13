@@ -13,8 +13,23 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-        ndk {
-            abiFilters.add("arm64-v8a")
+    }
+    flavorDimensions += "abi"
+    productFlavors {
+        create("x86_64") {
+            dimension = "abi"
+            ndk {
+                abiFilters.add("x86_64")
+            }
+        }
+        create("arm64_v8a") {
+            dimension = "abi"
+            ndk {
+                abiFilters.add("arm64-v8a")
+            }
+        }
+        create("universal") {
+            dimension = "abi"
         }
     }
 
@@ -25,6 +40,7 @@ android {
             )
         )
     }
+    buildFeatures.buildConfig = true
     buildTypes {
         release {
             isMinifyEnabled = true

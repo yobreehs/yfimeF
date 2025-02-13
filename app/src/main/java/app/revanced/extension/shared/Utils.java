@@ -2,22 +2,10 @@ package app.revanced.extension.shared;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.res.Resources;
-import android.net.ConnectivityManager;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.preference.Preference;
-import android.preference.PreferenceGroup;
-import android.preference.PreferenceScreen;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -25,16 +13,15 @@ import android.widget.Toast;
 import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
-import java.text.Bidi;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import app.revanced.extension.shared.settings.BooleanSetting;
 
 public class Utils {
 
@@ -47,6 +34,33 @@ public class Utils {
 
     public static Context getContext() {
         return context;
+    }
+
+    /**
+     * Hide a view by setting its layout height and width to 1dp.
+     *
+     * @param condition The setting to check for hiding the view.
+     * @param view      The view to hide.
+     */
+    public static void hideViewBy0dpUnderCondition(BooleanSetting condition, View view) {
+        if (hideViewBy0dpUnderCondition(condition.get(), view)) {
+            Logger.printDebug(() -> "View hidden by setting: " + condition);
+        }
+    }
+
+    /**
+     * Hide a view by setting its layout height and width to 0dp.
+     *
+     * @param condition The setting to check for hiding the view.
+     * @param view      The view to hide.
+     */
+    public static boolean hideViewBy0dpUnderCondition(boolean condition, View view) {
+        if (condition) {
+            hideViewByLayoutParams(view);
+            return true;
+        }
+
+        return false;
     }
 
     /**

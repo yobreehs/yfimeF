@@ -2,51 +2,31 @@ package io.github.chsbuffer.revancedxposed
 
 import android.app.Application
 import android.view.View
+import app.revanced.extension.shared.Logger
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
+import de.robv.android.xposed.XposedHelpers.InvocationTargetError
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
-import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.enums.StringMatchType
 import java.lang.reflect.Modifier
 
-class MusicHook(app: Application, val lpparam: LoadPackageParam) : Cache(app) {
-    lateinit var dexkit: DexKitBridge
+class MusicHook(app: Application, lpparam: LoadPackageParam) : Cache(app, lpparam) {
+    override val hooks = arrayOf(
+        ::HideMusicVideoAds,
+        ::MinimizedPlayback,
+        ::RemoveUpgradeButton,
+        ::HideGetPremium,
+        ::EnableExclusiveAudioPlayback,
+    )
 
-    var cached: Boolean = false
-
-    fun Hook() {
-        cached = loadCache()
-        XposedBridge.log("Using cached keys: $cached")
-
-        if (!cached) {
-            dexkit = createDexKit(lpparam)
-        }
-
-        try {
-            HideMusicVideoAds()
-            MinimizedPlayback()
-            RemoveUpgradeButton()
-            HideGetPremium()
-            EnableExclusiveAudioPlayback()
-            saveCache()
-        } catch (err: Exception) {
-            pref.edit().clear().apply()
-            throw err
-        } finally {
-            if (!cached) dexkit.close()
-        }
-    }
-
-    private fun EnableExclusiveAudioPlayback() {
+    fun EnableExclusiveAudioPlayback() {
         getDexMethod("AllowExclusiveAudioPlaybackFingerprint") {
             dexkit.findMethod {
+                matcher { addEqString("probably_has_unlimited_entitlement") }
+            }.single().invokes.findMethod {
                 matcher {
-                    addCaller {
-                        addEqString("probably_has_unlimited_entitlement")
-                    }
-
                     returnType = "boolean"
                     modifiers = Modifier.PUBLIC or Modifier.FINAL
                     paramCount = 0
@@ -54,8 +34,7 @@ class MusicHook(app: Application, val lpparam: LoadPackageParam) : Cache(app) {
             }.single()
         }.let {
             XposedBridge.hookMethod(
-                it.getMethodInstance(lpparam.classLoader),
-                XC_MethodReplacement.returnConstant(true)
+                it.getMethodInstance(lpparam.classLoader), XC_MethodReplacement.returnConstant(true)
             )
         }
     }
@@ -96,7 +75,7 @@ class MusicHook(app: Application, val lpparam: LoadPackageParam) : Cache(app) {
         }
     }
 
-    private fun RemoveUpgradeButton() {
+    fun RemoveUpgradeButton() {
         // PivotBarConstructorFingerprint
         getDexMethod("PivotBarConstructorFingerprint") {
             val result = dexkit.findMethod {
@@ -127,13 +106,18 @@ class MusicHook(app: Application, val lpparam: LoadPackageParam) : Cache(app) {
                         val list = XposedHelpers.getObjectField(
                             param.thisObject, pivotBarElementField
                         )
-                        XposedHelpers.callMethod(list, "remove", 4)
+                        try {
+                            XposedHelpers.callMethod(list, "remove", 4)
+                        } catch (e: InvocationTargetError) {
+                            if (e.cause !is IndexOutOfBoundsException)
+                                throw e
+                        }
                     }
                 })
         }
     }
 
-    private fun MinimizedPlayback() {
+    fun MinimizedPlayback() {
         getDexMethod("BackgroundPlaybackDisableFingerprint") {
             dexkit.findMethod {
                 matcher {
@@ -161,7 +145,6 @@ class MusicHook(app: Application, val lpparam: LoadPackageParam) : Cache(app) {
 
         // KidsMinimizedPlaybackPolicyControllerFingerprint
         getDexMethod("KidsMinimizedPlaybackPolicyControllerFingerprint") {
-
             dexkit.findMethod {
                 matcher {
                     returnType = "void"
@@ -190,7 +173,7 @@ class MusicHook(app: Application, val lpparam: LoadPackageParam) : Cache(app) {
         }
     }
 
-    private fun HideMusicVideoAds() {
+    fun HideMusicVideoAds() {
         // ShowMusicVideoAdsParentFingerprint
         getDexMethod("ShowMusicVideoAdsMethod") {
             dexkit.findMethod {
@@ -201,7 +184,7 @@ class MusicHook(app: Application, val lpparam: LoadPackageParam) : Cache(app) {
                     )
                 }
             }.single().also {
-                XposedBridge.log("ShowMusicVideoAdsParentFingerprint Matches: ${it.toDexMethod()}")
+                Logger.printInfo { "ShowMusicVideoAdsParentFingerprint Matches: ${it.toDexMethod()}" }
             }.invokes.findMethod {
                 matcher {
                     paramTypes("boolean")

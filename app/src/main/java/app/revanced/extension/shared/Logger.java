@@ -1,24 +1,21 @@
 package app.revanced.extension.shared;
 
-import static app.revanced.extension.shared.settings.BaseSettings.DEBUG;
-import static app.revanced.extension.shared.settings.BaseSettings.DEBUG_STACKTRACE;
-import static app.revanced.extension.shared.settings.BaseSettings.DEBUG_TOAST_ON_ERROR;
-
 import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import app.revanced.extension.shared.settings.BaseSettings;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import app.revanced.extension.shared.settings.BaseSettings;
+import static app.revanced.extension.shared.settings.BaseSettings.*;
 
 public class Logger {
 
     /**
      * Log messages using lambdas.
      */
+    @FunctionalInterface
     public interface LogMessage {
         @NonNull
         String buildMessageString();
@@ -59,19 +56,33 @@ public class Logger {
      * so the performance cost of building strings is paid only if {@link BaseSettings#DEBUG} is enabled.
      */
     public static void printDebug(@NonNull LogMessage message) {
+        printDebug(message, null);
+    }
+
+    /**
+     * Logs debug messages under the outer class name of the code calling this method.
+     * Whenever possible, the log string should be constructed entirely inside {@link LogMessage#buildMessageString()}
+     * so the performance cost of building strings is paid only if {@link BaseSettings#DEBUG} is enabled.
+     */
+    public static void printDebug(@NonNull LogMessage message, @Nullable Exception ex) {
         if (DEBUG.get()) {
-            var messageString = message.buildMessageString();
+            String logMessage = message.buildMessageString();
+            String logTag = REVANCED_LOG_PREFIX + message.findOuterClassSimpleName();
 
             if (DEBUG_STACKTRACE.get()) {
-                var builder = new StringBuilder(messageString);
+                var builder = new StringBuilder(logMessage);
                 var sw = new StringWriter();
                 new Throwable().printStackTrace(new PrintWriter(sw));
 
                 builder.append('\n').append(sw);
-                messageString = builder.toString();
+                logMessage = builder.toString();
             }
 
-            Log.d(REVANCED_LOG_PREFIX + message.findOuterClassSimpleName(), messageString);
+            if (ex == null) {
+                Log.d(logTag, logMessage);
+            } else {
+                Log.d(logTag, logMessage, ex);
+            }
         }
     }
 
@@ -99,14 +110,7 @@ public class Logger {
      * Logs exceptions under the outer class name of the code calling this method.
      */
     public static void printException(@NonNull LogMessage message) {
-        printException(message, null, null);
-    }
-
-    /**
-     * Logs exceptions under the outer class name of the code calling this method.
-     */
-    public static void printException(@NonNull LogMessage message, @Nullable Throwable ex) {
-        printException(message, ex, null);
+        printException(message, null);
     }
 
     /**
@@ -117,10 +121,8 @@ public class Logger {
      *
      * @param message          log message
      * @param ex               exception (optional)
-     * @param userToastMessage user specific toast message to show instead of the log message (optional)
      */
-    public static void printException(@NonNull LogMessage message, @Nullable Throwable ex,
-                                      @Nullable String userToastMessage) {
+    public static void printException(@NonNull LogMessage message, @Nullable Throwable ex) {
         String messageString = message.buildMessageString();
         String outerClassSimpleName = message.findOuterClassSimpleName();
         String logMessage = REVANCED_LOG_PREFIX + outerClassSimpleName;
@@ -130,10 +132,7 @@ public class Logger {
             Log.e(logMessage, messageString, ex);
         }
         if (DEBUG_TOAST_ON_ERROR.get()) {
-            String toastMessageToDisplay = (userToastMessage != null)
-                    ? userToastMessage
-                    : outerClassSimpleName + ": " + messageString;
-            Utils.showToastLong(toastMessageToDisplay);
+            Utils.showToastLong(outerClassSimpleName + ": " + messageString);
         }
     }
 

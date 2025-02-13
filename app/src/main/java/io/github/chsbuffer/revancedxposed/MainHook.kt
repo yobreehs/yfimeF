@@ -1,6 +1,7 @@
 package io.github.chsbuffer.revancedxposed
 
 import android.app.Application
+import app.revanced.extension.shared.Logger
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
@@ -16,7 +17,7 @@ class MainHook : IXposedHookLoadPackage {
                     val t = measureTimeMillis {
                         MusicHook(app, lpparam).Hook()
                     }
-                    XposedBridge.log("Youtube Music handleLoadPackage: ${t}ms")
+                    Logger.printDebug { "Youtube Music handleLoadPackage: ${t}ms" }
                 }
             }
 
@@ -25,7 +26,7 @@ class MainHook : IXposedHookLoadPackage {
                     val t = measureTimeMillis {
                         YoutubeHook(app, lpparam).Hook()
                     }
-                    XposedBridge.log("Youtube handleLoadPackage: ${t}ms")
+                    Logger.printDebug { "Youtube handleLoadPackage: ${t}ms" }
                 }
             }
         }

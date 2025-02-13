@@ -23,5 +23,6 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting HIDE_WEB_SEARCH_RESULTS = new BooleanSetting("revanced_hide_web_search_results", TRUE);
     // Uncategorized layout related settings.  Do not add to this section, and instead move these out and categorize them.
     public static final BooleanSetting HIDE_MOVIES_SECTION = new BooleanSetting("revanced_hide_movies_section", TRUE);
+    public static final BooleanSetting HIDE_END_SCREEN_STORE_BANNER = new BooleanSetting("revanced_hide_movies_section", TRUE);
 
 }
