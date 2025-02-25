@@ -217,8 +217,7 @@ class YoutubeHook(app: Application, lpparam: LoadPackageParam) : Cache(app, lppa
 
     fun LithoFilter() {
 
-
-        //region Pass the buffer into Integrations.
+        //region Pass the buffer into extension.
         val ProtobufBufferReferenceFingerprint =
             getDexMethod("ProtobufBufferReferenceFingerprint") {
                 dexkit.findMethod {
@@ -273,12 +272,13 @@ class YoutubeHook(app: Application, lpparam: LoadPackageParam) : Cache(app, lppa
 
         val filtered = ThreadLocal<Boolean>()
 
-        XposedBridge.hookMethod(parseBytesToConversionContext.getMethodInstance(classLoader),
+        XposedBridge.hookMethod(
+            parseBytesToConversionContext.getMethodInstance(classLoader),
             object : XC_MethodHook() {
                 override fun afterHookedMethod(param: MethodHookParam) {
                     val conversion = param.result
 
-                    val identifier = identifierField.get(conversion) as String
+                    val identifier = identifierField.get(conversion) as String?
                     val pathBuilder = pathBuilderField.get(conversion) as StringBuilder
                     filtered.set(LithoFilterPatch.filter(identifier, pathBuilder))
                 }
@@ -317,6 +317,50 @@ class YoutubeHook(app: Application, lpparam: LoadPackageParam) : Cache(app, lppa
                 }
             })
         //endregion
+
+        // region A/B test of new Litho native code.
+
+        // Turn off native code that handles litho component names.  If this feature is on then nearly
+        // all litho components have a null name and identifier/path filtering is completely broken.
+        runCatching {
+            getDexMethod("lithoComponentNameUpbFeatureFlagFingerprint") {
+                dexkit.findMethod {
+                    matcher {
+                        modifiers = Modifier.PUBLIC or Modifier.FINAL
+                        returnType = "boolean"
+                        paramTypes = listOf()
+                        usingNumbers(45631264L)
+                    }
+                }.single()
+            }
+        }.onFailure {
+            // ignored
+        }
+
+        // Turn off a feature flag that enables native code of protobuf parsing (Upb protobuf).
+        // If this is enabled, then the litho protobuffer hook will always show an empty buffer
+        // since it's no longer handled by the hooked Java code.
+        getDexMethod("lithoConverterBufferUpbFeatureFlagFingerprint") {
+            dexkit.findMethod {
+                matcher {
+                    modifiers = Modifier.PUBLIC or Modifier.STATIC
+                    paramTypes = listOf(null)
+                    usingNumbers(45419603L)
+                }
+            }.single().apply {
+                getDexMethod("featureFlagCheck") {
+                    this.invokes.single()
+                }
+            }
+        }.apply {
+            val featureFlagCheckMethod =
+                getDexMethod("featureFlagCheck").getMethodInstance(classLoader)
+            XposedBridge.hookMethod(
+                getMethodInstance(classLoader),
+                ScopedHook(featureFlagCheckMethod, XC_MethodReplacement.returnConstant(false))
+            )
+        }
+        // endregion
     }
 
     fun HideAds() {
