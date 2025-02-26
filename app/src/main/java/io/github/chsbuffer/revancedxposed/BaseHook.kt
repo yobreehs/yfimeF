@@ -7,6 +7,7 @@ import android.content.SharedPreferences
 import android.os.Build
 import android.widget.Toast
 import app.revanced.extension.shared.Logger
+import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import org.luckypray.dexkit.DexKitBridge
@@ -18,9 +19,19 @@ import org.luckypray.dexkit.wrap.DexField
 import org.luckypray.dexkit.wrap.DexMethod
 import kotlin.reflect.KFunction0
 
+class DependedHookFailedException(
+    subHookName: String, exception: Throwable
+) : Exception("Depended hook $subHookName failed.", exception)
+
 @SuppressLint("CommitPrefEdits")
-abstract class Cache(val app: Application, val lpparam: LoadPackageParam) {
+abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) {
+    val classLoader = lpparam.classLoader
+    // hooks
     abstract val hooks: Array<KFunction0<Unit>>
+    private val appliedHooks: MutableSet<KFunction0<Unit>> = mutableSetOf()
+    private val failedHook = mutableListOf<KFunction0<Unit>>()
+
+    // cache
     private val moduleRel = BuildConfig.VERSION_CODE
     private lateinit var pref: SharedPreferences
     private lateinit var map: MutableMap<String, String>
@@ -40,37 +51,42 @@ abstract class Cache(val app: Application, val lpparam: LoadPackageParam) {
         if (!cached) dexkit.close()
     }
 
+    fun dependsOn(vararg hooks: KFunction0<Unit>) {
+        hooks.forEach { hook ->
+            if (appliedHooks.contains(hook)) return@forEach
+            runCatching(hook).onFailure { err ->
+                XposedBridge.log(err)
+                throw DependedHookFailedException(hook.name, err)
+            }
+        }
+    }
+
     private fun createDexKit(lpparam: LoadPackageParam): DexKitBridge {
         System.loadLibrary("dexkit")
         return DexKitBridge.create(lpparam.classLoader, true)
     }
 
     private fun applyHooks(app: Application, vararg hooks: KFunction0<Unit>): Boolean {
-        val fails = mutableListOf<KFunction0<Unit>>()
         hooks.forEach { hook ->
             runCatching(hook).onFailure { err ->
                 XposedBridge.log(err)
-                fails.add(hook)
+                failedHook.add(hook)
             }
         }
 
-        val isAllSuccess = fails.isEmpty()
+        val isAllSuccess = failedHook.isEmpty()
         if (isAllSuccess) {
-            if (BuildConfig.DEBUG)
-                Toast.makeText(
-                    app,
-                    "apply hooks success",
-                    Toast.LENGTH_LONG
-                ).show()
+            if (BuildConfig.DEBUG) Toast.makeText(
+                app, "apply hooks success", Toast.LENGTH_LONG
+            ).show()
         } else {
             Toast.makeText(
                 app,
-                "Error while apply following Hooks:\n${fails.joinToString(", ") { it.name }}",
+                "Error while apply following Hooks:\n${failedHook.joinToString(", ") { it.name }}",
                 Toast.LENGTH_LONG
             ).show()
         }
-        if (BuildConfig.DEBUG or !isAllSuccess)
-            XposedBridge.log("${lpparam.appInfo.packageName} version: ${getAppVersion()}")
+        if (BuildConfig.DEBUG or !isAllSuccess) XposedBridge.log("${lpparam.appInfo.packageName} version: ${getAppVersion()}")
 
         return isAllSuccess
     }
@@ -81,8 +97,7 @@ abstract class Cache(val app: Application, val lpparam: LoadPackageParam) {
         val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             packageInfo.longVersionCode
         } else {
-            @Suppress("DEPRECATION")
-            packageInfo.versionCode
+            @Suppress("DEPRECATION") packageInfo.versionCode
         }
         return "$versionName ($versionCode)"
     }
@@ -179,5 +194,17 @@ abstract class Cache(val app: Application, val lpparam: LoadPackageParam) {
         }
         Logger.printInfo { "$key Matches: $str" }
         map[key] = str.toString()
+    }
+
+    fun setString(key: String, func: () -> Any) {
+        setString(key, func())
+    }
+
+    fun DexMethod.hookMethod(callback: XC_MethodHook) {
+        XposedBridge.hookMethod(getMethodInstance(lpparam.classLoader), callback)
+    }
+
+    fun DexMethod.hookConstructorInstance(callback: XC_MethodHook) {
+        XposedBridge.hookMethod(getConstructorInstance(lpparam.classLoader), callback)
     }
 }

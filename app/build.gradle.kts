@@ -9,9 +9,9 @@ android {
 
     defaultConfig {
         applicationId = "io.github.chsbuffer.revancedxposed"
-        minSdk = 24
+        minSdk = 27
         targetSdk = 35
-        versionCode = 2
+        versionCode = 3
         versionName = "1.0.$versionCode"
     }
     flavorDimensions += "abi"
@@ -52,11 +52,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_14
+        targetCompatibility = JavaVersion.VERSION_14
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "14"
         compileOptions {
             freeCompilerArgs = listOf(
                 "-Xno-param-assertions", "-Xno-receiver-assertions", "-Xno-call-assertions"

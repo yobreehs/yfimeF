@@ -1,0 +1,151 @@
+package io.github.chsbuffer.revancedxposed.youtube.layout
+
+import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Rect
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import app.revanced.extension.youtube.sponsorblock.SegmentPlaybackController
+import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockViewController
+import de.robv.android.xposed.XC_MethodHook
+import io.github.chsbuffer.revancedxposed.Opcode
+import io.github.chsbuffer.revancedxposed.opcodes
+import io.github.chsbuffer.revancedxposed.setObjectField
+import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
+import io.github.chsbuffer.revancedxposed.youtube.misc.PlayerTypeHook
+import io.github.chsbuffer.revancedxposed.youtube.misc.SettingsHook
+import io.github.chsbuffer.revancedxposed.youtube.video.VideoIdPatch
+import io.github.chsbuffer.revancedxposed.youtube.video.VideoInformationHook
+import io.github.chsbuffer.revancedxposed.youtube.video.playerInitHooks
+import io.github.chsbuffer.revancedxposed.youtube.video.videoIdHooks
+import io.github.chsbuffer.revancedxposed.youtube.video.videoTimeHooks
+import org.luckypray.dexkit.wrap.DexMethod
+
+fun YoutubeHook.SponsorBlock() {
+
+    dependsOn(
+        ::VideoInformationHook,
+        ::VideoIdPatch,
+        ::PlayerTypeHook,
+        ::SettingsHook,
+    )
+
+    // Hook the video time methods.
+    videoTimeHooks.add { SegmentPlaybackController.setVideoTime(it) }
+    videoIdHooks.add { SegmentPlaybackController.setCurrentVideoId(it) }
+
+    // Initialize the player controller.
+    playerInitHooks.add { SegmentPlaybackController.initialize(it) }
+
+    getDexClass("SeekbarClass") {
+        dexkit.findMethod {
+            matcher {
+                addEqString("timed_markers_width")
+                returnType = "void"
+            }
+        }.single().declaredClass!!.also { clazz ->
+            getDexField("SponsorBarRect") {
+                clazz.findMethod {
+                    matcher {
+                        addInvoke {
+                            name = "invalidate"
+                            paramTypes("android.graphics.Rect")
+                        }
+                    }
+                }.single().usingFields.last { it.field.typeName == "android.graphics.Rect" }.field
+            }
+            getDexMethod("seekbarOnDrawFingerprint") {
+                clazz.findMethod {
+                    matcher {
+                        name = "onDraw"
+                    }
+                }.single()
+            }
+        }
+    }
+
+    // Seekbar drawing
+    val seekbarOnDrawMethod = getDexMethod("seekbarOnDrawFingerprint")
+    val seekbarDrawLock = ThreadLocal<Boolean?>()
+
+    seekbarOnDrawMethod.hookMethod(object : XC_MethodHook() {
+        val SponsorBarRectField = getDexField("SponsorBarRect").getFieldInstance(classLoader)
+        override fun beforeHookedMethod(param: MethodHookParam) {
+            // Get left and right of seekbar rectangle.
+            SegmentPlaybackController.setSponsorBarRect(SponsorBarRectField.get(param.thisObject) as Rect)
+            seekbarDrawLock.set(true)
+        }
+
+        override fun afterHookedMethod(param: MethodHookParam?) {
+            seekbarDrawLock.set(false)
+        }
+    })
+
+    // Find the drawCircle call and draw the segment before it.
+    DexMethod("Landroid/graphics/RecordingCanvas;->drawCircle(FFFLandroid/graphics/Paint;)V").hookMethod(
+        object : XC_MethodHook() {
+            override fun beforeHookedMethod(param: MethodHookParam) {
+                if (seekbarDrawLock.get() != true) return
+                val radius = (param.args[2] as Float).toInt()
+                // Set the thickness of the segment.
+                SegmentPlaybackController.setSponsorBarThickness(radius)
+
+                SegmentPlaybackController.drawSponsorTimeBars(
+                    param.thisObject as Canvas, param.args[1] as Float
+                )
+            }
+        })
+
+    // Initialize the SponsorBlock view.
+    getDexMethod("controlsOverlayFingerprint") {
+        dexkit.findMethod {
+            matcher {
+                opcodes(
+                    Opcode.INVOKE_VIRTUAL,
+                    Opcode.MOVE_RESULT_OBJECT,
+                    Opcode.CHECK_CAST, // R.id.inset_overlay_view_layout
+                    Opcode.IPUT_OBJECT,
+                    Opcode.INVOKE_VIRTUAL,
+                    Opcode.CONST,
+                    Opcode.INVOKE_VIRTUAL,
+                    Opcode.MOVE_RESULT_OBJECT,
+                    Opcode.CHECK_CAST,
+                    Opcode.NEW_INSTANCE,
+                )
+                paramCount = 0
+                returnType = "void"
+            }
+        }.single().also {
+            getDexField("controlsOverlayParentLayout") { it.usingFields.first().field }
+        }
+    }.hookMethod(object : XC_MethodHook() {
+        val field = getDexField("controlsOverlayParentLayout").getFieldInstance(classLoader)
+        val id = app.resources.getIdentifier("inset_overlay_view_layout", "id", lpparam.packageName)
+        override fun afterHookedMethod(param: MethodHookParam) {
+            val layout = field.get(param.thisObject) as FrameLayout
+            val overlay_view = layout.findViewById<ViewGroup>(id)
+            SponsorBlockViewController.initialize(overlay_view)
+        }
+    })
+
+    fun injectClassLoader(self: ClassLoader, host: ClassLoader) {
+        val bootClassLoader = Context::class.java.classLoader!!
+        host.setObjectField("parent", object : ClassLoader(bootClassLoader) {
+            override fun findClass(name: String): Class<*> {
+                try {
+                    return bootClassLoader.loadClass(name)
+                } catch (ignored: ClassNotFoundException) {
+                }
+
+                try {
+                    if (name.startsWith("app.revanced")) return self.loadClass(name)
+                } catch (ignored: ClassNotFoundException) {
+                }
+
+                throw ClassNotFoundException(name)
+            }
+        })
+    }
+
+    injectClassLoader(this::class.java.classLoader!!, classLoader)
+}

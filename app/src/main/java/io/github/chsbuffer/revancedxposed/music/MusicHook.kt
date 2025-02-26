@@ -1,25 +1,32 @@
-package io.github.chsbuffer.revancedxposed
+package io.github.chsbuffer.revancedxposed.music
 
 import android.app.Application
 import android.view.View
 import app.revanced.extension.shared.Logger
+import app.revanced.extension.shared.Utils
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.XposedHelpers.InvocationTargetError
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
+import io.github.chsbuffer.revancedxposed.BaseHook
 import org.luckypray.dexkit.query.enums.StringMatchType
 import java.lang.reflect.Modifier
 
-class MusicHook(app: Application, lpparam: LoadPackageParam) : Cache(app, lpparam) {
+class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpparam) {
     override val hooks = arrayOf(
+        ::ExtensionHook,
         ::HideMusicVideoAds,
         ::MinimizedPlayback,
         ::RemoveUpgradeButton,
         ::HideGetPremium,
         ::EnableExclusiveAudioPlayback,
     )
+
+    fun ExtensionHook() {
+        Utils.setContext(app)
+    }
 
     fun EnableExclusiveAudioPlayback() {
         getDexMethod("AllowExclusiveAudioPlaybackFingerprint") {
