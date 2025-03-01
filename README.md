@@ -1,7 +1,7 @@
 # Compatibility & Patches
 
 ## Youtube Music
-Youtube Music tested version: 7.11.50, 8.02.53  
+Youtube Music tested version: 7.11.50, 8.02.53, 8.08.53  
 Patches:
 - HideMusicVideoAds
 - MinimizedPlayback
@@ -10,13 +10,14 @@ Patches:
 - EnableExclusiveAudioPlayback
 
 ## Youtube
-Youtube tested version: 19.29.37, 20.03.37  
+Youtube tested version: 19.47.53, 20.05.44, 20.08.36  
 Patches: 
 - VideoAds
 - BackgroundPlayback
 - RemoveTrackingQueryParameter
 - HideAds
 - LithoFilter
+- SponsorBlock
 
 # Credit
 
