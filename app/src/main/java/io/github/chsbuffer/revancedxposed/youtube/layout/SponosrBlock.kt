@@ -3,6 +3,7 @@ package io.github.chsbuffer.revancedxposed.youtube.layout
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Rect
+import android.os.Build
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import app.revanced.extension.youtube.sponsorblock.SegmentPlaybackController
@@ -22,6 +23,8 @@ import io.github.chsbuffer.revancedxposed.youtube.video.videoTimeHooks
 import org.luckypray.dexkit.wrap.DexMethod
 
 fun YoutubeHook.SponsorBlock() {
+    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q)
+        return
 
     dependsOn(
         ::VideoInformationHook,

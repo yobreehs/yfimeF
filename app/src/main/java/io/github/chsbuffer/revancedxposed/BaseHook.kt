@@ -63,7 +63,7 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) {
 
     private fun createDexKit(lpparam: LoadPackageParam): DexKitBridge {
         System.loadLibrary("dexkit")
-        return DexKitBridge.create(lpparam.classLoader, true)
+        return DexKitBridge.create(lpparam.appInfo.sourceDir)
     }
 
     private fun applyHooks(app: Application, vararg hooks: KFunction0<Unit>): Boolean {
