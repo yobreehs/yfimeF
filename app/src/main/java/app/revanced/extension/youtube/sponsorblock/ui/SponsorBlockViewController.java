@@ -3,7 +3,6 @@ package app.revanced.extension.youtube.sponsorblock.ui;
 import static app.revanced.extension.shared.Utils.getResourceIdentifier;
 
 import android.content.Context;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
@@ -19,6 +18,7 @@ import app.revanced.extension.shared.Utils;
 import app.revanced.extension.youtube.settings.Settings;
 import app.revanced.extension.youtube.shared.PlayerType;
 import app.revanced.extension.youtube.sponsorblock.objects.SponsorSegment;
+import io.github.chsbuffer.revancedxposed.youtube.layout.RevancedSBInlineSponsorOverlay;
 import kotlin.Unit;
 
 public class SponsorBlockViewController {
@@ -63,8 +63,9 @@ public class SponsorBlockViewController {
 
             Context context = Utils.getContext();
             RelativeLayout layout = new RelativeLayout(context);
-            layout.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.MATCH_PARENT));
-            LayoutInflater.from(context).inflate(getResourceIdentifier("revanced_sb_inline_sponsor_overlay", "layout"), layout);
+            layout.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
+            RevancedSBInlineSponsorOverlay rvoverlay = new RevancedSBInlineSponsorOverlay(context);
+            layout.addView(rvoverlay);
             inlineSponsorOverlayRef = new WeakReference<>(layout);
 
             viewGroup.addView(layout);
@@ -77,22 +78,20 @@ public class SponsorBlockViewController {
                         layout.bringToFront();
                     }
                 }
+
                 @Override
                 public void onChildViewRemoved(View parent, View child) {
                 }
             });
             youtubeOverlaysLayoutRef = new WeakReference<>(viewGroup);
 
-            skipHighlightButtonRef = new WeakReference<>(Objects.requireNonNull(
-                    layout.findViewById(getResourceIdentifier("revanced_sb_skip_highlight_button", "id"))));
+            skipHighlightButtonRef = new WeakReference<>(rvoverlay.getSkipHighlightButton());
 
-            skipSponsorButtonRef = new WeakReference<>(Objects.requireNonNull(
-                    layout.findViewById(getResourceIdentifier("revanced_sb_skip_sponsor_button", "id"))));
+            skipSponsorButtonRef = new WeakReference<>(rvoverlay.getSkipSponsorButton());
 
-            NewSegmentLayout newSegmentLayout = Objects.requireNonNull(
-                    layout.findViewById(getResourceIdentifier("revanced_sb_new_segment_view", "id")));
-            newSegmentLayoutRef = new WeakReference<>(newSegmentLayout);
-            newSegmentLayout.updateLayout();
+//            NewSegmentLayout newSegmentLayout = rvoverlay.getNewSegmentLayout();
+//            newSegmentLayoutRef = new WeakReference<>(newSegmentLayout);
+//            newSegmentLayout.updateLayout();
 
             newSegmentLayoutVisible = false;
             skipHighlight = null;
@@ -132,6 +131,7 @@ public class SponsorBlockViewController {
         final boolean buttonVisibility = newSegmentLayout == null || newSegmentLayout.getVisibility() != View.VISIBLE;
         updateSkipButton(skipHighlightButtonRef.get(), segment, buttonVisibility);
     }
+
     public static void showSkipSegmentButton(@NonNull SponsorSegment segment) {
         skipSegment = Objects.requireNonNull(segment);
         updateSkipButton(skipSponsorButtonRef.get(), segment, true);
@@ -208,7 +208,7 @@ public class SponsorBlockViewController {
     }
 
     private static void setNewSegmentLayoutMargins(@Nullable NewSegmentLayout layout, boolean fullScreen) {
-         if (layout != null) {
+        if (layout != null) {
             setLayoutMargins(layout, fullScreen, layout.defaultBottomMargin, layout.ctaBottomMargin);
         }
     }

@@ -10,7 +10,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -18,11 +17,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
-import java.util.Objects;
-
 import app.revanced.extension.youtube.settings.Settings;
 import app.revanced.extension.youtube.sponsorblock.SegmentPlaybackController;
 import app.revanced.extension.youtube.sponsorblock.objects.SponsorSegment;
+import io.github.chsbuffer.revancedxposed.youtube.layout.RevancedSBSkipSponsorButton;
 
 public class SkipSponsorButton extends FrameLayout {
     /**
@@ -56,9 +54,10 @@ public class SkipSponsorButton extends FrameLayout {
     public SkipSponsorButton(Context context, AttributeSet attributeSet, int defStyleAttr, int defStyleRes) {
         super(context, attributeSet, defStyleAttr, defStyleRes);
 
-        LayoutInflater.from(context).inflate(getResourceIdentifier(context, "revanced_sb_skip_sponsor_button", "layout"), this, true);  // layout:skip_ad_button
+        var layout = new RevancedSBSkipSponsorButton(context, context.getClassLoader());
+        this.addView(layout);
         setMinimumHeight(getResourceDimensionPixelSize("ad_skip_ad_button_min_height"));  // dimen:ad_skip_ad_button_min_height
-        skipSponsorBtnContainer = Objects.requireNonNull(findViewById(getResourceIdentifier(context, "revanced_sb_skip_sponsor_button_container", "id")));  // id:skip_ad_button_container
+        skipSponsorBtnContainer = layout;
 
         background = new Paint();
         background.setColor(getResourceColor("skip_ad_button_background_color"));  // color:skip_ad_button_background_color);
@@ -69,7 +68,7 @@ public class SkipSponsorButton extends FrameLayout {
         border.setStrokeWidth(getResourceDimension("ad_skip_ad_button_border_width"));  // dimen:ad_skip_ad_button_border_width);
         border.setStyle(Paint.Style.STROKE);
 
-        skipSponsorTextView = Objects.requireNonNull(findViewById(getResourceIdentifier(context, "revanced_sb_skip_sponsor_button_text", "id")));  // id:skip_ad_button_text;
+        skipSponsorTextView = layout.getTextView();
         defaultBottomMargin = getResourceDimensionPixelSize("skip_button_default_bottom_margin");  // dimen:skip_button_default_bottom_margin
         ctaBottomMargin = getResourceDimensionPixelSize("skip_button_cta_bottom_margin");  // dimen:skip_button_cta_bottom_margin
 

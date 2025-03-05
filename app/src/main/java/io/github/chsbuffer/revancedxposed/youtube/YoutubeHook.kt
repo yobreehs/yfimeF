@@ -18,6 +18,8 @@ import io.github.chsbuffer.revancedxposed.youtube.misc.BackgroundPlayback
 import io.github.chsbuffer.revancedxposed.youtube.misc.LithoFilter
 import io.github.chsbuffer.revancedxposed.youtube.misc.RemoveTrackingQueryParameter
 
+lateinit var modRes: Resources
+
 class YoutubeHook(
     app: Application,
     lpparam: LoadPackageParam,
@@ -36,33 +38,9 @@ class YoutubeHook(
         ::SponsorBlock
     )
 
-    companion object {
-        @JvmStatic
-        fun getFakeId(resourceIdentifierName: String, type: String): Int {
-            return getFakeIdFunction(resourceIdentifierName, type)
-        }
-
-        @JvmStatic
-        private var getFakeIdFunction: (String, String) -> Int = { _, _ -> 0 }
-    }
-
-    private val fakeIdMap = mutableMapOf<String, Int>()
-
-    lateinit var modRes: Resources
-
     fun ExtensionHook() {
         Utils.setContext(app)
         modRes = XModuleResources.createInstance(startupParam.modulePath, resparam.res)
-        getFakeIdFunction = { name, type ->
-            var fakeId = fakeIdMap.getOrDefault("$type/$name", 0)
-            if (fakeId == 0) {
-                val id = modRes.getIdentifier(name, type, BuildConfig.APPLICATION_ID)
-                fakeId = resparam.res.addResource(modRes, id)
-                fakeIdMap["$type/$name"] = fakeId
-                Logger.printDebug { "Added resource: $type/$name -> 0x${fakeId.toString(16)}" }
-            }
-            fakeId
-        }
 
         StringRef.resources = modRes
         StringRef.packageName = BuildConfig.APPLICATION_ID

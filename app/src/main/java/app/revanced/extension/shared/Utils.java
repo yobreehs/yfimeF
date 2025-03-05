@@ -248,11 +248,7 @@ public class Utils {
      */
     @SuppressLint("DiscouragedApi")
     public static int getResourceIdentifier(@NonNull Context context, @NonNull String resourceIdentifierName, @NonNull String type) {
-        var id = context.getResources().getIdentifier(resourceIdentifierName, type, context.getPackageName());
-        if (id == 0) {
-            id = YoutubeHook.getFakeId(resourceIdentifierName, type);
-        }
-        return id;
+        return context.getResources().getIdentifier(resourceIdentifierName, type, context.getPackageName());
     }
 
     /**

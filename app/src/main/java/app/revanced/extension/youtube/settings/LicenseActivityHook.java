@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.preference.PreferenceFragment;
 import android.util.TypedValue;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toolbar;
@@ -22,6 +23,8 @@ import app.revanced.extension.shared.Utils;
 import app.revanced.extension.shared.settings.BaseSettings;
 import app.revanced.extension.youtube.ThemeHelper;
 import app.revanced.extension.youtube.settings.preference.SponsorBlockPreferenceFragment;
+
+import io.github.chsbuffer.revancedxposed.youtube.misc.RevancedSettingsLayout;
 
 /**
  * Hooks LicenseActivity.
@@ -59,8 +62,8 @@ public class LicenseActivityHook {
     public static void initialize(Activity licenseActivity) {
         try {
             ThemeHelper.setActivityTheme(licenseActivity);
-            licenseActivity.setContentView(getResourceIdentifier(
-                    "revanced_settings_with_toolbar", "layout"));
+            RevancedSettingsLayout layout = new RevancedSettingsLayout(licenseActivity);
+            licenseActivity.setContentView(layout);
 
             PreferenceFragment fragment;
             String toolbarTitleResourceName;
@@ -84,10 +87,12 @@ public class LicenseActivityHook {
                     return;
             }
 
+            var containerId = View.generateViewId();
+            layout.getFragmentsContainer().setId(containerId);
             //noinspection deprecation
             licenseActivity.getFragmentManager()
                     .beginTransaction()
-                    .replace(getResourceIdentifier("revanced_settings_fragments", "id"), fragment)
+                    .replace(containerId, fragment)
                     .commit();
         } catch (Exception ex) {
             Logger.printException(() -> "initialize failure", ex);
