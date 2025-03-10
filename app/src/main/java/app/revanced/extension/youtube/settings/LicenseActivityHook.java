@@ -1,29 +1,14 @@
 package app.revanced.extension.youtube.settings;
 
-import static app.revanced.extension.shared.Utils.getResourceIdentifier;
-
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.preference.PreferenceFragment;
-import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toolbar;
 
-import androidx.annotation.RequiresApi;
-
-import java.util.Objects;
-
 import app.revanced.extension.shared.Logger;
-import app.revanced.extension.shared.Utils;
-import app.revanced.extension.shared.settings.BaseSettings;
 import app.revanced.extension.youtube.ThemeHelper;
 import app.revanced.extension.youtube.settings.preference.SponsorBlockPreferenceFragment;
-
 import io.github.chsbuffer.revancedxposed.youtube.misc.RevancedSettingsLayout;
 
 /**
@@ -58,7 +43,6 @@ public class LicenseActivityHook {
      * <p>
      * Hooks LicenseActivity#onCreate in order to inject our own fragment.
      */
-    @RequiresApi(api = Build.VERSION_CODES.N)
     public static void initialize(Activity licenseActivity) {
         try {
             ThemeHelper.setActivityTheme(licenseActivity);

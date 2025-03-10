@@ -1,11 +1,12 @@
 package app.revanced.extension.youtube.patches.components;
 
-import android.os.Build;
-
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Spliterator;
 import java.util.function.Consumer;
 
 import app.revanced.extension.youtube.ByteTrieSearch;
@@ -44,13 +45,11 @@ abstract class FilterGroupList<V, T extends FilterGroup<V>> implements Iterable<
         return filterGroups.iterator();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void forEach(@NonNull Consumer<? super T> action) {
         filterGroups.forEach(action);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @NonNull
     @Override
     public Spliterator<T> spliterator() {

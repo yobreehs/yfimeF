@@ -1,5 +1,6 @@
 package io.github.chsbuffer.revancedxposed.youtube.misc
 
+import android.view.View
 import app.revanced.extension.youtube.patches.PlayerTypeHookPatch
 import de.robv.android.xposed.XC_MethodHook
 import io.github.chsbuffer.revancedxposed.Opcode
@@ -31,6 +32,29 @@ fun YoutubeHook.PlayerTypeHook() {
     }.hookMethod(object : XC_MethodHook() {
         override fun beforeHookedMethod(param: MethodHookParam) {
             PlayerTypeHookPatch.setPlayerType(param.args[0] as Enum<*>)
+        }
+    })
+
+    getDexMethod("reelWatchPagerFingerprint") {
+        dexkit.findMethod {
+            matcher {
+                addUsingNumber(
+                    app.resources.getIdentifier(
+                        "reel_watch_player", "id", lpparam.packageName
+                    )
+                )
+            }
+        }.single().also { method ->
+            getDexField("ReelPlayerViewField") {
+                method.declaredClass!!.fields.single { it.typeName.endsWith("ReelPlayerView") }
+            }
+        }
+    }.hookMethod(object : XC_MethodHook() {
+        val field = getDexField("ReelPlayerViewField").getFieldInstance(classLoader)
+        override fun afterHookedMethod(param: MethodHookParam) {
+            val thiz = param.thisObject
+            val view = field.get(thiz) as View
+            PlayerTypeHookPatch.onShortsCreate(view)
         }
     })
 

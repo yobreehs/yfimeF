@@ -1,7 +1,5 @@
 package app.revanced.extension.youtube.sponsorblock.ui;
 
-import static app.revanced.extension.shared.Utils.getResourceIdentifier;
-
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
@@ -238,8 +236,8 @@ public class SponsorBlockViewController {
             // but if buttons are showing when the end of the video is reached then they need
             // to be forcefully hidden
             if (!Settings.AUTO_REPEAT.get()) {
-                CreateSegmentButtonController.hide();
-                VotingButtonController.hide();
+                CreateSegmentButton.hideControls();
+                VotingButton.hideControls();
             }
         } catch (Exception ex) {
             Logger.printException(() -> "endOfVideoReached failure", ex);

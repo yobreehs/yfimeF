@@ -30,20 +30,20 @@ Second \"item\" text"</string>
     <string name="revanced_sb_square_layout_sum_on">Buttons and controls are square</string>
     <string name="revanced_sb_square_layout_sum_off">Buttons and controls are rounded</string>
     <!-- Translations should use language similar to 'revanced_ryd_compact_layout_title' -->
-    <string name="revanced_sb_enable_compact_skip_button">Use compact skip button</string>
+    <string name="revanced_sb_enable_compact_skip_button">Use compact Skip button</string>
     <string name="revanced_sb_enable_compact_skip_button_sum_on">Skip button styled for minimum width</string>
     <string name="revanced_sb_enable_compact_skip_button_sum_off">Skip button styled for best appearance</string>
-    <string name="revanced_sb_enable_auto_hide_skip_segment_button">Automatically hide skip button</string>
+    <string name="revanced_sb_enable_auto_hide_skip_segment_button">Automatically hide Skip button</string>
     <string name="revanced_sb_enable_auto_hide_skip_segment_button_sum_on">Skip button hides after a few seconds</string>
-    <string name="revanced_sb_enable_auto_hide_skip_segment_button_sum_off">Skip button displayed for entire segment</string>
-    <string name="revanced_sb_general_skiptoast">Show a toast when skipping automatically</string>
+    <string name="revanced_sb_enable_auto_hide_skip_segment_button_sum_off">Skip button is shown for the entire segment</string>
+    <string name="revanced_sb_general_skiptoast">Show a toast when skipping</string>
     <string name="revanced_sb_general_skiptoast_sum_on">Toast is shown when a segment is automatically skipped. Tap here to see an example</string>
     <string name="revanced_sb_general_skiptoast_sum_off">Toast is not shown. Tap here to see an example</string>
     <string name="revanced_sb_general_time_without">Show video length without segments</string>
     <string name="revanced_sb_general_time_without_sum_on">Video length minus all segments, shown in parentheses next to the full video length</string>
     <string name="revanced_sb_general_time_without_sum_off">Full video length shown</string>
     <string name="revanced_sb_create_segment_category">Creating new segments</string>
-    <string name="revanced_sb_enable_create_segment">Show create new segment button</string>
+    <string name="revanced_sb_enable_create_segment">Show Create new segment button</string>
     <string name="revanced_sb_enable_create_segment_sum_on">Create new segment button is shown</string>
     <string name="revanced_sb_enable_create_segment_sum_off">Create new segment button is not shown</string>
     <string name="revanced_sb_general_adjusting">Adjust new segment step</string>
@@ -137,8 +137,8 @@ Your user id is like a password and it should never be shared.
     <string name="revanced_sb_skipped_multiple_segments">Skipped multiple segments</string>
     <string name="revanced_sb_skip_automatically">Skip automatically</string>
     <string name="revanced_sb_skip_automatically_once">Skip automatically once</string>
-    <string name="revanced_sb_skip_showbutton">Show a skip button</string>
-    <string name="revanced_sb_skip_seekbaronly">Show in seek bar</string>
+    <string name="revanced_sb_skip_showbutton">Show a Skip button</string>
+    <string name="revanced_sb_skip_seekbaronly">Show in seekbar</string>
     <string name="revanced_sb_skip_ignore">Disable</string>
     <string name="revanced_sb_submit_failed_invalid">Unable to submit segment: %s</string>
     <string name="revanced_sb_submit_failed_timeout">SponsorBlock is temporarily down</string>
@@ -149,9 +149,9 @@ Your user id is like a password and it should never be shared.
 Already exists"</string>
     <string name="revanced_sb_submit_succeeded">Segment submitted successfully</string>
     <!-- Toast shown if network connection times out. Translations of this should not be longer than the original English or the text can be clipped and not entirely shown. -->
-    <string name="revanced_sb_sponsorblock_connection_failure_timeout">SponsorBlock temporarily not available (API timed out)</string>
-    <string name="revanced_sb_sponsorblock_connection_failure_status">SponsorBlock temporarily not available (status %d)</string>
-    <string name="revanced_sb_sponsorblock_connection_failure_generic">SponsorBlock temporarily not available</string>
+    <string name="revanced_sb_sponsorblock_connection_failure_timeout">SponsorBlock is temporarily not available (API timed out)</string>
+    <string name="revanced_sb_sponsorblock_connection_failure_status">SponsorBlock is temporarily not available (status %d)</string>
+    <string name="revanced_sb_sponsorblock_connection_failure_generic">SponsorBlock is temporarily not available</string>
     <string name="revanced_sb_vote_failed_timeout">Unable to vote for segment (API timed out)</string>
     <string name="revanced_sb_vote_failed_unknown_error">Unable to vote for segment (status: %1$d %2$s)</string>
     <string name="revanced_sb_vote_failed_forbidden">Unable to vote for segment: %s</string>
@@ -163,9 +163,9 @@ Already exists"</string>
     <string name="revanced_sb_new_segment_disabled_category">Category is disabled in settings. Enable category to submit.</string>
     <string name="revanced_sb_new_segment_title">New SponsorBlock segment</string>
     <string name="revanced_sb_new_segment_mark_time_as_question">Set %s as the start or end of a new segment?</string>
-    <string name="revanced_sb_new_segment_mark_start">start</string>
-    <string name="revanced_sb_new_segment_mark_end">end</string>
-    <string name="revanced_sb_new_segment_now">now</string>
+    <string name="revanced_sb_new_segment_mark_start">Start</string>
+    <string name="revanced_sb_new_segment_mark_end">End</string>
+    <string name="revanced_sb_new_segment_now">Now</string>
     <string name="revanced_sb_new_segment_time_start">Time the segment begins at</string>
     <string name="revanced_sb_new_segment_time_end">Time the segment ends at</string>
     <string name="revanced_sb_new_segment_confirm_title">Are the times correct?</string>
@@ -186,7 +186,7 @@ Ready to submit?"</string>
     <string name="revanced_sb_new_segment_edit_by_hand_parse_error">Invalid time given</string>
     <string name="revanced_sb_stats">Stats</string>
     <!-- Shown in the settings preferences, and translations can be any text length. -->
-    <string name="revanced_sb_stats_connection_failure">Stats temporarily not available (API is down)</string>
+    <string name="revanced_sb_stats_connection_failure">Stats are temporarily not available (API is down)</string>
     <string name="revanced_sb_stats_loading">Loading...</string>
     <string name="revanced_sb_stats_sb_disabled">SponsorBlock is disabled</string>
     <string name="revanced_sb_stats_username">Your username: &lt;b>%s&lt;/b></string>

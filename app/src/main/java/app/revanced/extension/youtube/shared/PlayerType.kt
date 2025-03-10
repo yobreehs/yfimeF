@@ -2,10 +2,9 @@ package app.revanced.extension.youtube.shared
 
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.youtube.Event
-import app.revanced.extension.youtube.patches.VideoInformation
 
 /**
- * Main player type.
+ * Regular player type.
  */
 enum class PlayerType {
     /**
@@ -21,9 +20,6 @@ enum class PlayerType {
 
     /**
      * A regular video is minimized.
-     *
-     * When spoofing to 16.x YouTube and watching a short with a regular video in the background,
-     * the type can be this (and not [HIDDEN]).
      */
     WATCH_WHILE_MINIMIZED,
     WATCH_WHILE_MAXIMIZED,
@@ -56,8 +52,7 @@ enum class PlayerType {
             val newType = nameToPlayerType[enumName]
             if (newType == null) {
                 Logger.printException { "Unknown PlayerType encountered: $enumName" }
-            } else if (current != newType) {
-                Logger.printDebug { "PlayerType changed to: $newType" }
+            } else {
                 current = newType
             }
         }
@@ -68,9 +63,13 @@ enum class PlayerType {
         @JvmStatic
         var current
             get() = currentPlayerType
-            private set(value) {
-                currentPlayerType = value
-                onChange(currentPlayerType)
+            private set(type) {
+                if (currentPlayerType != type) {
+                    Logger.printDebug { "Changed to: $type" }
+
+                    currentPlayerType = type
+                    onChange(type)
+                }
             }
 
         @Volatile // Read/write from different threads.
@@ -90,8 +89,6 @@ enum class PlayerType {
      * Does not include the first moment after a short is opened when a regular video is minimized on screen,
      * or while watching a short with a regular video present on a spoofed 16.x version of YouTube.
      * To include those situations instead use [isNoneHiddenOrMinimized].
-     *
-     * @see VideoInformation
      */
     fun isNoneOrHidden(): Boolean {
         return this == NONE || this == HIDDEN
@@ -107,8 +104,11 @@ enum class PlayerType {
      * when spoofing to an old version this will return false even
      * though a Short is being opened or is on screen (see [isNoneHiddenOrMinimized]).
      *
+     * Instead of this method, consider using {@link ShortsPlayerState}
+     * which may work better for some situations.
+     *
      * @return If nothing, a Short, or a regular video is sliding off screen to a dismissed or hidden state.
-     * @see VideoInformation
+     * @see ShortsPlayerState
      */
     fun isNoneHiddenOrSlidingMinimized(): Boolean {
         return isNoneOrHidden() || this == WATCH_WHILE_SLIDING_MINIMIZED_DISMISSED
@@ -125,9 +125,12 @@ enum class PlayerType {
      * Typically used to detect if a Short is playing when the player cannot be in a minimized state,
      * such as the user interacting with a button or element of the player.
      *
+     * Instead of this method, consider using {@link ShortsPlayerState}
+     * which may work better for some situations.
+     *
      * @return If nothing, a Short, a regular video is sliding off screen to a dismissed or hidden state,
      *         a regular video is minimized (and a new video is not being opened).
-     * @see VideoInformation
+     * @see ShortsPlayerState
      */
     fun isNoneHiddenOrMinimized(): Boolean {
         return isNoneHiddenOrSlidingMinimized() || this == WATCH_WHILE_MINIMIZED
