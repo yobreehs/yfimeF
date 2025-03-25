@@ -1,5 +1,8 @@
 package app.revanced.extension.youtube.settings.preference;
 
+import static android.text.Html.fromHtml;
+import static app.revanced.extension.shared.StringRef.str;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -7,16 +10,25 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.*;
+import android.preference.EditTextPreference;
+import android.preference.Preference;
+import android.preference.PreferenceCategory;
+import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
+import android.preference.SwitchPreference;
 import android.text.Html;
 import android.text.InputType;
 import android.util.TypedValue;
 import android.widget.EditText;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import app.revanced.extension.shared.Logger;
 import app.revanced.extension.shared.Utils;
 import app.revanced.extension.shared.settings.Setting;
+import app.revanced.extension.shared.settings.preference.ResettableEditTextPreference;
 import app.revanced.extension.youtube.settings.Settings;
 import app.revanced.extension.youtube.sponsorblock.SegmentPlaybackController;
 import app.revanced.extension.youtube.sponsorblock.SponsorBlockSettings;
@@ -26,9 +38,6 @@ import app.revanced.extension.youtube.sponsorblock.objects.SegmentCategoryListPr
 import app.revanced.extension.youtube.sponsorblock.objects.UserStats;
 import app.revanced.extension.youtube.sponsorblock.requests.SBRequester;
 import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockViewController;
-
-import static android.text.Html.fromHtml;
-import static app.revanced.extension.shared.StringRef.str;
 
 @SuppressWarnings("deprecation")
 public class SponsorBlockPreferenceFragment extends PreferenceFragment {
@@ -44,8 +53,9 @@ public class SponsorBlockPreferenceFragment extends PreferenceFragment {
     private SwitchPreference showTimeWithoutSegments;
     private SwitchPreference toastOnConnectionError;
 
-    private EditTextPreference newSegmentStep;
-    private EditTextPreference minSegmentDuration;
+    private ResettableEditTextPreference newSegmentStep;
+    private ResettableEditTextPreference minSegmentDuration;
+
     private EditTextPreference privateUserId;
     private EditTextPreference importExport;
     private Preference apiUrl;
@@ -159,6 +169,8 @@ public class SponsorBlockPreferenceFragment extends PreferenceFragment {
 
             addAboutCategory(context, preferenceScreen);
 
+//            Utils.setPreferenceTitlesToMultiLineIfNeeded(preferenceScreen);
+
             updateUI();
         } catch (Exception ex) {
             Logger.printException(() -> "onCreate failure", ex);
@@ -268,7 +280,8 @@ public class SponsorBlockPreferenceFragment extends PreferenceFragment {
             return true;
         });
 
-        newSegmentStep = new EditTextPreference(context);
+        newSegmentStep = new ResettableEditTextPreference(context);
+        newSegmentStep.setSetting(Settings.SB_CREATE_NEW_SEGMENT_STEP);
         newSegmentStep.setTitle(str("revanced_sb_general_adjusting"));
         newSegmentStep.setSummary(str("revanced_sb_general_adjusting_sum"));
         newSegmentStep.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -326,7 +339,8 @@ public class SponsorBlockPreferenceFragment extends PreferenceFragment {
         });
         category.addPreference(trackSkips);
 
-        minSegmentDuration = new EditTextPreference(context);
+        minSegmentDuration = new ResettableEditTextPreference(context);
+        minSegmentDuration.setSetting(Settings.SB_SEGMENT_MIN_DURATION);
         minSegmentDuration.setTitle(str("revanced_sb_general_min_duration"));
         minSegmentDuration.setSummary(str("revanced_sb_general_min_duration_sum"));
         minSegmentDuration.getEditText().setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
@@ -345,7 +359,15 @@ public class SponsorBlockPreferenceFragment extends PreferenceFragment {
         });
         category.addPreference(minSegmentDuration);
 
-        privateUserId = new EditTextPreference(context);
+        privateUserId = new EditTextPreference(context) {
+            protected void onPrepareDialogBuilder(AlertDialog.Builder builder) {
+                Utils.setEditTextDialogTheme(builder);
+
+                builder.setNeutralButton(str("revanced_sb_settings_copy"), (dialog, which) -> {
+                    Utils.setClipboard(getEditText().getText().toString());
+                });
+            }
+        };
         privateUserId.setTitle(str("revanced_sb_general_uuid"));
         privateUserId.setSummary(str("revanced_sb_general_uuid_sum"));
         privateUserId.setOnPreferenceChangeListener((preference1, newValue) -> {
@@ -504,7 +526,7 @@ public class SponsorBlockPreferenceFragment extends PreferenceFragment {
 
             if (stats.totalSegmentCountIncludingIgnored > 0) {
                 // If user has not created any segments, there's no reason to set a username.
-                EditTextPreference preference = new EditTextPreference(context);
+                EditTextPreference preference = new ResettableEditTextPreference(context);
                 statsCategory.addPreference(preference);
                 String userName = stats.userName;
                 preference.setTitle(fromHtml(str("revanced_sb_stats_username", userName)));
