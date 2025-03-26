@@ -1,7 +1,6 @@
-import groovy.xml.*
+import groovy.xml.MarkupBuilder
+import groovy.xml.XmlSlurper
 import groovy.xml.slurpersupport.NodeChild
-import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.PathSensitive
 
 plugins {
     alias(libs.plugins.android.application)
@@ -16,7 +15,7 @@ android {
         applicationId = "io.github.chsbuffer.revancedxposed"
         minSdk = 27
         targetSdk = 35
-        versionCode = 5
+        versionCode = 6
         versionName = "1.0.$versionCode"
     }
     flavorDimensions += "abi"
