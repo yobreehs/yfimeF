@@ -19,6 +19,10 @@ Patches:
 - LithoFilter
 - SponsorBlock
 
+## Spotify
+Patches:
+- UnlockPremiumPatch
+
 # Credit
 
 [DexKit](https://github.com/LuckyPray/DexKit)  
