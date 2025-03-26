@@ -11,6 +11,7 @@ import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_InitPackageResources
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.music.MusicHook
+import io.github.chsbuffer.revancedxposed.spotify.SpotifyHook
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import kotlin.system.measureTimeMillis
 
@@ -35,6 +36,12 @@ class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources, IXpose
                         YoutubeHook(app, lpparam, resparam, startupParam).Hook()
                     }
                     Logger.printDebug { "Youtube handleLoadPackage: ${t}ms" }
+                }
+            }
+
+            "com.spotify.music" -> {
+                inContext(lpparam) { app ->
+                    SpotifyHook(app, lpparam).Hook()
                 }
             }
         }

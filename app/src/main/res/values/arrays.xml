@@ -3,5 +3,6 @@
     <string-array name="scope">
         <item>com.google.android.apps.youtube.music</item>
         <item>com.google.android.youtube</item>
+        <item>com.spotify.music</item>
     </string-array>
 </resources>

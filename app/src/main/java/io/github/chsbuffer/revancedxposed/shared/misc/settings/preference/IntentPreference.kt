@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package io.github.chsbuffer.revancedxposed.shared.misc.settings.preference
 
 import android.content.ComponentName
