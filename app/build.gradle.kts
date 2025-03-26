@@ -1,3 +1,8 @@
+import groovy.xml.*
+import groovy.xml.slurpersupport.NodeChild
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.PathSensitive
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -52,11 +57,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_14
-        targetCompatibility = JavaVersion.VERSION_14
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "14"
+        jvmTarget = "17"
         compileOptions {
             freeCompilerArgs = listOf(
                 "-Xno-param-assertions", "-Xno-receiver-assertions", "-Xno-call-assertions"
@@ -69,4 +74,54 @@ dependencies {
     implementation(libs.dexkit)
     implementation(libs.annotation)
     compileOnly(libs.xposed)
+}
+
+abstract class GenerateStringsTask @Inject constructor(
+) : DefaultTask() {
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val inputDirectory: DirectoryProperty
+
+    @get:OutputDirectory
+    abstract val outputDirectory: DirectoryProperty
+
+    @TaskAction
+    fun action() {
+        val inputDir = inputDirectory.get().asFile
+
+        inputDir.listFiles()?.forEach {
+            val name = it.name
+            val inputFile = File(it, "strings.xml")
+            val genResDir = File(outputDirectory.get().asFile, name).apply { mkdirs() }
+            val outputFile = File(genResDir, "strings.xml")
+
+            val inputXml = XmlSlurper().parse(inputFile)
+
+            outputFile.writer().use { writer ->
+                MarkupBuilder(writer).run {
+                    doubleQuotes = true
+                    withGroovyBuilder {
+                        "resources" {
+                            inputXml.children().children().children().forEach {
+                                val node = it as NodeChild
+                                "string"("name" to node.getProperty("@name")) { mkp.yield(it.text()) }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+androidComponents {
+    onVariants { variant ->
+        val task = project.tasks.register<GenerateStringsTask>("generate${variant.name}Strings") {
+            val stringResourceDir = project.file("src/main/addresources")
+            inputDirectory.set(stringResourceDir)
+        }
+        variant.sources.res?.addGeneratedSourceDirectory(
+            task, GenerateStringsTask::outputDirectory
+        )
+    }
 }

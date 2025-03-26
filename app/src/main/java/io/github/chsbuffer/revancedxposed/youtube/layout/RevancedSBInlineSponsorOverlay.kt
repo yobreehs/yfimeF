@@ -9,6 +9,7 @@ import app.revanced.extension.youtube.sponsorblock.ui.SkipSponsorButton
 import io.github.chsbuffer.revancedxposed.R
 import io.github.chsbuffer.revancedxposed.youtube.modRes
 
+// revanced_sb_inline_sponsor_overlay.xml
 class RevancedSBInlineSponsorOverlay(context: Context) : RelativeLayout(context) {
 
     val skipHighlightButton: SkipSponsorButton

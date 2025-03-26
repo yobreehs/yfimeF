@@ -1,13 +1,18 @@
 package app.revanced.extension.youtube.settings;
 
+import static io.github.chsbuffer.revancedxposed.youtube.misc.SettingsKt.getPreferences;
+
 import android.app.Activity;
 import android.preference.PreferenceFragment;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toolbar;
 
+import java.util.Objects;
+
 import app.revanced.extension.shared.Logger;
 import app.revanced.extension.youtube.ThemeHelper;
+import app.revanced.extension.youtube.settings.preference.ReVancedPreferenceFragment;
 import app.revanced.extension.youtube.settings.preference.SponsorBlockPreferenceFragment;
 import io.github.chsbuffer.revancedxposed.youtube.misc.RevancedSettingsLayout;
 
@@ -51,8 +56,8 @@ public class LicenseActivityHook {
 
             PreferenceFragment fragment;
             String toolbarTitleResourceName;
-//            String dataString = Objects.requireNonNull(licenseActivity.getIntent().getDataString());
-            String dataString = "revanced_sb_settings_intent";
+            String dataString = Objects.requireNonNullElse(licenseActivity.getIntent().getStringExtra("data"), "revanced_settings_intent");
+
             switch (dataString) {
                 case "revanced_sb_settings_intent":
                     toolbarTitleResourceName = "revanced_sb_settings_title";
@@ -62,14 +67,17 @@ public class LicenseActivityHook {
                     toolbarTitleResourceName = "revanced_ryd_settings_title";
                     fragment = new ReturnYouTubeDislikePreferenceFragment();
                     break;
+                    */
                 case "revanced_settings_intent":
                     toolbarTitleResourceName = "revanced_settings_title";
                     fragment = new ReVancedPreferenceFragment();
-                    break;*/
+                    break;
                 default:
                     Logger.printException(() -> "Unknown setting: " + dataString);
                     return;
             }
+
+            layout.setTitle(toolbarTitleResourceName);
 
             var containerId = View.generateViewId();
             layout.getFragmentsContainer().setId(containerId);

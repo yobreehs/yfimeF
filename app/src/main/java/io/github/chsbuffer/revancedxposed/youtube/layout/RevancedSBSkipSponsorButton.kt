@@ -11,6 +11,7 @@ import io.github.chsbuffer.revancedxposed.R
 import io.github.chsbuffer.revancedxposed.new
 import io.github.chsbuffer.revancedxposed.youtube.modRes
 
+// revanced_sb_skip_sponsor_button.xml
 class RevancedSBSkipSponsorButton(context: Context, hostCl: ClassLoader) : LinearLayout(context) {
 
     val textView: TextView

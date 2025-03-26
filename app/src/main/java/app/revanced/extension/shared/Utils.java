@@ -40,9 +40,8 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import app.revanced.extension.shared.settings.BaseSettings;
 import app.revanced.extension.shared.settings.BooleanSetting;
-import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook;
+import app.revanced.extension.shared.settings.preference.ReVancedAboutPreference;
 
 public class Utils {
 
@@ -796,6 +795,93 @@ public class Utils {
         }
     }
 */
+
+    /**
+     * Sort a PreferenceGroup and all it's sub groups by title or key.
+     *
+     * Sort order is determined by the preferences key {@link Sort} suffix.
+     *
+     * If a preference has no key or no {@link Sort} suffix,
+     * then the preferences are left unsorted.
+     */
+    @SuppressWarnings("deprecation")
+    public static void sortPreferenceGroups(@NonNull PreferenceGroup group) {
+        Sort groupSort = Sort.fromKey(group.getKey(), Sort.UNSORTED);
+        SortedMap<String, Preference> preferences = new TreeMap<>();
+
+        for (int i = 0, prefCount = group.getPreferenceCount(); i < prefCount; i++) {
+            Preference preference = group.getPreference(i);
+
+            final Sort preferenceSort;
+            if (preference instanceof PreferenceGroup subGroup) {
+                sortPreferenceGroups(subGroup);
+                preferenceSort = groupSort; // Sort value for groups is for it's content, not itself.
+            } else {
+                // Allow individual preferences to set a key sorting.
+                // Used to force a preference to the top or bottom of a group.
+                preferenceSort = Sort.fromKey(preference.getKey(), groupSort);
+            }
+
+            final String sortValue;
+            switch (preferenceSort) {
+                case BY_TITLE:
+                    sortValue = removePunctuationConvertToLowercase(preference.getTitle());
+                    break;
+                case BY_KEY:
+                    sortValue = preference.getKey();
+                    break;
+                case UNSORTED:
+                    continue; // Keep original sorting.
+                default:
+                    throw new IllegalStateException();
+            }
+
+            preferences.put(sortValue, preference);
+        }
+
+        int index = 0;
+        for (Preference pref : preferences.values()) {
+            int order = index++;
+
+            // Move any screens, intents, and the one off About preference to the top.
+            if (pref instanceof PreferenceScreen || pref instanceof ReVancedAboutPreference
+                    || pref.getIntent() != null) {
+                // Arbitrary high number.
+                order -= 1000;
+            }
+
+            pref.setOrder(order);
+        }
+    }
+
+    /**
+     * Set all preferences to multiline titles if the device is not using an English variant.
+     * The English strings are heavily scrutinized and all titles fit on screen
+     * except 2 or 3 preference strings and those do not affect readability.
+     *
+     * Allowing multiline for those 2 or 3 English preferences looks weird and out of place,
+     * and visually it looks better to clip the text and keep all titles 1 line.
+     */
+    @SuppressWarnings("deprecation")
+    public static void setPreferenceTitlesToMultiLineIfNeeded(PreferenceGroup group) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return;
+        }
+
+        String revancedLocale = Utils.getContext().getResources().getConfiguration().locale.getLanguage();
+        if (revancedLocale.equals(Locale.ENGLISH.getLanguage())) {
+            return;
+        }
+
+        for (int i = 0, prefCount = group.getPreferenceCount(); i < prefCount; i++) {
+            Preference pref = group.getPreference(i);
+            pref.setSingleLineTitle(false);
+
+            if (pref instanceof PreferenceGroup subGroup) {
+                setPreferenceTitlesToMultiLineIfNeeded(subGroup);
+            }
+        }
+    }
 
     /**
      * If {@link Fragment} uses [Android library] rather than [AndroidX library],

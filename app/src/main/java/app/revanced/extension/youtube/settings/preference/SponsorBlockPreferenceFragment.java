@@ -169,7 +169,7 @@ public class SponsorBlockPreferenceFragment extends PreferenceFragment {
 
             addAboutCategory(context, preferenceScreen);
 
-//            Utils.setPreferenceTitlesToMultiLineIfNeeded(preferenceScreen);
+            Utils.setPreferenceTitlesToMultiLineIfNeeded(preferenceScreen);
 
             updateUI();
         } catch (Exception ex) {

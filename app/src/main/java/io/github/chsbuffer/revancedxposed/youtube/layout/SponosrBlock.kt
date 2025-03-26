@@ -3,7 +3,6 @@ package io.github.chsbuffer.revancedxposed.youtube.layout
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Rect
-import android.os.Build
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import app.revanced.extension.youtube.sponsorblock.SegmentPlaybackController
@@ -12,9 +11,12 @@ import de.robv.android.xposed.XC_MethodHook
 import io.github.chsbuffer.revancedxposed.Opcode
 import io.github.chsbuffer.revancedxposed.opcodes
 import io.github.chsbuffer.revancedxposed.setObjectField
+import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.IntentPreference
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import io.github.chsbuffer.revancedxposed.youtube.misc.PlayerTypeHook
 import io.github.chsbuffer.revancedxposed.youtube.misc.SettingsHook
+import io.github.chsbuffer.revancedxposed.youtube.misc.addSettingPreference
+import io.github.chsbuffer.revancedxposed.youtube.misc.newIntent
 import io.github.chsbuffer.revancedxposed.youtube.video.VideoIdPatch
 import io.github.chsbuffer.revancedxposed.youtube.video.VideoInformationHook
 import io.github.chsbuffer.revancedxposed.youtube.video.playerInitHooks
@@ -28,6 +30,15 @@ fun YoutubeHook.SponsorBlock() {
         ::VideoIdPatch,
         ::PlayerTypeHook,
         ::SettingsHook,
+    )
+
+    addSettingPreference(
+        IntentPreference(
+            key = "revanced_settings_screen_10",
+            titleKey = "revanced_sb_settings_title",
+            summaryKey = null,
+            intent = newIntent("revanced_sb_settings_intent"),
+        ),
     )
 
     // Hook the video time methods.

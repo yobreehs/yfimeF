@@ -3,7 +3,6 @@ package io.github.chsbuffer.revancedxposed.youtube
 import android.app.Application
 import android.content.res.Resources
 import android.content.res.XModuleResources
-import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.StringRef
 import app.revanced.extension.shared.Utils
 import de.robv.android.xposed.IXposedHookZygoteInit
