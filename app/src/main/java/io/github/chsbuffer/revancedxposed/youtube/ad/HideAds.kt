@@ -2,14 +2,19 @@ package io.github.chsbuffer.revancedxposed.youtube.ad
 
 import android.view.View
 import app.revanced.extension.shared.Logger
+import app.revanced.extension.shared.Utils
 import app.revanced.extension.youtube.patches.components.AdsFilter
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.SwitchPreference
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
+import io.github.chsbuffer.revancedxposed.youtube.misc.FixVerticalScroll
 import io.github.chsbuffer.revancedxposed.youtube.misc.PreferenceScreen
 
 fun YoutubeHook.HideAds() {
+    dependsOn(
+        ::FixVerticalScroll,
+    )
 
     PreferenceScreen.ADS.addPreferences(
         SwitchPreference("revanced_hide_general_ads"),
@@ -29,9 +34,7 @@ fun YoutubeHook.HideAds() {
     // TODO: Hide end screen store banner
 
     // Hide ad views
-    val adAttributionId = getNumber("adAttributionId") {
-        app.resources.getIdentifier("ad_attribution", "id", app.packageName)
-    }
+    val adAttributionId = Utils.getResourceIdentifier("ad_attribution", "id")
 
     XposedHelpers.findAndHookMethod(
         View::class.java.name,
@@ -40,8 +43,8 @@ fun YoutubeHook.HideAds() {
         Int::class.java.name,
         object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
-                if (param.args[0].equals(adAttributionId)) {
-                    Logger.printInfo { "Hide Ad Attribution View" }
+                if (param.args[0] == adAttributionId) {
+                    Logger.printDebug { "Hide Ad Attribution View" }
                     AdsFilter.hideAdAttributionView(param.result as View)
                 }
             }

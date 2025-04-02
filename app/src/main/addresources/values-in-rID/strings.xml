@@ -555,6 +555,7 @@ Jika mengubah setelan ini tidak berpengaruh, coba beralih ke mode Penyamaran."</
   <string name="revanced_disable_translucent_status_bar_title">Nonaktifkan bilah status tembus cahaya</string>
   <string name="revanced_disable_translucent_status_bar_summary_on">Bilah status buram</string>
   <string name="revanced_disable_translucent_status_bar_summary_off">Bilah status buram atau tembus pandang</string>
+  <string name="revanced_disable_translucent_status_bar_user_dialog_message">Di beberapa perangkat, mengaktifkan fitur ini dapat mengubah bilah navigasi sistem menjadi transparan.</string>
   <string name="revanced_disable_translucent_navigation_bar_light_title">Nonaktifkan bilah tembus cahaya terang</string>
   <string name="revanced_disable_translucent_navigation_bar_light_summary_on">Bilah navigasi mode terang adalah buram</string>
   <string name="revanced_disable_translucent_navigation_bar_light_summary_off">Bilah navigasi mode terang buram atau tembus pandang</string>
@@ -1153,6 +1154,7 @@ Jika kemudian dimatikan, disarankan untuk menghapus data aplikasi untuk mencegah
   <string name="revanced_miniplayer_type_entry_4">Modern 1</string>
   <string name="revanced_miniplayer_type_entry_5">Modern 2</string>
   <string name="revanced_miniplayer_type_entry_6">Modern 3</string>
+  <string name="revanced_miniplayer_type_entry_7">Modern 4</string>
   <string name="revanced_miniplayer_rounded_corners_title">Aktifkan sudut membulat</string>
   <string name="revanced_miniplayer_rounded_corners_summary_on">Sudutnya membulat</string>
   <string name="revanced_miniplayer_rounded_corners_summary_off">Sudutnya persegi</string>
@@ -1172,14 +1174,14 @@ Miniplayer dapat diseret ke sudut layar mana pun"</string>
 
 Miniplayer dapat diseret keluar layar ke kiri atau kanan"</string>
   <string name="revanced_miniplayer_horizontal_drag_summary_off">Gerakan seret horizontal dinonaktifkan</string>
-  <string name="revanced_miniplayer_hide_expand_close_title">Sembunyikan tombol tutup</string>
-  <string name="revanced_miniplayer_hide_expand_close_summary_on">Tombol tutup disembunyikan</string>
-  <string name="revanced_miniplayer_hide_expand_close_summary_off">Tombol tutup ditampilkan</string>
-  <string name="revanced_miniplayer_hide_expand_close_legacy_title">Sembunyikan perbesar dan tutup</string>
-  <string name="revanced_miniplayer_hide_expand_close_legacy_summary_on">"Tombol disembunyikan
+  <string name="revanced_miniplayer_hide_overlay_buttons_title">Sembunyikan tombol overlay</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_summary_on">Tombol overlay disembunyikan</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_summary_off">Tombol overlay ditampilkan</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_legacy_title">Sembunyikan tombol perluas dan tutup</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_legacy_summary_on">"Tombol disembunyikan
 
-Usap untuk memperluas atau menutup"</string>
-  <string name="revanced_miniplayer_hide_expand_close_legacy_summary_off">Tombol bentang dan tutup ditampilkan</string>
+Geser untuk memperluas atau menutup"</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_legacy_summary_off">Tombol perluas dan tutup ditampilkan</string>
   <string name="revanced_miniplayer_hide_subtext_title">Sembunyikan subteks</string>
   <string name="revanced_miniplayer_hide_subtext_summary_on">Subteks disembunyikan</string>
   <string name="revanced_miniplayer_hide_subtext_summary_off">Subteks ditampilkan</string>

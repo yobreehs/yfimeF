@@ -68,7 +68,7 @@ fun YoutubeHook.SettingsHook() {
     getDexMethod("licenseActivityOnCreateFingerprint") {
         dexkit.findClass {
             matcher {
-                className(".LicenseActivity$", StringMatchType.SimilarRegex)
+                className(".LicenseActivity", StringMatchType.EndsWith)
             }
         }.single().also {
             setString("licenseActivityNOTonCreate") {

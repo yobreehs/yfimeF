@@ -44,7 +44,9 @@ fun YoutubeHook.PlayerResponseMethodHook() {
             it.paramTypeNames.contains("java.lang.String")
         }
     }.apply {
-        parameterIsShortAndOpeningOrPlaying = paramTypeNames.indexOfFirst { it == "boolean" }
+        parameterIsShortAndOpeningOrPlaying =
+            paramTypeNames.zip(paramTypeNames.indices)
+                .indexOfFirst { (type, i) -> i >= 10 && type == "boolean" }
     }.hookMethod(object : XC_MethodHook() {
         override fun beforeHookedMethod(param: MethodHookParam) {
             var protobuf = param.args[PARAMETER_PROTO_BUFFER] as String

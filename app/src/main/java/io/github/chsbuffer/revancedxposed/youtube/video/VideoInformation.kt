@@ -78,7 +78,7 @@ fun YoutubeHook.VideoInformationHook() {
     playerInitMethod.apply {
         val seekSourceType = getDexClass("seekSourceType").getInstance(classLoader)
         val seekSourceNone = seekSourceType.getStaticObjectField("a")!!
-        hookConstructorInstance(object : XC_MethodHook() {
+        hookConstructor(object : XC_MethodHook() {
             val seekFingerprint = getDexMethod("seekFingerprint").getMethodInstance(classLoader)
             val seekRelativeFingerprint =
                 getDexMethod("seekRelativeFingerprint").getMethodInstance(classLoader)
@@ -145,7 +145,7 @@ fun YoutubeHook.VideoInformationHook() {
 
         val seekSourceType = getDexClass("mkxSeekSourceType").getInstance(classLoader)
         val seekSourceNone = seekSourceType.getStaticObjectField("a")!!
-        hookConstructorInstance(object : XC_MethodHook() {
+        hookConstructor(object : XC_MethodHook() {
             val mdxSeekFingerprint =
                 getDexMethod("mdxSeekFingerprint").getMethodInstance(classLoader)
             val mdxSeekRelativeFingerprint =
@@ -231,7 +231,7 @@ fun YoutubeHook.VideoInformationHook() {
                 strings("Media progress reported outside media playback: ")
             }
         }.single().invokes.single { it.name == "<init>" }
-    }.hookConstructorInstance(object : XC_MethodHook() {
+    }.hookConstructor(object : XC_MethodHook() {
         override fun beforeHookedMethod(param: MethodHookParam) {
             val videoTime = param.args[0] as Long
             videoTimeHooks.forEach { it(videoTime) }

@@ -555,6 +555,7 @@ Pokud změna tohoto nastavení nemá žádný účinek, zkuste přepnout do rež
   <string name="revanced_disable_translucent_status_bar_title">Deaktivovat průsvitný stavový řádek</string>
   <string name="revanced_disable_translucent_status_bar_summary_on">Statusový řádek je neprůhledný</string>
   <string name="revanced_disable_translucent_status_bar_summary_off">Statusový řádek je neprůhledný nebo průsvitný</string>
+  <string name="revanced_disable_translucent_status_bar_user_dialog_message">Na některých zařízeních může aktivace této funkce změnit navigační lištu systému na průhlednou.</string>
   <string name="revanced_disable_translucent_navigation_bar_light_title">Deaktivovat světlý průsvitný navigační panel</string>
   <string name="revanced_disable_translucent_navigation_bar_light_summary_on">Navigační panel v světlém režimu je neprůhledný</string>
   <string name="revanced_disable_translucent_navigation_bar_light_summary_off">Navigační lišta v světlém režimu je neprůhledná nebo průsvitná</string>
@@ -1153,6 +1154,7 @@ Pokud bude později vypnuta, doporučujeme vymazat data aplikace, aby se zabrán
   <string name="revanced_miniplayer_type_entry_4">Moderní 1</string>
   <string name="revanced_miniplayer_type_entry_5">Moderní 2</string>
   <string name="revanced_miniplayer_type_entry_6">Moderní 3</string>
+  <string name="revanced_miniplayer_type_entry_7">Moderní 4</string>
   <string name="revanced_miniplayer_rounded_corners_title">Povolit zaoblené rohy</string>
   <string name="revanced_miniplayer_rounded_corners_summary_on">Rohy jsou zaoblené</string>
   <string name="revanced_miniplayer_rounded_corners_summary_off">Rohy jsou čtvercové</string>
@@ -1172,14 +1174,14 @@ Pokud bude později vypnuta, doporučujeme vymazat data aplikace, aby se zabrán
 
 \"Miniplayer\" lze přetáhnout z obrazovky doleva nebo doprava"</string>
   <string name="revanced_miniplayer_horizontal_drag_summary_off">Horizontální posun je zakázán</string>
-  <string name="revanced_miniplayer_hide_expand_close_title">Skrýt tlačítko zavření</string>
-  <string name="revanced_miniplayer_hide_expand_close_summary_on">Tlačítko zavření je skryto</string>
-  <string name="revanced_miniplayer_hide_expand_close_summary_off">Tlačítko zavření je zobrazeno</string>
-  <string name="revanced_miniplayer_hide_expand_close_legacy_title">Skrýt tlačítka pro rozbalení a zavření</string>
-  <string name="revanced_miniplayer_hide_expand_close_legacy_summary_on">"Tlačítka jsou skryta
+  <string name="revanced_miniplayer_hide_overlay_buttons_title">Skrýt tlačítka překrytí</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_summary_on">Tlačítka překrytí jsou skrytá</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_summary_off">Tlačítka překrytí jsou zobrazena</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_legacy_title">Skrýt tlačítka rozbalení a zavření</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_legacy_summary_on">"Tlačítka jsou skrytá
 
-Přejeďte prstem pro rozbalení nebo zavření"</string>
-  <string name="revanced_miniplayer_hide_expand_close_legacy_summary_off">Tlačítka pro rozbalení a zavření jsou zobrazena</string>
+Rozbalte nebo zavřete přejetím prstem"</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_legacy_summary_off">Tlačítka rozbalení a zavření jsou zobrazena</string>
   <string name="revanced_miniplayer_hide_subtext_title">Skrýt podtexty</string>
   <string name="revanced_miniplayer_hide_subtext_summary_on">Podtexty jsou skryty</string>
   <string name="revanced_miniplayer_hide_subtext_summary_off">Podtexty jsou zobrazeny</string>

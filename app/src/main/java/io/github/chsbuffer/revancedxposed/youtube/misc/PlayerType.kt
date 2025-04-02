@@ -14,7 +14,7 @@ fun YoutubeHook.PlayerTypeHook() {
     getDexMethod("playerTypeFingerprint") {
         dexkit.findClass {
             matcher {
-                className(".YouTubePlayerOverlaysLayout$", StringMatchType.SimilarRegex)
+                className(".YouTubePlayerOverlaysLayout", StringMatchType.EndsWith)
             }
         }.findMethod {
             matcher {

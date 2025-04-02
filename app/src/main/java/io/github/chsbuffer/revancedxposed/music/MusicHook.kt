@@ -6,7 +6,6 @@ import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
-import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.XposedHelpers.InvocationTargetError
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
@@ -39,11 +38,7 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
                     paramCount = 0
                 }
             }.single()
-        }.let {
-            XposedBridge.hookMethod(
-                it.getMethodInstance(lpparam.classLoader), XC_MethodReplacement.returnConstant(true)
-            )
-        }
+        }.hookMethod(XC_MethodReplacement.returnConstant(true))
     }
 
     fun HideGetPremium() {
@@ -57,35 +52,26 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
                     )
                 }
             }.single()
-        }.let {
-            XposedBridge.hookMethod(
-                it.getMethodInstance(lpparam.classLoader),
-                object : XC_MethodHook() {
-                    lateinit var hook: XC_MethodHook.Unhook
-
-                    override fun beforeHookedMethod(param: MethodHookParam) {
-                        hook = XposedHelpers.findAndHookMethod("android.view.View",
-                            lpparam.classLoader,
-                            "setVisibility",
-                            Int::class.java,
-                            object : XC_MethodHook() {
-                                override fun beforeHookedMethod(param: MethodHookParam) {
-                                    param.args[0] = View.GONE
-                                }
-                            })
-                    }
-
-                    override fun afterHookedMethod(param: MethodHookParam?) {
-                        hook.unhook()
-                    }
-                })
-        }
+        }.hookMethod(object : XC_MethodHook() {
+            val id = Utils.getResourceIdentifier("unlimited_panel", "id")
+            override fun afterHookedMethod(param: MethodHookParam) {
+                val thiz = param.thisObject
+                for (field in thiz.javaClass.fields) {
+                    val view = field.get(thiz)
+                    if (view !is View) continue
+                    val panelView = view.findViewById<View>(id) ?: continue
+                    Logger.printDebug { "hide get premium" }
+                    panelView.visibility = View.GONE
+                    break
+                }
+            }
+        })
     }
 
     fun RemoveUpgradeButton() {
         // PivotBarConstructorFingerprint
         getDexMethod("PivotBarConstructorFingerprint") {
-            val result = dexkit.findMethod {
+            dexkit.findMethod {
                 matcher {
                     name = "<init>"
                     returnType = "void"
@@ -99,29 +85,24 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
                         "return-void",
                     )
                 }
-            }.single()
-            getString("pivotBarElementField") {
-                result.declaredClass!!.fields.single { f -> f.typeName == "java.util.List" }.fieldName
+            }.single().also { method ->
+                getDexField("pivotBarElementField") {
+                    method.declaredClass!!.fields.single { f -> f.typeName == "java.util.List" }
+                }
             }
-            result
-        }.let {
+        }.hookConstructor(object : XC_MethodHook() {
             val pivotBarElementField =
-                getString("pivotBarElementField") { throw Exception("WTF, Shouldn't i already searched?") }
-            XposedBridge.hookMethod(it.getConstructorInstance(lpparam.classLoader),
-                object : XC_MethodHook() {
-                    override fun afterHookedMethod(param: MethodHookParam) {
-                        val list = XposedHelpers.getObjectField(
-                            param.thisObject, pivotBarElementField
-                        )
-                        try {
-                            XposedHelpers.callMethod(list, "remove", 4)
-                        } catch (e: InvocationTargetError) {
-                            if (e.cause !is IndexOutOfBoundsException)
-                                throw e
-                        }
-                    }
-                })
-        }
+                getDexField("pivotBarElementField").getFieldInstance(classLoader)
+
+            override fun afterHookedMethod(param: MethodHookParam) {
+                val list = pivotBarElementField.get(param.thisObject)
+                try {
+                    XposedHelpers.callMethod(list, "remove", 4)
+                } catch (e: InvocationTargetError) {
+                    if (e.cause !is IndexOutOfBoundsException) throw e
+                }
+            }
+        })
     }
 
     fun MinimizedPlayback() {
@@ -144,11 +125,7 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
                     )
                 }
             }.single()
-        }.let {
-            XposedBridge.hookMethod(
-                it.getMethodInstance(lpparam.classLoader), XC_MethodReplacement.returnConstant(true)
-            )
-        }
+        }.hookMethod(XC_MethodReplacement.returnConstant(true))
 
         // KidsMinimizedPlaybackPolicyControllerFingerprint
         getDexMethod("KidsMinimizedPlaybackPolicyControllerFingerprint") {
@@ -173,11 +150,7 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
                     )
                 }
             }.single()
-        }.let {
-            XposedBridge.hookMethod(
-                it.getMethodInstance(lpparam.classLoader), XC_MethodReplacement.DO_NOTHING
-            )
-        }
+        }.hookMethod(XC_MethodReplacement.DO_NOTHING)
     }
 
     fun HideMusicVideoAds() {
@@ -197,13 +170,10 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
                     paramTypes("boolean")
                 }
             }.single()
-        }.let {
-            XposedBridge.hookMethod(it.getMethodInstance(lpparam.classLoader),
-                object : XC_MethodHook() {
-                    override fun beforeHookedMethod(param: MethodHookParam) {
-                        param.args[0] = false
-                    }
-                })
-        }
+        }.hookMethod(object : XC_MethodHook() {
+            override fun beforeHookedMethod(param: MethodHookParam) {
+                param.args[0] = false
+            }
+        })
     }
 }

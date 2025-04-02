@@ -555,6 +555,7 @@ MicroG-ի համար մարտկոցի օպտիմալացումը անջատել�
   <string name="revanced_disable_translucent_status_bar_title">Անջատել կիսաթափանց կարգավիճակի տողը</string>
   <string name="revanced_disable_translucent_status_bar_summary_on">Վիճակի նوارը անթափանց է</string>
   <string name="revanced_disable_translucent_status_bar_summary_off">Վիճակի նշագիծը անթափանց է կամ կիսաթափանց</string>
+  <string name="revanced_disable_translucent_status_bar_user_dialog_message">Որոշ սարքերում այս գործառույթի միացումը կարող է համակարգի նավիգացիոն տողը դարձնել թափանցիկ։</string>
   <string name="revanced_disable_translucent_navigation_bar_light_title">Անջատել կիսաթափանց լուսավոր շերտը</string>
   <string name="revanced_disable_translucent_navigation_bar_light_summary_on">Լուսավոր ռեժիմի նավիգացիոն շերտը անթափանց է</string>
   <string name="revanced_disable_translucent_navigation_bar_light_summary_off">Լույսի ռեժիմի նավիգացիոն նշագիծը անթափանց է կամ կիսաթափանց</string>
@@ -1154,6 +1155,7 @@ Seekbar thumbnails-ները կօգտագործեն նույն որակը, ինչ
   <string name="revanced_miniplayer_type_entry_4">Ժամանակակից 1</string>
   <string name="revanced_miniplayer_type_entry_5">Ժամանակակից 2</string>
   <string name="revanced_miniplayer_type_entry_6">Ժամանակակից 3</string>
+  <string name="revanced_miniplayer_type_entry_7">Ժամանակակից 4</string>
   <string name="revanced_miniplayer_rounded_corners_title">Աктиվացնել կլորացված անկյունները</string>
   <string name="revanced_miniplayer_rounded_corners_summary_on">Անկյունները կլորացված են</string>
   <string name="revanced_miniplayer_rounded_corners_summary_off">Անկյունները քառակուսի են</string>
@@ -1173,14 +1175,14 @@ Mini-player-ը կարող է գրավվել էկրանի ցանկացած անկ
 
 Mini-player-ը կարող է գրավվել էկրանից դուրս՝ դեպի ձախ կամ աջ։"</string>
   <string name="revanced_miniplayer_horizontal_drag_summary_off">Հորիզոնական քարշելու ժեստը անջատված է</string>
-  <string name="revanced_miniplayer_hide_expand_close_title">Թաքցնել փակման կոճակը</string>
-  <string name="revanced_miniplayer_hide_expand_close_summary_on">Փակման կոճակը թաքցված է</string>
-  <string name="revanced_miniplayer_hide_expand_close_summary_off">Փակման կոճակը ցուցադրվում է</string>
-  <string name="revanced_miniplayer_hide_expand_close_legacy_title">Թաքցնել ընդլայնման և փակման կոճակները</string>
-  <string name="revanced_miniplayer_hide_expand_close_legacy_summary_on">"Կոճակները թաքցվում են
+  <string name="revanced_miniplayer_hide_overlay_buttons_title">Թաքցնել վերադիր կոճակները</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_summary_on">Վերադիր կոճակները թաքցված են</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_summary_off">Վերադիր կոճակները ցուցադրվում են</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_legacy_title">Թաքցնել ընդարձակման և փակման կոճակները</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_legacy_summary_on">"Կոճակները թաքցված են
 
-Գրավել՝ մեծացնելու կամ փակելու համար։"</string>
-  <string name="revanced_miniplayer_hide_expand_close_legacy_summary_off">Ընդլայնման և փակման կոճակները ցուցադրվում են</string>
+Սահեցրեք՝ ընդարձակելու կամ փակելու համար"</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_legacy_summary_off">Ընդարձակման և փակման կոճակները ցուցադրվում են</string>
   <string name="revanced_miniplayer_hide_subtext_title">Թաքցնել ենթատեքստերը</string>
   <string name="revanced_miniplayer_hide_subtext_summary_on">Ենթատեքստերը թաքցված են</string>
   <string name="revanced_miniplayer_hide_subtext_summary_off">Ենթատեքստերը ցուցադրվում են</string>

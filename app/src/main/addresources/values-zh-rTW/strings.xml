@@ -226,6 +226,9 @@ Second \"item\" text"</string>
   <string name="revanced_hide_artist_cards_title">隱藏藝人資訊卡</string>
   <string name="revanced_hide_artist_cards_summary_on">已隱藏藝人資訊卡</string>
   <string name="revanced_hide_artist_cards_summary_off">已顯示藝人資訊卡</string>
+  <string name="revanced_hide_ai_generated_video_summary_section_title">隱藏「AI 產生的影片摘要」</string>
+  <string name="revanced_hide_ai_generated_video_summary_section_summary_on">已隱藏影片摘要區塊</string>
+  <string name="revanced_hide_ai_generated_video_summary_section_summary_off">已顯示影片摘要區塊</string>
   <string name="revanced_hide_attributes_section_title">隱藏屬性</string>
   <string name="revanced_hide_attributes_section_summary_on">已隱藏精選地點、遊戲、音樂和提及的人區塊</string>
   <string name="revanced_hide_attributes_section_summary_off">已顯示精選地點、遊戲、音樂和提及的人區塊</string>
@@ -262,8 +265,12 @@ Second \"item\" text"</string>
   <string name="revanced_hide_filter_bar_feed_in_related_videos_summary_off">已在相關影片中顯示</string>
   <string name="revanced_comments_screen_title">留言區</string>
   <string name="revanced_comments_screen_summary">隱藏或顯示影片留言區內容</string>
+  <string name="revanced_hide_comments_ai_chat_summary_title">隱藏 AI 聊天室摘要</string>
   <string name="revanced_hide_comments_ai_chat_summary_summary_on">已隱藏聊天室摘要</string>
   <string name="revanced_hide_comments_ai_chat_summary_summary_off">已顯示聊天室摘要</string>
+  <string name="revanced_hide_comments_ai_summary_title">隱藏 AI 留言摘要</string>
+  <string name="revanced_hide_comments_ai_summary_summary_on">已隱藏留言摘要</string>
+  <string name="revanced_hide_comments_ai_summary_summary_off">已顯示留言摘要</string>
   <string name="revanced_hide_comments_by_members_header_title">隱藏「會員留言」標題</string>
   <string name="revanced_hide_comments_by_members_header_summary_on">已隱藏會員留言標題</string>
   <string name="revanced_hide_comments_by_members_header_summary_off">已顯示會員留言標題</string>
@@ -1161,14 +1168,6 @@ Second \"item\" text"</string>
 
 迷你播放器可水平拖曳至螢幕左右兩側之外"</string>
   <string name="revanced_miniplayer_horizontal_drag_summary_off">已停用水平拖曳手勢</string>
-  <string name="revanced_miniplayer_hide_expand_close_title">隱藏「關閉」按鈕</string>
-  <string name="revanced_miniplayer_hide_expand_close_summary_on">已隱藏「關閉」按鈕</string>
-  <string name="revanced_miniplayer_hide_expand_close_summary_off">已顯示「關閉」按鈕</string>
-  <string name="revanced_miniplayer_hide_expand_close_legacy_title">隱藏「展開」和「關閉」按鈕</string>
-  <string name="revanced_miniplayer_hide_expand_close_legacy_summary_on">"已隱藏按鈕
-
-向上或向下滑動以展開或關閉"</string>
-  <string name="revanced_miniplayer_hide_expand_close_legacy_summary_off">已顯示「展開」和「關閉」按鈕</string>
   <string name="revanced_miniplayer_hide_subtext_title">隱藏字幕</string>
   <string name="revanced_miniplayer_hide_subtext_summary_on">已隱藏字幕</string>
   <string name="revanced_miniplayer_hide_subtext_summary_off">已顯示字幕</string>

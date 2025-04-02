@@ -204,7 +204,7 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) {
         XposedBridge.hookMethod(getMethodInstance(lpparam.classLoader), callback)
     }
 
-    fun DexMethod.hookConstructorInstance(callback: XC_MethodHook) {
+    fun DexMethod.hookConstructor(callback: XC_MethodHook) {
         XposedBridge.hookMethod(getConstructorInstance(lpparam.classLoader), callback)
     }
 }

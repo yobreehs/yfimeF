@@ -1,7 +1,11 @@
 package app.revanced.extension.shared;
 
 import android.annotation.SuppressLint;
-import android.app.*;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -32,13 +36,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.text.Bidi;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import app.revanced.extension.shared.settings.BooleanSetting;
 import app.revanced.extension.shared.settings.preference.ReVancedAboutPreference;
@@ -61,7 +68,7 @@ public class Utils {
      */
     @SuppressWarnings("SameReturnValue")
     public static String getPatchesReleaseVersion() {
-        return "5.12.0"; // Value is replaced during patching.
+        return "5.18.0";
     }
 
     private static PackageInfo getPackageInfo() throws PackageManager.NameNotFoundException {

@@ -5,8 +5,11 @@ import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.spotify.misc.UnlockPremiumPatch
 import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XC_MethodReplacement
+import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.BaseHook
+import io.github.chsbuffer.revancedxposed.strings
 import org.luckypray.dexkit.query.enums.StringMatchType
 
 class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpparam) {
@@ -15,11 +18,14 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
     )
 
     fun UnlockPremium() {
+        // Logger
         Utils.setContext(app)
+
+        // Override the attributes map in the getter method.
         getDexMethod("productStateProtoFingerprint") {
             dexkit.findClass {
                 matcher {
-                    className("ProductStateProto$", StringMatchType.SimilarRegex)
+                    className("ProductStateProto", StringMatchType.EndsWith)
                 }
             }.findMethod {
                 matcher {
@@ -33,9 +39,38 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
         }.hookMethod(object : XC_MethodHook() {
             val field = getDexField("attributesMapField").getFieldInstance(classLoader)
             override fun beforeHookedMethod(param: MethodHookParam) {
-                Logger.printDebug { field.get(param.thisObject).toString() }
+                Logger.printDebug { field.get(param.thisObject)!!.toString() }
                 UnlockPremiumPatch.overrideAttribute(field.get(param.thisObject) as Map<*, *>)
             }
         })
+
+        // Add the query parameter trackRows to show popular tracks in the artist page.
+        getDexMethod("buildQueryParametersFingerprint") {
+            dexkit.findMethod {
+                matcher {
+                    strings("trackRows", "device_type:tablet")
+                }
+            }.single()
+        }.hookMethod(object : XC_MethodHook() {
+            override fun afterHookedMethod(param: MethodHookParam) {
+                val result = param.result as Map<*, *>
+                val FIELD = "checkDeviceCapability"
+                if (result.toString().contains("${FIELD}=")) {
+                    param.result = XposedBridge.invokeOriginalMethod(
+                        param.method, param.thisObject, arrayOf(param.args[0], true)
+                    )
+                }
+            }
+        })
+
+        // Disable the "Spotify Premium" upsell experiment in context menus.
+        getDexMethod("contextMenuExperimentsFingerprint") {
+            dexkit.findMethod {
+                matcher {
+                    paramCount = 1
+                    strings("remove_ads_upsell_enabled")
+                }
+            }.single().invokes.distinct().single { it.returnTypeName == "boolean" }
+        }.hookMethod(XC_MethodReplacement.returnConstant(false))
     }
 }

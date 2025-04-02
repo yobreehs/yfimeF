@@ -555,6 +555,7 @@ Se alterar esta configuração não fizer efeito, tente alternar para o modo an�
   <string name="revanced_disable_translucent_status_bar_title">Desativar a barra de status translúcida</string>
   <string name="revanced_disable_translucent_status_bar_summary_on">A barra de status é opaca</string>
   <string name="revanced_disable_translucent_status_bar_summary_off">A barra de status é opaca ou translúcida</string>
+  <string name="revanced_disable_translucent_status_bar_user_dialog_message">Em alguns dispositivos, habilitar este recurso pode mudar a barra de navegação do sistema para transparente.</string>
   <string name="revanced_disable_translucent_navigation_bar_light_title">Desativar a barra translúcida clara</string>
   <string name="revanced_disable_translucent_navigation_bar_light_summary_on">A barra de navegação no modo claro é opaca</string>
   <string name="revanced_disable_translucent_navigation_bar_light_summary_off">A barra de navegação em modo claro é opaca ou translúcida</string>
@@ -1154,6 +1155,7 @@ Nếu sau này tắt, bạn nên xóa dữ liệu ứng dụng để tránh lỗ
   <string name="revanced_miniplayer_type_entry_4">Moderno 1</string>
   <string name="revanced_miniplayer_type_entry_5">Moderno 2</string>
   <string name="revanced_miniplayer_type_entry_6">Moderno 3</string>
+  <string name="revanced_miniplayer_type_entry_7">Moderno 4</string>
   <string name="revanced_miniplayer_rounded_corners_title">Ativar cantos arredondados</string>
   <string name="revanced_miniplayer_rounded_corners_summary_on">Bordas são arredondadas</string>
   <string name="revanced_miniplayer_rounded_corners_summary_off">Os cantos estão quadrados</string>
@@ -1173,14 +1175,14 @@ Miniplayer có thể được kéo đến bất kỳ góc nào của màn hình"
 
 Miniplayer có thể được kéo ra khỏi màn hình sang trái hoặc phải"</string>
   <string name="revanced_miniplayer_horizontal_drag_summary_off">Gestos de arrastar horizontais desativados</string>
-  <string name="revanced_miniplayer_hide_expand_close_title">Ocultar botão fechar</string>
-  <string name="revanced_miniplayer_hide_expand_close_summary_on">O botão fechar está oculto</string>
-  <string name="revanced_miniplayer_hide_expand_close_summary_off">Botão fechar é mostrado</string>
-  <string name="revanced_miniplayer_hide_expand_close_legacy_title">Ocultar botões de expansão e fechamento</string>
-  <string name="revanced_miniplayer_hide_expand_close_legacy_summary_on">"Nút bị ẩn
+  <string name="revanced_miniplayer_hide_overlay_buttons_title">Ocultar botões de sobreposição</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_summary_on">Os botões de sobreposição estão ocultos</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_summary_off">Os botões de sobreposição são mostrados</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_legacy_title">Ocultar botões de expansão e fechar</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_legacy_summary_on">"Os botões estão ocultos
 
-Vuốt để mở rộng hoặc đóng"</string>
-  <string name="revanced_miniplayer_hide_expand_close_legacy_summary_off">Botões de expansão e fechamento são mostrados</string>
+Deslize para expandir ou fechar"</string>
+  <string name="revanced_miniplayer_hide_overlay_buttons_legacy_summary_off">Os botões de expansão e fechar são mostrados</string>
   <string name="revanced_miniplayer_hide_subtext_title">Ocultar subtextos</string>
   <string name="revanced_miniplayer_hide_subtext_summary_on">Subtextos estão ocultos</string>
   <string name="revanced_miniplayer_hide_subtext_summary_off">Subtextos são exibidos</string>

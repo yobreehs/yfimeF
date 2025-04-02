@@ -5,6 +5,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import io.github.chsbuffer.revancedxposed.ScopedHook
+import io.github.chsbuffer.revancedxposed.strings
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import org.luckypray.dexkit.result.FieldUsingType
 import java.lang.reflect.Modifier
@@ -83,10 +84,11 @@ fun YoutubeHook.LithoFilter() {
     val ComponentContextParserFingerprint = getDexMethod("ComponentContextParserFingerprint") {
         dexkit.findMethod {
             matcher {
-                addEqString("Component was not found %s because it was removed due to duplicate converter bindings.")
-            }
-            matcher {
-                addEqString("Component was not found because it was removed due to duplicate converter bindings.")
+                strings(
+                    "TreeNode result must be set.",
+                    // String is a partial match and changed slightly in 20.03+
+                    "it was removed due to duplicate converter bindings."
+                )
             }
         }.single()
     }
