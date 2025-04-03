@@ -5,10 +5,10 @@ import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.spotify.misc.UnlockPremiumPatch
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.BaseHook
+import io.github.chsbuffer.revancedxposed.ScopedHookSafe
 import io.github.chsbuffer.revancedxposed.strings
 import org.luckypray.dexkit.query.enums.StringMatchType
 
@@ -53,7 +53,7 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
             }.single()
         }.hookMethod(object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
-                val result = param.result as Map<*, *>
+                val result = param.result
                 val FIELD = "checkDeviceCapability"
                 if (result.toString().contains("${FIELD}=")) {
                     param.result = XposedBridge.invokeOriginalMethod(
@@ -64,13 +64,21 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
         })
 
         // Disable the "Spotify Premium" upsell experiment in context menus.
-        getDexMethod("contextMenuExperimentsFingerprint") {
+        val contextMenuExperiments = getDexMethod("contextMenuExperimentsFingerprint") {
             dexkit.findMethod {
                 matcher {
                     paramCount = 1
                     strings("remove_ads_upsell_enabled")
                 }
-            }.single().invokes.distinct().single { it.returnTypeName == "boolean" }
-        }.hookMethod(XC_MethodReplacement.returnConstant(false))
+            }.single().also { method ->
+                getDexMethod("checkExperiments") {
+                    method.invokes.distinct().single { it.returnTypeName == "boolean" }
+                }
+            }
+        }
+        val checkExperimentsMethod = getDexMethod("checkExperiments").getMethodInstance(classLoader)
+        contextMenuExperiments.hookMethod(ScopedHookSafe(checkExperimentsMethod) {
+            returnConstant(false)
+        })
     }
 }
