@@ -9,6 +9,7 @@ import android.preference.PreferenceManager
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
 import io.github.chsbuffer.revancedxposed.BuildConfig
+import io.github.chsbuffer.revancedxposed.R
 import io.github.chsbuffer.revancedxposed.youtube.modRes
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -22,25 +23,22 @@ abstract class BasePreference(
 ) {
     fun trySetString(
         key: String?,
+        resources: Resources = modRes,
+        pkg: String = BuildConfig.APPLICATION_ID,
         setRes: (str: String) -> Unit
-    ) {
-        if (key == null) return
-        val id = modRes.getIdentifier(key, "string", BuildConfig.APPLICATION_ID)
-        when (id) {
-            0 -> Logger.printDebug { "$key not found." }
-            else -> setRes(modRes.getString(id))
-        }
-    }
+    ) = trySetRes(key, "string", resources, pkg) { res, id -> setRes(resources.getString(id)) }
 
     fun trySetRes(
         key: String?,
         type: String,
+        resources: Resources = modRes,
+        pkg: String = BuildConfig.APPLICATION_ID,
         setRes: (res: Resources, id: Int) -> Unit,
     ) {
         if (key == null) return
-        when (val id = modRes.getIdentifier(key, type, BuildConfig.APPLICATION_ID)) {
+        when (val id = resources.getIdentifier(key, type, pkg)) {
             0 -> Logger.printDebug { "$key not found." }
-            else -> setRes(modRes, id)
+            else -> setRes(resources, id)
         }
     }
 
@@ -49,7 +47,12 @@ abstract class BasePreference(
             key?.let { pref.key = key }
             trySetString(titleKey) { pref.title = it }
             trySetString(summaryKey) { pref.summary = it }
-            trySetRes(icon, "drawable") { res, id -> pref.icon = res.getDrawable(id) }
+
+            trySetRes(icon, "drawable") { res, id ->
+                pref.icon = res.getDrawable(id, res.newTheme().apply {
+                    applyStyle(R.style.MainTheme, true)
+                })
+            }
             layout?.let {
                 pref.layoutResource = Utils.getResourceIdentifier(layout, "layout")
             }

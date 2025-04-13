@@ -13,6 +13,13 @@ import de.robv.android.xposed.XposedHelpers;
 @SuppressWarnings("unused")
 public final class UnlockPremiumPatch {
 
+    private static final String SPOTIFY_MAIN_ACTIVITY_LEGACY = "com.spotify.music.MainActivity";
+
+    /**
+     * If the app target is 8.6.98.900.
+     */
+    public static boolean IS_SPOTIFY_LEGACY_APP_TARGET;
+
     private static class OverrideAttribute {
         /**
          * Account attribute key.
@@ -53,8 +60,8 @@ public final class UnlockPremiumPatch {
             // Make sure playing songs is not disabled remotely and playlists show up.
             new OverrideAttribute("streaming", TRUE),
             // Allows adding songs to queue and removes the smart shuffle mode restriction,
-            // allowing to pick any of the other modes.
-            new OverrideAttribute("pick-and-shuffle", FALSE),
+            // allowing to pick any of the other modes. Flag is not present in legacy app target.
+            new OverrideAttribute("pick-and-shuffle", FALSE, !IS_SPOTIFY_LEGACY_APP_TARGET),
             // Disables shuffle-mode streaming-rule, which forces songs to be played shuffled
             // and breaks the player when other patches are applied.
             new OverrideAttribute("streaming-rules", ""),
@@ -68,16 +75,21 @@ public final class UnlockPremiumPatch {
             new OverrideAttribute("tablet-free", FALSE, false)
     );
 
+    private static final List<Integer> REMOVED_HOME_SECTIONS = List.of(
+            Section.VIDEO_BRAND_AD_FIELD_NUMBER,
+            Section.IMAGE_BRAND_AD_FIELD_NUMBER
+    );
+
     /**
-     * Injection point.
+     * Injection point. Override account attributes.
      */
-    public static void overrideAttribute(Map attributes) {
+    public static void overrideAttribute(Map<String, /*AccountAttribute*/ Object> attributes) {
         try {
             for (var override : OVERRIDES) {
                 var attribute = attributes.get(override.key);
                 if (attribute == null) {
                     if (override.isExpected) {
-                        Logger.printException(() -> "''" + override.key + "' expected but not found");
+                        Logger.printException(() -> "'" + override.key + "' expected but not found");
                     }
                 } else {
                     XposedHelpers.setObjectField(attribute, "value_", override.overrideValue);
@@ -85,6 +97,24 @@ public final class UnlockPremiumPatch {
             }
         } catch (Exception ex) {
             Logger.printException(() -> "overrideAttribute failure", ex);
+        }
+    }
+
+    /**
+     * Injection point. Remove station data from Google assistant URI.
+     */
+    public static String removeStationString(String spotifyUriOrUrl) {
+        return spotifyUriOrUrl.replace("spotify:station:", "spotify:");
+    }
+
+    /**
+     * Injection point. Remove ads sections from home.
+     */
+    public static void removeHomeSections(List<Object> sections) {
+        try {
+            sections.removeIf(section -> REMOVED_HOME_SECTIONS.contains(XposedHelpers.getIntField(section, "featureTypeCase_")));
+        } catch (Exception ex) {
+            Logger.printException(() -> "Remove home sections failure", ex);
         }
     }
 }
