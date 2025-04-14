@@ -72,6 +72,9 @@ android {
 dependencies {
     implementation(libs.dexkit)
     implementation(libs.annotation)
+    implementation(libs.gson)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.fuel)
     compileOnly(libs.xposed)
 }
 

@@ -10,6 +10,7 @@ import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_InitPackageResources
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
+import io.github.chsbuffer.revancedxposed.common.UpdateChecker
 import io.github.chsbuffer.revancedxposed.music.MusicHook
 import io.github.chsbuffer.revancedxposed.spotify.SpotifyHook
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
@@ -65,6 +66,10 @@ fun inContext(lpparam: LoadPackageParam, f: (Application) -> Unit) {
         override fun afterHookedMethod(param: MethodHookParam) {
             val app = param.thisObject as Application
             f(app)
+            UpdateChecker(app).apply {
+                hookNewActivity()
+                autoCheckUpdate()
+            }
         }
     })
 }
