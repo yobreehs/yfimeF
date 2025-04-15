@@ -2,16 +2,19 @@ package app.revanced.extension.youtube.settings;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-
 import static app.revanced.extension.shared.settings.Setting.parent;
 import static app.revanced.extension.youtube.sponsorblock.objects.CategoryBehaviour.IGNORE;
 import static app.revanced.extension.youtube.sponsorblock.objects.CategoryBehaviour.MANUAL_SKIP;
 import static app.revanced.extension.youtube.sponsorblock.objects.CategoryBehaviour.SKIP_AUTOMATICALLY;
 import static app.revanced.extension.youtube.sponsorblock.objects.CategoryBehaviour.SKIP_AUTOMATICALLY_ONCE;
 
+import app.revanced.extension.shared.settings.BaseSettings;
+import app.revanced.extension.shared.settings.BooleanSetting;
+import app.revanced.extension.shared.settings.FloatSetting;
+import app.revanced.extension.shared.settings.IntegerSetting;
+import app.revanced.extension.shared.settings.LongSetting;
+import app.revanced.extension.shared.settings.StringSetting;
 import app.revanced.extension.youtube.sponsorblock.SponsorBlockSettings;
-
-import app.revanced.extension.shared.settings.*;
 
 @SuppressWarnings("deprecation")
 public class Settings extends BaseSettings {
@@ -33,6 +36,19 @@ public class Settings extends BaseSettings {
     // Uncategorized layout related settings.  Do not add to this section, and instead move these out and categorize them.
     public static final BooleanSetting HIDE_MOVIES_SECTION = new BooleanSetting("revanced_hide_movies_section", TRUE);
     public static final BooleanSetting HIDE_END_SCREEN_STORE_BANNER = new BooleanSetting("revanced_hide_end_screen_store_banner", TRUE);
+    // Navigation buttons
+    public static final BooleanSetting HIDE_HOME_BUTTON = new BooleanSetting("revanced_hide_home_button", FALSE, true);
+    public static final BooleanSetting HIDE_CREATE_BUTTON = new BooleanSetting("revanced_hide_create_button", TRUE, true);
+    public static final BooleanSetting HIDE_SHORTS_BUTTON = new BooleanSetting("revanced_hide_shorts_button", TRUE, true);
+    public static final BooleanSetting HIDE_SUBSCRIPTIONS_BUTTON = new BooleanSetting("revanced_hide_subscriptions_button", FALSE, true);
+    public static final BooleanSetting HIDE_NAVIGATION_BUTTON_LABELS = new BooleanSetting("revanced_hide_navigation_button_labels", FALSE, true);
+    public static final BooleanSetting HIDE_NOTIFICATIONS_BUTTON = new BooleanSetting("revanced_hide_notifications_button", FALSE, true);
+    public static final BooleanSetting SWITCH_CREATE_WITH_NOTIFICATIONS_BUTTON = new BooleanSetting("revanced_switch_create_with_notifications_button", TRUE, true,
+            "revanced_switch_create_with_notifications_button_user_dialog_message");
+    public static final BooleanSetting DISABLE_TRANSLUCENT_STATUS_BAR = new BooleanSetting("revanced_disable_translucent_status_bar", FALSE, true,
+            "revanced_disable_translucent_status_bar_user_dialog_message");
+    public static final BooleanSetting DISABLE_TRANSLUCENT_NAVIGATION_BAR_LIGHT = new BooleanSetting("revanced_disable_translucent_navigation_bar_light", FALSE, true);
+    public static final BooleanSetting DISABLE_TRANSLUCENT_NAVIGATION_BAR_DARK = new BooleanSetting("revanced_disable_translucent_navigation_bar_dark", FALSE, true);
 
     // SponsorBlock
     public static final BooleanSetting SB_ENABLED = new BooleanSetting("sb_enabled", TRUE);

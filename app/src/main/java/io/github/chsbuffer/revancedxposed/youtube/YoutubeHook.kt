@@ -12,10 +12,12 @@ import io.github.chsbuffer.revancedxposed.BaseHook
 import io.github.chsbuffer.revancedxposed.BuildConfig
 import io.github.chsbuffer.revancedxposed.youtube.ad.HideAds
 import io.github.chsbuffer.revancedxposed.youtube.ad.VideoAds
+import io.github.chsbuffer.revancedxposed.youtube.layout.NavigationButtons
 import io.github.chsbuffer.revancedxposed.youtube.layout.SponsorBlock
 import io.github.chsbuffer.revancedxposed.youtube.misc.BackgroundPlayback
 import io.github.chsbuffer.revancedxposed.youtube.misc.LithoFilter
 import io.github.chsbuffer.revancedxposed.youtube.misc.RemoveTrackingQueryParameter
+import io.github.chsbuffer.revancedxposed.youtube.misc.SettingsHook
 
 lateinit var modRes: Resources
 
@@ -34,7 +36,10 @@ class YoutubeHook(
         ::RemoveTrackingQueryParameter,
         ::HideAds,
         ::LithoFilter,
-        ::SponsorBlock
+        ::SponsorBlock,
+        ::NavigationButtons,
+        // make sure settingsHook at end to build preferences
+        ::SettingsHook
     )
 
     fun ExtensionHook() {

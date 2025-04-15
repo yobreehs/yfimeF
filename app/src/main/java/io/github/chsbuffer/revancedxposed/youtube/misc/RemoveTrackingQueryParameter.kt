@@ -12,7 +12,6 @@ import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import java.lang.reflect.Modifier
 
 fun YoutubeHook.RemoveTrackingQueryParameter() {
-
     PreferenceScreen.MISC.addPreferences(
         SwitchPreference("revanced_remove_tracking_query_parameter"),
     )

@@ -14,7 +14,6 @@ import io.github.chsbuffer.revancedxposed.setObjectField
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.IntentPreference
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import io.github.chsbuffer.revancedxposed.youtube.misc.PlayerTypeHook
-import io.github.chsbuffer.revancedxposed.youtube.misc.SettingsHook
 import io.github.chsbuffer.revancedxposed.youtube.misc.addSettingPreference
 import io.github.chsbuffer.revancedxposed.youtube.misc.newIntent
 import io.github.chsbuffer.revancedxposed.youtube.video.VideoIdPatch
@@ -28,8 +27,7 @@ fun YoutubeHook.SponsorBlock() {
     dependsOn(
         ::VideoInformationHook,
         ::VideoIdPatch,
-        ::PlayerTypeHook,
-        ::SettingsHook,
+        ::PlayerTypeHook
     )
 
     addSettingPreference(

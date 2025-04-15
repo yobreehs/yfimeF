@@ -97,7 +97,6 @@ fun YoutubeHook.SettingsHook() {
         if (m.returnTypeName == "void") m.hookMethod(XC_MethodReplacement.DO_NOTHING)
     }
 
-
     getDexMethod("setThemeFingerprint") {
         val appearanceStringId = Utils.getResourceIdentifier("app_theme_appearance_dark", "string")
         dexkit.findMethod {

@@ -90,7 +90,7 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
                     method.declaredClass!!.fields.single { f -> f.typeName == "java.util.List" }
                 }
             }
-        }.hookConstructor(object : XC_MethodHook() {
+        }.hookMethod(object : XC_MethodHook() {
             val pivotBarElementField =
                 getDexField("pivotBarElementField").getFieldInstance(classLoader)
 

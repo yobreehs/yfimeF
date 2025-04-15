@@ -57,6 +57,8 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) {
             runCatching(hook).onFailure { err ->
                 XposedBridge.log(err)
                 throw DependedHookFailedException(hook.name, err)
+            }.onSuccess {
+                appliedHooks.add(hook)
             }
         }
     }
@@ -71,6 +73,8 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) {
             runCatching(hook).onFailure { err ->
                 XposedBridge.log(err)
                 failedHook.add(hook)
+            }.onSuccess {
+                appliedHooks.add(hook)
             }
         }
 
@@ -201,10 +205,11 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) {
     }
 
     fun DexMethod.hookMethod(callback: XC_MethodHook) {
-        XposedBridge.hookMethod(getMethodInstance(lpparam.classLoader), callback)
+        if (isMethod) {
+            XposedBridge.hookMethod(getMethodInstance(lpparam.classLoader), callback)
+        } else {
+            XposedBridge.hookMethod(getConstructorInstance(lpparam.classLoader), callback)
+        }
     }
 
-    fun DexMethod.hookConstructor(callback: XC_MethodHook) {
-        XposedBridge.hookMethod(getConstructorInstance(lpparam.classLoader), callback)
-    }
 }

@@ -103,12 +103,15 @@ public class ReVancedPreferenceFragment extends AbstractPreferenceFragment {
         Activity context = getActivity();
         PreferenceManager manager = getPreferenceManager();
         manager.setSharedPreferencesName(Setting.preferences.name);
-        PreferenceScreen preferenceScreen = manager.createPreferenceScreen(context);
-        setPreferenceScreen(preferenceScreen);
+        PreferenceScreen screen = manager.createPreferenceScreen(context);
+        setPreferenceScreen(screen);
 
         var preferencesBuilder = getPreferences();
-        preferencesBuilder.forEach(builder -> preferenceScreen.addPreference(builder.build(context, manager)));
+        preferencesBuilder.forEach(builder -> screen.addPreference(builder.build(context, manager)));
 
+        screen.setKey("revanced_settings_root_screen_sort_by_key");
+        Utils.sortPreferenceGroups(screen);
+        Utils.setPreferenceTitlesToMultiLineIfNeeded(screen);
         try {
             setPreferenceScreenToolbar(getPreferenceScreen());
         } catch (Exception ex) {
