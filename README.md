@@ -1,31 +1,34 @@
-# Compatibility & Patches
+<div align="center">
+  <h1>ReVanced Xposed</h1>
+  <a href="https://discord.gg/QWUrAA2mKq"><img alt="Discord Server" src="https://img.shields.io/badge/Join-Discord-5865F2.svg?logo=discord"></a>
+  <a href="https://github.com/chsbuffer/ReVancedXposed/releases/latest"><img alt="GitHub Downloads" src="https://img.shields.io/github/downloads/chsbuffer/ReVancedXposed/total"></a>
+  <a href="https://github.com/chsbuffer/ReVancedXposed"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/chsbuffer/ReVancedXposed"></a>  
+  <br>
+  ReVanced present by LSPosed module.  
+</div>
 
-## Youtube Music
-Youtube Music tested version: 7.11.50, 8.02.53, 8.08.53  
-Patches:
-- HideMusicVideoAds
-- MinimizedPlayback
-- RemoveUpgradeButton
-- HideGetPremium
-- EnableExclusiveAudioPlayback
+## Patches
 
-## Youtube
-Youtube tested version: 19.47.53, 20.05.44, 20.08.36  
-Patches: 
-- VideoAds
-- BackgroundPlayback
-- RemoveTrackingQueryParameter
-- HideAds
-- LithoFilter
+### Youtube
+- Hide ads
+- Remove video ads
 - SponsorBlock
+- Remove background playback restrictions
+- Remove share links tracking query parameter
+- Switch navigation button "Create" with "Notifications"
 
-## Spotify
-Patches:
-- UnlockPremiumPatch
+### Spotify
+- Unlock Spotify Premium
 
-# Credit
+### Youtube Music
+- Hide music video ads
+- Remove background playback restrictions
+- Remove upgrade button
+- Hide 'Get Music Premium' label
+- Enable exclusive audio playback
 
-[DexKit](https://github.com/LuckyPray/DexKit)  
-[ReVanced Integrations](https://github.com/ReVanced/revanced-integrations)  
-[Revanced Patcher](https://github.com/ReVanced/revanced-patcher)  
-[Revanced Patches](https://github.com/ReVanced/revanced-patches)  
+## ⭐ Credits
+
+[DexKit](https://github.com/LuckyPray/DexKit): a high-performance dex runtime parsing library.  
+[ReVanced Patches](https://github.com/ReVanced/revanced-patches): powerful community patcher enhancing Android apps.  
+TeamVanced: legendary  
