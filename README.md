@@ -4,14 +4,16 @@
   <a href="https://github.com/chsbuffer/ReVancedXposed/releases/latest"><img alt="GitHub Downloads" src="https://img.shields.io/github/downloads/chsbuffer/ReVancedXposed/total"></a>
   <a href="https://github.com/chsbuffer/ReVancedXposed"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/chsbuffer/ReVancedXposed"></a>  
   <br>
-  ReVanced present by LSPosed module.  
 </div>
+
+**ReVanced LSPosed module by ChsBuffer.**  
+>[!IMPORTANT]  
+> This is not an official ReVanced project, do not ask the ReVanced developers for help.
 
 ## Patches
 
 ### Youtube
-- Hide ads
-- Remove video ads
+- Remove ads
 - SponsorBlock
 - Remove background playback restrictions
 - Remove share links tracking query parameter
@@ -21,14 +23,17 @@
 - Unlock Spotify Premium
 
 ### Youtube Music
-- Hide music video ads
+- Remove music video ads
 - Remove background playback restrictions
-- Remove upgrade button
+- Hide upgrade button
 - Hide 'Get Music Premium' label
 - Enable exclusive audio playback
 
+## Supports
+[![Discord Server](https://img.shields.io/badge/Join-Discord-5865F2.svg?logo=discord)](https://discord.gg/QWUrAA2mKq)
+or [Create an issue](https://github.com/chsbuffer/ReVancedXposed/issues/new)
+
 ## ⭐ Credits
 
-[DexKit](https://github.com/LuckyPray/DexKit): a high-performance dex runtime parsing library.  
-[ReVanced Patches](https://github.com/ReVanced/revanced-patches): powerful community patcher enhancing Android apps.  
-TeamVanced: legendary  
+[DexKit](https://luckypray.org/DexKit/en/): a high-performance dex runtime parsing library.  
+[ReVanced](https://revanced.app): Continuing the legacy of Vanced at [revanced.app](https://revanced.app)  
