@@ -3,8 +3,10 @@ package io.github.chsbuffer.revancedxposed.youtube.misc
 import app.revanced.extension.youtube.patches.components.LithoFilterPatch
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
-import de.robv.android.xposed.XposedBridge
+import io.github.chsbuffer.revancedxposed.Opcode
 import io.github.chsbuffer.revancedxposed.ScopedHook
+import io.github.chsbuffer.revancedxposed.new
+import io.github.chsbuffer.revancedxposed.opcodes
 import io.github.chsbuffer.revancedxposed.strings
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import org.luckypray.dexkit.result.FieldUsingType
@@ -15,32 +17,34 @@ import java.nio.ByteBuffer
 fun YoutubeHook.LithoFilter() {
 
     //region Pass the buffer into extension.
-    val ProtobufBufferReferenceFingerprint =
-        getDexMethod("ProtobufBufferReferenceFingerprint") {
-            dexkit.findMethod {
-                matcher {
-                    returnType = "void"
-                    modifiers = Modifier.PUBLIC or Modifier.FINAL
-                    paramTypes = listOf("int", "java.nio.ByteBuffer")
-                    opNames = listOf(
-                        "iput", "invoke-virtual", "move-result", "sub-int/2addr"
-                    )
-                }
-            }.single()
-        }
-
-    XposedBridge.hookMethod(ProtobufBufferReferenceFingerprint.getMethodInstance(classLoader),
-        object : XC_MethodHook() {
-            override fun beforeHookedMethod(param: MethodHookParam) {
-                LithoFilterPatch.setProtoBuffer(param.args[1] as ByteBuffer)
+    getDexMethod("ProtobufBufferReferenceFingerprint") {
+        dexkit.findMethod {
+            matcher {
+                returnType = "void"
+                modifiers = Modifier.PUBLIC or Modifier.FINAL
+                paramTypes = listOf("int", "java.nio.ByteBuffer")
+                opcodes(
+                    Opcode.IPUT,
+                    Opcode.INVOKE_VIRTUAL,
+                    Opcode.MOVE_RESULT,
+                    Opcode.SUB_INT_2ADDR,
+                )
             }
-        })
+        }.single()
+    }.hookMethod(object : XC_MethodHook() {
+        override fun beforeHookedMethod(param: MethodHookParam) {
+            LithoFilterPatch.setProtoBuffer(param.args[1] as ByteBuffer)
+        }
+    })
+
     //endregion
 
     //region Hook the method that parses bytes into a ComponentContext.
 
-    val parseBytesToConversionContext = getDexMethod("parseBytesToConversionContext") {
-        val method = dexkit.findMethod {
+    val filtered = ThreadLocal<Boolean>()
+
+    getDexMethod("parseBytesToConversionContext") {
+        dexkit.findMethod {
             matcher {
                 usingEqStrings(
                     "Failed to parse Element proto.",
@@ -50,38 +54,41 @@ fun YoutubeHook.LithoFilter() {
                     "Found an Element with missing debugger id."
                 )
             }
-        }.single()
-        //
-        val conversionContextClass = method.returnType!!
-        setString("conversionContextClass", conversionContextClass)
-        setString("identifierFieldData",
-            conversionContextClass.methods.single { it.methodName == "toString" }.usingFields.filter {
-                it.usingType == FieldUsingType.Read && it.field.typeSign == "Ljava/lang/String;"
-            }[1].field
-        )
-        setString("pathBuilderFieldData",
-            conversionContextClass.fields.single { it.typeSign == "Ljava/lang/StringBuilder;" })
-        method
-    }
-
-    val identifierField = getDexField("identifierFieldData").getFieldInstance(classLoader)
-    val pathBuilderField = getDexField("pathBuilderFieldData").getFieldInstance(classLoader)
-
-    val filtered = ThreadLocal<Boolean>()
-
-    XposedBridge.hookMethod(parseBytesToConversionContext.getMethodInstance(classLoader),
-        object : XC_MethodHook() {
-            override fun afterHookedMethod(param: MethodHookParam) {
-                val conversion = param.result
-
-                val identifier = identifierField.get(conversion) as String?
-                val pathBuilder = pathBuilderField.get(conversion) as StringBuilder
-                filtered.set(LithoFilterPatch.filter(identifier, pathBuilder))
+        }.single().also { method ->
+            val conversionContextClass = method.returnType!!
+            getDexClass("conversionContextClass") { conversionContextClass }
+            getDexField("identifierFieldData") {
+                conversionContextClass.methods.single { it.methodName == "toString" }.usingFields.filter {
+                    it.usingType == FieldUsingType.Read && it.field.typeSign == "Ljava/lang/String;"
+                }[1].field
             }
-        })
+            getDexField("pathBuilderFieldData") {
+                conversionContextClass.fields.single { it.typeSign == "Ljava/lang/StringBuilder;" }
+            }
+        }
+    }.hookMethod(object : XC_MethodHook() {
+        val identifierField = getDexField("identifierFieldData").getFieldInstance(classLoader)
+        val pathBuilderField = getDexField("pathBuilderFieldData").getFieldInstance(classLoader)
+        override fun afterHookedMethod(param: MethodHookParam) {
+            val conversion = param.result
+
+            val identifier = identifierField.get(conversion) as String?
+            val pathBuilder = pathBuilderField.get(conversion) as StringBuilder
+            filtered.set(LithoFilterPatch.filter(identifier, pathBuilder))
+        }
+    })
 
     // Return an EmptyComponent instead of the original component if the filterState method returns true.
-    val ComponentContextParserFingerprint = getDexMethod("ComponentContextParserFingerprint") {
+    val emptyComponentClass = getDexClass("emptyComponentClass") {
+        dexkit.findMethod {
+            matcher {
+                name = "<init>"
+                addEqString("EmptyComponent")
+            }
+        }.single().declaredClass!!
+    }
+
+    getDexMethod("ComponentContextParserFingerprint") {
         dexkit.findMethod {
             matcher {
                 strings(
@@ -91,34 +98,23 @@ fun YoutubeHook.LithoFilter() {
                 )
             }
         }.single()
-    }
-    val emptyComponentClass = getDexClass("emptyComponentClass") {
-        dexkit.findClass {
-            matcher {
-                addMethod {
-                    name = "<init>"
-                    addEqString("EmptyComponent")
-                }
+    }.hookMethod(object : XC_MethodHook() {
+        val emptyComponentClazz = emptyComponentClass.getInstance(classLoader)
+        override fun afterHookedMethod(param: MethodHookParam) {
+            if (filtered.get() == true) {
+                param.result = emptyComponentClazz.new()
             }
-        }.single()
-    }
-    val emptyComponentCtor =
-        emptyComponentClass.getInstance(classLoader).declaredConstructors.single()
-
-    XposedBridge.hookMethod(ComponentContextParserFingerprint.getMethodInstance(classLoader),
-        object : XC_MethodHook() {
-            override fun afterHookedMethod(param: MethodHookParam) {
-                if (filtered.get() == true) {
-                    param.result = emptyComponentCtor.newInstance()
-                }
-            }
-        })
+        }
+    })
     //endregion
 
     // region A/B test of new Litho native code.
 
     // Turn off native code that handles litho component names.  If this feature is on then nearly
     // all litho components have a null name and identifier/path filtering is completely broken.
+    //
+    // Flag was removed in 20.05. It appears a new flag might be used instead (45660109L),
+    // but if the flag is forced on then litho filtering still works correctly.
     runCatching {
         getDexMethod("lithoComponentNameUpbFeatureFlagFingerprint") {
             dexkit.findMethod {
@@ -129,9 +125,7 @@ fun YoutubeHook.LithoFilter() {
                     usingNumbers(45631264L)
                 }
             }.single()
-        }
-    }.onFailure {
-        // ignored
+        }.hookMethod(XC_MethodReplacement.returnConstant(false))
     }
 
     // Turn off a feature flag that enables native code of protobuf parsing (Upb protobuf).
@@ -145,17 +139,14 @@ fun YoutubeHook.LithoFilter() {
                 usingNumbers(45419603L)
             }
         }.single().apply {
-            getDexMethod("featureFlagCheck") {
-                this.invokes.single()
-            }
+            getDexMethod("featureFlagCheck") { this.invokes.single() }
         }
-    }.apply {
-        val featureFlagCheckMethod =
-            getDexMethod("featureFlagCheck").getMethodInstance(classLoader)
-        XposedBridge.hookMethod(
-            getMethodInstance(classLoader),
-            ScopedHook(featureFlagCheckMethod, XC_MethodReplacement.returnConstant(false))
+    }.hookMethod(
+        ScopedHook(
+            getDexMethod("featureFlagCheck").getMethodInstance(classLoader),
+            XC_MethodReplacement.returnConstant(false)
         )
-    }
+    )
+
     // endregion
 }

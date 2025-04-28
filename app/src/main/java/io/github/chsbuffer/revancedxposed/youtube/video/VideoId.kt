@@ -1,7 +1,6 @@
 package io.github.chsbuffer.revancedxposed.youtube.video
 
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedBridge
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 
 /**
@@ -13,30 +12,27 @@ val videoIdHooks: MutableList<(String) -> Unit> = mutableListOf()
 
 
 fun YoutubeHook.VideoIdPatch() {
-    val videoIdFingerprint = getDexMethod("videoId") {
+    getDexMethod("videoId") {
         dexkit.findMethod {
             matcher {
                 addEqString("Null initialPlayabilityStatus")
             }
         }.single().also { method ->
-            setString("PlayerResponseModel.videoId") {
+            getDexMethod("PlayerResponseModel.videoId") {
                 method.invokes.distinct().single {
                     it.returnTypeName == "java.lang.String" && it.declaredClass == method.paramTypes[0] // PlayerResponseModel, interface
                 }
             }
         }
-    }
+    }.hookMethod(object : XC_MethodHook() {
+        val videoIdMethod =
+            getDexMethod("PlayerResponseModel.videoId").getMethodInstance(classLoader)
 
-    XposedBridge.hookMethod(videoIdFingerprint.getMethodInstance(classLoader),
-        object : XC_MethodHook() {
-            val videoIdMethod =
-                getDexMethod("PlayerResponseModel.videoId").getMethodInstance(classLoader)
-
-            override fun beforeHookedMethod(param: MethodHookParam) {
-                val videoId = videoIdMethod(param.args[0]) as String
-                videoIdHooks.forEach { it(videoId) }
-            }
-        })
+        override fun beforeHookedMethod(param: MethodHookParam) {
+            val videoId = videoIdMethod(param.args[0]) as String
+            videoIdHooks.forEach { it(videoId) }
+        }
+    })
 }
 
 /*

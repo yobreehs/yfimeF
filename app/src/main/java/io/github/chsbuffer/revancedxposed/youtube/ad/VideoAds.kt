@@ -1,12 +1,11 @@
 package io.github.chsbuffer.revancedxposed.youtube.ad
 
 import de.robv.android.xposed.XC_MethodReplacement
-import de.robv.android.xposed.XposedBridge
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 
 
 fun YoutubeHook.VideoAds() {
-    val LoadVideoAds = getDexMethod("LoadVideoAds") {
+    getDexMethod("LoadVideoAds") {
         dexkit.findMethod {
             matcher {
                 usingEqStrings(
@@ -18,9 +17,5 @@ fun YoutubeHook.VideoAds() {
                 )
             }
         }.single()
-    }
-
-    XposedBridge.hookMethod(
-        LoadVideoAds.getMethodInstance(classLoader), XC_MethodReplacement.DO_NOTHING
-    )
+    }.hookMethod(XC_MethodReplacement.DO_NOTHING)
 }

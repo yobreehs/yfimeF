@@ -53,14 +53,14 @@ fun YoutubeHook.VideoInformationHook() {
             }
         }.single().methods.single { it.name == "<init>" }.also {
             val playerClass = it.declaredClass!!
-            setString("seekFingerprint") {
+            getDexMethod("seekFingerprint") {
                 playerClass.findMethod {
                     matcher { addEqString("Attempting to seek during an ad") }
                 }.single().also {
-                    setString("seekSourceType") { it.paramTypes[1] }
+                    getDexClass("seekSourceType") { it.paramTypes[1] }
                 }
             }
-            setString("seekRelativeFingerprint") {
+            getDexMethod("seekRelativeFingerprint") {
                 playerClass.findMethod {
                     matcher {
                         modifiers = Modifier.FINAL or Modifier.PUBLIC
@@ -105,7 +105,7 @@ fun YoutubeHook.VideoInformationHook() {
             }
         }.single().methods.single { it.name == "<init>" }.also {
             val mdxClass = it.declaredClass!!
-            setString("mdxSeekFingerprint") {
+            getDexMethod("mdxSeekFingerprint") {
                 mdxClass.findMethod {
                     matcher {
                         modifiers = Modifier.FINAL or Modifier.PUBLIC
@@ -123,10 +123,10 @@ fun YoutubeHook.VideoInformationHook() {
                         }
                     }
                 }.single().also {
-                    setString("mkxSeekSourceType") { it.paramTypes[1] }
+                    getDexClass("mkxSeekSourceType") { it.paramTypes[1] }
                 }
             }
-            setString("mdxSeekRelativeFingerprint") {
+            getDexMethod("mdxSeekRelativeFingerprint") {
                 mdxClass.findMethod {
                     matcher {
                         modifiers = Modifier.FINAL or Modifier.PUBLIC
@@ -192,8 +192,8 @@ fun YoutubeHook.VideoInformationHook() {
                 method.usingFields.single { it.usingType == FieldUsingType.Write && it.field.typeName == "long" }.field
             val videoLengthHolderField =
                 method.usingFields.single { it.usingType == FieldUsingType.Read && it.field.typeName == videoLengthField.declaredClassName }.field
-            setString("videoLengthField", videoLengthField)
-            setString("videoLengthHolderField", videoLengthHolderField)
+            getDexField("videoLengthField") { videoLengthField }
+            getDexField("videoLengthHolderField") { videoLengthHolderField }
         }
     }.hookMethod(object : XC_MethodHook() {
         val videoLengthField = getDexField("videoLengthField").getFieldInstance(classLoader)

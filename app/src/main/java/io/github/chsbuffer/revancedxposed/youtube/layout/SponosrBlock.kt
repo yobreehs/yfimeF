@@ -1,6 +1,5 @@
 package io.github.chsbuffer.revancedxposed.youtube.layout
 
-import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Rect
 import android.view.ViewGroup
@@ -10,7 +9,6 @@ import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockViewController
 import de.robv.android.xposed.XC_MethodHook
 import io.github.chsbuffer.revancedxposed.Opcode
 import io.github.chsbuffer.revancedxposed.opcodes
-import io.github.chsbuffer.revancedxposed.setObjectField
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.IntentPreference
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import io.github.chsbuffer.revancedxposed.youtube.misc.PlayerTypeHook
@@ -138,25 +136,4 @@ fun YoutubeHook.SponsorBlock() {
             SponsorBlockViewController.initialize(overlay_view)
         }
     })
-
-    fun injectClassLoader(self: ClassLoader, host: ClassLoader) {
-        val bootClassLoader = Context::class.java.classLoader!!
-        host.setObjectField("parent", object : ClassLoader(bootClassLoader) {
-            override fun findClass(name: String): Class<*> {
-                try {
-                    return bootClassLoader.loadClass(name)
-                } catch (ignored: ClassNotFoundException) {
-                }
-
-                try {
-                    if (name.startsWith("app.revanced")) return self.loadClass(name)
-                } catch (ignored: ClassNotFoundException) {
-                }
-
-                throw ClassNotFoundException(name)
-            }
-        })
-    }
-
-    injectClassLoader(this::class.java.classLoader!!, classLoader)
 }

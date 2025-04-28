@@ -71,7 +71,7 @@ fun YoutubeHook.PlayerTypeHook() {
                 )
             }
         }.single().also { method ->
-            setString("videoStateParameterField") {
+            getDexField("videoStateParameterField") {
                 method.usingFields.distinct().single { field ->
                     // obfuscated parameter field name
                     field.usingType == FieldUsingType.Read && field.field.declaredClass == method.paramTypes[0]

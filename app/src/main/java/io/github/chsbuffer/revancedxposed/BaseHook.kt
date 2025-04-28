@@ -26,6 +26,7 @@ class DependedHookFailedException(
 @SuppressLint("CommitPrefEdits")
 abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) {
     val classLoader = lpparam.classLoader
+
     // hooks
     abstract val hooks: Array<KFunction0<Unit>>
     private val appliedHooks: MutableSet<KFunction0<Unit>> = mutableSetOf()
@@ -33,7 +34,7 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) {
 
     // cache
     private val moduleRel = BuildConfig.VERSION_CODE
-    private lateinit var pref: SharedPreferences
+    private var pref: SharedPreferences = app.getSharedPreferences("xprevanced", Context.MODE_PRIVATE)
     private lateinit var map: MutableMap<String, String>
     lateinit var dexkit: DexKitBridge
     private var cached: Boolean = false
@@ -108,7 +109,6 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) {
 
     @Suppress("UNCHECKED_CAST")
     private fun loadCache() {
-        pref = app.getSharedPreferences("xprevanced", Context.MODE_PRIVATE)
         val packageInfo = app.packageManager.getPackageInfo(app.packageName, 0)
 
         val id = "${packageInfo.lastUpdateTime}-$moduleRel"
@@ -135,7 +135,10 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) {
     }
 
     private fun clearCache() {
+        Logger.printInfo { "clear cache" }
         pref.edit().clear().apply()
+        cached = false
+        map.clear()
     }
 
     fun getDexClass(key: String, f: () -> ClassData): DexClass {

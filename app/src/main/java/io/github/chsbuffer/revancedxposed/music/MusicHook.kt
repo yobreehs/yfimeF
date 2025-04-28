@@ -10,7 +10,8 @@ import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.XposedHelpers.InvocationTargetError
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.BaseHook
-import org.luckypray.dexkit.query.enums.StringMatchType
+import io.github.chsbuffer.revancedxposed.Opcode
+import io.github.chsbuffer.revancedxposed.opcodes
 import java.lang.reflect.Modifier
 
 class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpparam) {
@@ -47,9 +48,7 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
             dexkit.findMethod {
                 matcher {
                     modifiers = Modifier.FINAL or Modifier.PUBLIC
-                    usingStrings(
-                        listOf("FEmusic_history", "FEmusic_offline"), StringMatchType.Equals
-                    )
+                    usingEqStrings("FEmusic_history", "FEmusic_offline")
                 }
             }.single()
         }.hookMethod(object : XC_MethodHook() {
@@ -77,12 +76,12 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
                     returnType = "void"
                     modifiers = Modifier.PUBLIC
                     paramTypes(null, "boolean")
-                    opNames = listOf(
-                        "check-cast",
-                        "invoke-interface",
-                        "goto",
-                        "iput-object",
-                        "return-void",
+                    opcodes(
+                        Opcode.CHECK_CAST,
+                        Opcode.INVOKE_INTERFACE,
+                        Opcode.GOTO,
+                        Opcode.IPUT_OBJECT,
+                        Opcode.RETURN_VOID
                     )
                 }
             }.single().also { method ->
@@ -112,16 +111,16 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
                     returnType = "boolean"
                     modifiers = Modifier.PUBLIC or Modifier.STATIC
                     paramCount = 1
-                    opNames = listOf(
-                        "const/4",
-                        "if-eqz",
-                        "iget",
-                        "and-int/lit16",
-                        "if-eqz",
-                        "iget-object",
-                        "if-nez",
-                        "sget-object",
-                        "iget",
+                    opcodes(
+                        Opcode.CONST_4,
+                        Opcode.IF_EQZ,
+                        Opcode.IGET,
+                        Opcode.AND_INT_LIT16,
+                        Opcode.IF_EQZ,
+                        Opcode.IGET_OBJECT,
+                        Opcode.IF_NEZ,
+                        Opcode.SGET_OBJECT,
+                        Opcode.IGET,
                     )
                 }
             }.single()
@@ -134,19 +133,19 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
                     returnType = "void"
                     modifiers = Modifier.PUBLIC or Modifier.FINAL
                     paramTypes("int", null, "boolean")
-                    opNames = listOf(
-                        "iget",
-                        "if-ne",
-                        "iget-object",
-                        "if-ne",
-                        "iget-boolean",
-                        "if-eq",
-                        "goto",
-                        "return-void",
-                        "sget-object",
-                        "const/4",
-                        "if-ne",
-                        "iput-boolean"
+                    opcodes(
+                        Opcode.IGET,
+                        Opcode.IF_NE,
+                        Opcode.IGET_OBJECT,
+                        Opcode.IF_NE,
+                        Opcode.IGET_BOOLEAN,
+                        Opcode.IF_EQ,
+                        Opcode.GOTO,
+                        Opcode.RETURN_VOID,
+                        Opcode.SGET_OBJECT,
+                        Opcode.CONST_4,
+                        Opcode.IF_NE,
+                        Opcode.IPUT_BOOLEAN,
                     )
                 }
             }.single()
@@ -158,9 +157,8 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
         getDexMethod("ShowMusicVideoAdsMethod") {
             dexkit.findMethod {
                 matcher {
-                    usingStrings(
-                        listOf("maybeRegenerateCpnAndStatsClient called unexpectedly, but no error."),
-                        StringMatchType.Equals
+                    usingEqStrings(
+                        "maybeRegenerateCpnAndStatsClient called unexpectedly, but no error."
                     )
                 }
             }.single().also {
