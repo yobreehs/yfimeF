@@ -39,27 +39,28 @@ fun YoutubeHook.LithoFilter() {
 
     //endregion
 
-    //region Hook the method that parses bytes into a ComponentContext.
+    //region check if the ComponentContext should be filtered, and save the result to a thread local.
 
     val filtered = ThreadLocal<Boolean>()
 
-    getDexMethod("parseBytesToConversionContext") {
+    // In 19.17 and earlier, this resolves to the same method as [ComponentContextParserFingerprint],
+    // instead of a separate method returns a ConversionContext. In which case,
+    // a ScopedHookSafe on `ConversionContext(...)` or `ConversionContextBuilder.build()` is needed,
+    // So I don't want to support these versions.
+    getDexMethod("readComponentIdentifierFingerprint") {
         dexkit.findMethod {
             matcher {
-                usingEqStrings(
-                    "Failed to parse Element proto.",
-                    "Cannot read theme key from model.",
-                    "Number of bits must be positive",
-                    "Failed to parse LoggingProperties",
-                    "Found an Element with missing debugger id."
-                )
+                usingEqStrings("Number of bits must be positive")
             }
         }.single().also { method ->
             val conversionContextClass = method.returnType!!
-            getDexClass("conversionContextClass") { conversionContextClass }
+            // Identifier field is the second string type field initialized in the constructor.
+            // 0 elementId, 1 identifierProperty
             getDexField("identifierFieldData") {
-                conversionContextClass.methods.single { it.methodName == "toString" }.usingFields.filter {
-                    it.usingType == FieldUsingType.Read && it.field.typeSign == "Ljava/lang/String;"
+                conversionContextClass.methods.single {
+                    it.isConstructor && it.paramCount != 0
+                }.usingFields.filter {
+                    it.usingType == FieldUsingType.Write && it.field.typeName == String::class.java.name
                 }[1].field
             }
             getDexField("pathBuilderFieldData") {
@@ -77,6 +78,10 @@ fun YoutubeHook.LithoFilter() {
             filtered.set(LithoFilterPatch.filter(identifier, pathBuilder))
         }
     })
+
+    // endregion
+
+    // region return an empty component if filtering is needed.
 
     // Return an EmptyComponent instead of the original component if the filterState method returns true.
     val emptyComponentClass = getDexClass("emptyComponentClass") {
