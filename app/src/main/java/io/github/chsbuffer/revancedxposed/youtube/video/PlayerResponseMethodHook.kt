@@ -36,7 +36,7 @@ fun YoutubeHook.PlayerResponseMethodHook() {
     val PARAMETER_PROTO_BUFFER = 2
     var parameterIsShortAndOpeningOrPlaying = -1
     getDexMethod("playerParameterBuilderFingerprint") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 usingStrings("psns", "psnr", "psps", "pspe")
             }

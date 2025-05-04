@@ -36,7 +36,7 @@ fun newIntent(settingsName: String) = IntentPreference.Intent(
 @Suppress("UNREACHABLE_CODE")
 fun YoutubeHook.SettingsHook() {
     getDexMethod("PreferenceFragmentCompat#addPreferencesFromResource") {
-        dexkit.findClass {
+        findClass {
             matcher {
                 usingStrings(
                     "Could not create RecyclerView",
@@ -70,12 +70,12 @@ fun YoutubeHook.SettingsHook() {
         })
 
     getDexMethod("licenseActivityOnCreateFingerprint") {
-        dexkit.findClass {
+        findClass {
             matcher {
                 className(".LicenseActivity", StringMatchType.EndsWith)
             }
         }.single().also {
-            setString("licenseActivityNOTonCreate") {
+            getString("licenseActivityNOTonCreate") {
                 it.methods.filter { it.name != "onCreate" && it.isMethod }
                     .joinToString("|") { it.descriptor }
             }
@@ -99,7 +99,7 @@ fun YoutubeHook.SettingsHook() {
 
     getDexMethod("setThemeFingerprint") {
         val appearanceStringId = Utils.getResourceIdentifier("app_theme_appearance_dark", "string")
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 modifiers = Modifier.PUBLIC or Modifier.FINAL
                 paramCount = 0

@@ -35,7 +35,7 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
 
         // Override the attributes map in the getter method.
         getDexMethod("productStateProtoFingerprint") {
-            dexkit.findClass {
+            findClass {
                 matcher {
                     if (IS_SPOTIFY_LEGACY_APP_TARGET)
                         className("com.spotify.ucs.proto.v0.UcsResponseWrapper\$AccountAttributesResponse")
@@ -61,7 +61,7 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
 
         // Add the query parameter trackRows to show popular tracks in the artist page.
         getDexMethod("buildQueryParametersFingerprint") {
-            dexkit.findMethod {
+            findMethod {
                 matcher {
                     strings("trackRows", "device_type:tablet")
                 }
@@ -86,7 +86,7 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
 
         // Enable choosing a specific song/artist via Google Assistant.
         getDexMethod("contextFromJsonFingerprint") {
-            dexkit.findMethod {
+            findMethod {
                 matcher {
                     declaredClass("com.spotify.voiceassistants.playermodels.ContextJsonAdapter")
                     name("fromJson")
@@ -125,7 +125,7 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
 
         // Disable the "Spotify Premium" upsell experiment in context menus.
         val contextMenuExperiments = getDexMethod("contextMenuExperimentsFingerprint") {
-            dexkit.findMethod {
+            findMethod {
                 matcher {
                     paramCount = 1
                     strings("remove_ads_upsell_enabled")
@@ -143,7 +143,7 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
 
         // Remove ads sections from home.
         getDexMethod("homeStructureFingerprint") {
-            dexkit.findMethod {
+            findMethod {
                 matcher {
                     declaredClass("homeapi.proto.HomeStructure", StringMatchType.EndsWith)
                     opcodes(Opcode.IGET_OBJECT, Opcode.RETURN_OBJECT)

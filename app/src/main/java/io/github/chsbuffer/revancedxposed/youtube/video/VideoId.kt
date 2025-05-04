@@ -13,7 +13,7 @@ val videoIdHooks: MutableList<(String) -> Unit> = mutableListOf()
 
 fun YoutubeHook.VideoIdPatch() {
     getDexMethod("videoId") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 addEqString("Null initialPlayabilityStatus")
             }
@@ -48,7 +48,7 @@ fun YoutubeHook.VideoIdPatchTest() {
         })
     }
 
-    val videoIdParentFingerprint = dexkit.findMethod {
+    val videoIdParentFingerprint = findMethod {
         matcher {
             modifiers = Modifier.PUBLIC or Modifier.FINAL
             paramCount = 1
@@ -77,7 +77,7 @@ fun YoutubeHook.VideoIdPatchTest() {
 
     LogCall { videoIdFingerprint.toDexMethod() }
 
-    val videoIdBackgroundPlayFingerprint = dexkit.findMethod {
+    val videoIdBackgroundPlayFingerprint = findMethod {
                 matcher {
                     opcodes(
                         Opcode.IF_EQZ,

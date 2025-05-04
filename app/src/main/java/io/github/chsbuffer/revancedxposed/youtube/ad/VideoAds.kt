@@ -6,7 +6,7 @@ import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 
 fun YoutubeHook.VideoAds() {
     getDexMethod("LoadVideoAds") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 usingEqStrings(
                     listOf(

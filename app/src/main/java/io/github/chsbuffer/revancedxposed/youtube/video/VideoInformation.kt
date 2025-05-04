@@ -47,7 +47,7 @@ fun YoutubeHook.VideoInformationHook() {
 
     //region playerController
     val playerInitMethod = getDexMethod("playerInitMethod") {
-        dexkit.findClass {
+        findClass {
             matcher {
                 addEqString("playVideo called on player response with no videoStreamingData.")
             }
@@ -99,7 +99,7 @@ fun YoutubeHook.VideoInformationHook() {
 
     //region mdxPlayerDirector
     val mdxInitMethod = getDexMethod("mdxPlayerDirectorSetVideoStageFingerprint") {
-        dexkit.findClass {
+        findClass {
             matcher {
                 addEqString("MdxDirector setVideoStage ad should be null when videoStage is not an Ad state ")
             }
@@ -164,13 +164,13 @@ fun YoutubeHook.VideoInformationHook() {
 
     getDexMethod("videoLengthFingerprint") {
 //        // createVideoPlayerSeekbarFingerprint
-//        dexkit.findMethod {
+//        findMethod {
 //            matcher {
 //                addEqString("timed_markers_width")
 //                returnType = "void"
 //            }
 //        }.single().declaredClass
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 opcodes(
                     Opcode.MOVE_RESULT_WIDE,
@@ -225,7 +225,7 @@ fun YoutubeHook.VideoInformationHook() {
      * Set the video time method
      */
     getDexMethod("timeMethod") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 opcodes(Opcode.INVOKE_DIRECT_RANGE, Opcode.IGET_OBJECT)
                 strings("Media progress reported outside media playback: ")

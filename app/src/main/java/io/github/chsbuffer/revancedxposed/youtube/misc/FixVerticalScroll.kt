@@ -9,7 +9,7 @@ import java.lang.reflect.Modifier
 
 fun YoutubeHook.FixVerticalScroll() {
     getDexMethod("canChildScrollUpFingerprint") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 modifiers = Modifier.PUBLIC or Modifier.FINAL
                 returnType = "boolean"

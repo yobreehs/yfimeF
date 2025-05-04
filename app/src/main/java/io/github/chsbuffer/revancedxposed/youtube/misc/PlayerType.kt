@@ -12,7 +12,7 @@ import org.luckypray.dexkit.result.FieldUsingType
 fun YoutubeHook.PlayerTypeHook() {
 
     getDexMethod("playerTypeFingerprint") {
-        dexkit.findClass {
+        findClass {
             matcher {
                 className(".YouTubePlayerOverlaysLayout", StringMatchType.EndsWith)
             }
@@ -36,7 +36,7 @@ fun YoutubeHook.PlayerTypeHook() {
     })
 
     getDexMethod("reelWatchPagerFingerprint") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 addUsingNumber(
                     app.resources.getIdentifier(
@@ -59,7 +59,7 @@ fun YoutubeHook.PlayerTypeHook() {
     })
 
     getDexMethod("videoStateFingerprint") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 returnType = "void"
                 paramTypes("com/google/android/libraries/youtube/player/features/overlay/controls/ControlsState")

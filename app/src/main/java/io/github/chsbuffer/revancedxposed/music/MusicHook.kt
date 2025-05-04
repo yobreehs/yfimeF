@@ -30,7 +30,7 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
 
     fun EnableExclusiveAudioPlayback() {
         getDexMethod("AllowExclusiveAudioPlaybackFingerprint") {
-            dexkit.findMethod {
+            findMethod {
                 matcher { addEqString("probably_has_unlimited_entitlement") }
             }.single().invokes.findMethod {
                 matcher {
@@ -45,7 +45,7 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
     fun HideGetPremium() {
         // HideGetPremiumFingerprint
         getDexMethod("HideGetPremiumFingerprint") {
-            dexkit.findMethod {
+            findMethod {
                 matcher {
                     modifiers = Modifier.FINAL or Modifier.PUBLIC
                     usingEqStrings("FEmusic_history", "FEmusic_offline")
@@ -70,7 +70,7 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
     fun RemoveUpgradeButton() {
         // PivotBarConstructorFingerprint
         getDexMethod("PivotBarConstructorFingerprint") {
-            dexkit.findMethod {
+            findMethod {
                 matcher {
                     name = "<init>"
                     returnType = "void"
@@ -106,7 +106,7 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
 
     fun MinimizedPlayback() {
         getDexMethod("BackgroundPlaybackDisableFingerprint") {
-            dexkit.findMethod {
+            findMethod {
                 matcher {
                     returnType = "boolean"
                     modifiers = Modifier.PUBLIC or Modifier.STATIC
@@ -128,7 +128,7 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
 
         // KidsMinimizedPlaybackPolicyControllerFingerprint
         getDexMethod("KidsMinimizedPlaybackPolicyControllerFingerprint") {
-            dexkit.findMethod {
+            findMethod {
                 matcher {
                     returnType = "void"
                     modifiers = Modifier.PUBLIC or Modifier.FINAL
@@ -155,7 +155,7 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
     fun HideMusicVideoAds() {
         // ShowMusicVideoAdsParentFingerprint
         getDexMethod("ShowMusicVideoAdsMethod") {
-            dexkit.findMethod {
+            findMethod {
                 matcher {
                     usingEqStrings(
                         "maybeRegenerateCpnAndStatsClient called unexpectedly, but no error."

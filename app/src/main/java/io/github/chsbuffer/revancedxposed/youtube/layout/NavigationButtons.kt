@@ -31,7 +31,7 @@ fun YoutubeHook.NavigationButtons() {
     val ANDROID_AUTOMOTIVE_STRING = "Android Automotive"
 
     getDexMethod("addCreateButtonViewFingerprint") {
-        dexkit.findMethod {
+        findMethod {
             matcher { strings("Android Wear", ANDROID_AUTOMOTIVE_STRING) }
         }.single().also { method ->
             getDexMethod("AutoMotiveFeatureMethod") {

@@ -15,7 +15,7 @@ fun YoutubeHook.BackgroundPlayback() {
 
     // isBackgroundPlaybackAllowed
     getDexMethod("BackgroundPlaybackManagerFingerprint") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 returnType = "boolean"
                 modifiers = Modifier.PUBLIC or Modifier.STATIC
@@ -53,7 +53,7 @@ fun YoutubeHook.BackgroundPlayback() {
 
     // Enable background playback option in YouTube settings
     getDexMethod("BackgroundPlaybackSettingsBoolean") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 returnType = "java.lang.String"
                 modifiers = Modifier.PUBLIC or Modifier.FINAL

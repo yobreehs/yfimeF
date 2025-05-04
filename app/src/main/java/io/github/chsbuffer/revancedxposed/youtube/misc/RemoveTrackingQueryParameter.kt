@@ -26,7 +26,7 @@ fun YoutubeHook.RemoveTrackingQueryParameter() {
     }
 
     getDexMethod("CopyTextFingerprint") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 returnType = "void"
                 paramTypes = listOf(null, "java.util.Map")
@@ -66,7 +66,7 @@ fun YoutubeHook.RemoveTrackingQueryParameter() {
     )
 
     getDexMethod("YouTubeShareSheetFingerprint") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 modifiers = Modifier.PUBLIC or Modifier.FINAL
                 returnType = "void"
@@ -83,7 +83,7 @@ fun YoutubeHook.RemoveTrackingQueryParameter() {
     }.hookMethod(intentSanitizeHook)
 
     getDexMethod("SystemShareSheetFingerprint") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 returnType = "void"
                 paramTypes = listOf(null, "java.util.Map")

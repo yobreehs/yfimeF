@@ -47,7 +47,7 @@ fun YoutubeHook.SponsorBlock() {
     playerInitHooks.add { SegmentPlaybackController.initialize(it) }
 
     getDexClass("SeekbarClass") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 addEqString("timed_markers_width")
                 returnType = "void"
@@ -107,7 +107,7 @@ fun YoutubeHook.SponsorBlock() {
 
     // Initialize the SponsorBlock view.
     getDexMethod("controlsOverlayFingerprint") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 opcodes(
                     Opcode.INVOKE_VIRTUAL,

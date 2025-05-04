@@ -18,7 +18,7 @@ fun YoutubeHook.LithoFilter() {
 
     //region Pass the buffer into extension.
     getDexMethod("ProtobufBufferReferenceFingerprint") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 returnType = "void"
                 modifiers = Modifier.PUBLIC or Modifier.FINAL
@@ -48,7 +48,7 @@ fun YoutubeHook.LithoFilter() {
     // a ScopedHookSafe on `ConversionContext(...)` or `ConversionContextBuilder.build()` is needed,
     // So I don't want to support these versions.
     getDexMethod("readComponentIdentifierFingerprint") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 usingEqStrings("Number of bits must be positive")
             }
@@ -85,7 +85,7 @@ fun YoutubeHook.LithoFilter() {
 
     // Return an EmptyComponent instead of the original component if the filterState method returns true.
     val emptyComponentClass = getDexClass("emptyComponentClass") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 name = "<init>"
                 addEqString("EmptyComponent")
@@ -94,7 +94,7 @@ fun YoutubeHook.LithoFilter() {
     }
 
     getDexMethod("ComponentContextParserFingerprint") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 strings(
                     "TreeNode result must be set.",
@@ -122,7 +122,7 @@ fun YoutubeHook.LithoFilter() {
     // but if the flag is forced on then litho filtering still works correctly.
     runCatching {
         getDexMethod("lithoComponentNameUpbFeatureFlagFingerprint") {
-            dexkit.findMethod {
+            findMethod {
                 matcher {
                     modifiers = Modifier.PUBLIC or Modifier.FINAL
                     returnType = "boolean"
@@ -137,14 +137,14 @@ fun YoutubeHook.LithoFilter() {
     // If this is enabled, then the litho protobuffer hook will always show an empty buffer
     // since it's no longer handled by the hooked Java code.
     getDexMethod("lithoConverterBufferUpbFeatureFlagFingerprint") {
-        dexkit.findMethod {
+        findMethod {
             matcher {
                 modifiers = Modifier.PUBLIC or Modifier.STATIC
                 paramTypes = listOf(null)
                 usingNumbers(45419603L)
             }
-        }.single().apply {
-            getDexMethod("featureFlagCheck") { this.invokes.single() }
+        }.single().also { method ->
+            getDexMethod("featureFlagCheck") { method.invokes.single() }
         }
     }.hookMethod(
         ScopedHook(
