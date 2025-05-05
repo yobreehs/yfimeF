@@ -62,7 +62,7 @@ fun YoutubeHook.PlayerTypeHook() {
         findMethod {
             matcher {
                 returnType = "void"
-                paramTypes("com/google/android/libraries/youtube/player/features/overlay/controls/ControlsState")
+                paramTypes("com.google.android.libraries.youtube.player.features.overlay.controls.ControlsState")
                 opcodes(
                     Opcode.CONST_4,
                     Opcode.IF_EQZ,
