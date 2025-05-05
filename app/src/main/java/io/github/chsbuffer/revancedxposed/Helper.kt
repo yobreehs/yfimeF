@@ -67,6 +67,7 @@ class ScopedHookSafe(hookMethod: Member, f: XFuncBuilder.() -> Unit) : XC_Method
             }
 
             override fun afterHookedMethod(param: MethodHookParam) {
+                if (lock.get() != true) return
                 callback.after?.invoke(param, outerParam.get()!!)
             }
         })
