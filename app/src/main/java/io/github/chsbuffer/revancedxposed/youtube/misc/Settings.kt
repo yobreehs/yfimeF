@@ -57,7 +57,7 @@ fun YoutubeHook.SettingsHook() {
             }
         }
     }.hookMethod(
-        ScopedHookSafe(getDexMethod("PreferenceInflater#inflate").getMethodInstance(classLoader)) {
+        ScopedHookSafe(getDexMethod("PreferenceInflater#inflate").toMethod()) {
             after { param, outerParam ->
                 val preferencesName = app.resources.getResourceName(outerParam.args[0] as Int)
                 Logger.printDebug { "addPreferencesFromResource $preferencesName" }

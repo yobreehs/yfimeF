@@ -50,7 +50,7 @@ fun YoutubeHook.PlayerTypeHook() {
             }
         }
     }.hookMethod(object : XC_MethodHook() {
-        val field = getDexField("ReelPlayerViewField").getFieldInstance(classLoader)
+        val field = getDexField("ReelPlayerViewField").toField()
         override fun afterHookedMethod(param: MethodHookParam) {
             val thiz = param.thisObject
             val view = field.get(thiz) as View
@@ -79,7 +79,7 @@ fun YoutubeHook.PlayerTypeHook() {
             }
         }
     }.hookMethod(object : XC_MethodHook() {
-        val field = getDexField("videoStateParameterField").getFieldInstance(classLoader)
+        val field = getDexField("videoStateParameterField").toField()
         override fun beforeHookedMethod(param: MethodHookParam) {
             PlayerTypeHookPatch.setVideoState(field.get(param.args[0]) as Enum<*>)
         }

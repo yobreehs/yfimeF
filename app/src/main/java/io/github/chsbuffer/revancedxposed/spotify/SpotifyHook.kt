@@ -17,22 +17,29 @@ import io.github.chsbuffer.revancedxposed.findFirstFieldByExactType
 import io.github.chsbuffer.revancedxposed.opcodes
 import io.github.chsbuffer.revancedxposed.strings
 import org.luckypray.dexkit.query.enums.StringMatchType
+import org.luckypray.dexkit.wrap.DexField
+import org.luckypray.dexkit.wrap.DexMethod
 import java.lang.reflect.Field
 
 @Suppress("UNCHECKED_CAST")
 class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpparam) {
     override val hooks = arrayOf(
-        ::UnlockPremium
+        ::Extension,
+        ::SanitizeSharingLinks,
+        ::UnlockPremium,
     )
 
-    fun UnlockPremium() {
+    val IS_SPOTIFY_LEGACY_APP_TARGET =
+        runCatching { classLoader.loadClass("com.spotify.music.MainActivity") }.isSuccess
+
+    fun Extension() {
         // Logger
         Utils.setContext(app)
 
-        val IS_SPOTIFY_LEGACY_APP_TARGET =
-            runCatching { classLoader.loadClass("com.spotify.music.MainActivity") }.isSuccess
         UnlockPremiumPatch.IS_SPOTIFY_LEGACY_APP_TARGET = IS_SPOTIFY_LEGACY_APP_TARGET
+    }
 
+    fun UnlockPremium() {
         // Override the attributes map in the getter method.
         getDexMethod("productStateProtoFingerprint") {
             findClass {
@@ -52,7 +59,7 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
                 }
             }
         }.hookMethod(object : XC_MethodHook() {
-            val field = getDexField("attributesMapField").getFieldInstance(classLoader)
+            val field = getDexField("attributesMapField").toField()
             override fun beforeHookedMethod(param: MethodHookParam) {
                 Logger.printDebug { field.get(param.thisObject)!!.toString() }
                 UnlockPremiumPatch.overrideAttribute(field.get(param.thisObject) as Map<String, *>)
@@ -136,7 +143,7 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
                 }
             }
         }
-        val checkExperimentsMethod = getDexMethod("checkExperiments").getMethodInstance(classLoader)
+        val checkExperimentsMethod = getDexMethod("checkExperiments").toMethod()
         contextMenuExperiments.hookMethod(ScopedHookSafe(checkExperimentsMethod) {
             returnConstant(false)
         })
@@ -158,5 +165,44 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
                 UnlockPremiumPatch.removeHomeSections(param.result as List<*>)
             }
         })
+
+        // Remove pendragon (pop up ads) requests and return the errors instead.
+        val replaceFetchRequestSingleWithError = object : XC_MethodHook() {
+            val justMethod =
+                DexMethod("Lio/reactivex/rxjava3/core/Single;->just(Ljava/lang/Object;)Lio/reactivex/rxjava3/core/Single;").toMethod()
+
+            val onErrorField =
+                DexField("Lio/reactivex/rxjava3/internal/operators/single/SingleOnErrorReturn;->b:Lio/reactivex/rxjava3/functions/Function;").toField()
+
+            override fun afterHookedMethod(param: MethodHookParam) {
+                if (!param.result.javaClass.name.endsWith("SingleOnErrorReturn")) return
+                val justError = justMethod.invoke(null, onErrorField.get(param.result))
+                param.result = justError
+            }
+        }
+
+        getDexMethod("pendragonJsonFetchMessageRequestFingerprint") {
+            findMethod {
+                matcher {
+                    name("apply")
+                    addInvoke {
+                        name("<init>")
+                        declaredClass("FetchMessageRequest", StringMatchType.EndsWith)
+                    }
+                }
+            }.single()
+        }.hookMethod(replaceFetchRequestSingleWithError)
+
+        getDexMethod("pendragonJsonFetchMessageListRequestFingerprint") {
+            findMethod {
+                matcher {
+                    name("apply")
+                    addInvoke {
+                        name("<init>")
+                        declaredClass("FetchMessageListRequest", StringMatchType.EndsWith)
+                    }
+                }
+            }.single()
+        }.hookMethod(replaceFetchRequestSingleWithError)
     }
 }

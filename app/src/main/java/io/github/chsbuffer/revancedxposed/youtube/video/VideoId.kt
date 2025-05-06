@@ -26,7 +26,7 @@ fun YoutubeHook.VideoIdPatch() {
         }
     }.hookMethod(object : XC_MethodHook() {
         val videoIdMethod =
-            getDexMethod("PlayerResponseModel.videoId").getMethodInstance(classLoader)
+            getDexMethod("PlayerResponseModel.videoId").toMethod()
 
         override fun beforeHookedMethod(param: MethodHookParam) {
             val videoId = videoIdMethod(param.args[0]) as String
@@ -41,7 +41,7 @@ fun YoutubeHook.VideoIdPatchTest() {
 
     val LogCall: (DexKitBridge.() -> DexMethod) -> Unit = {
         val dexMethod = it(dexkit)
-        XposedBridge.hookMethod(dexMethod.getMethodInstance(classLoader), object : XC_MethodHook() {
+        XposedBridge.hookMethod(dexMethod.toMethod(), object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam?) {
                 Logger.printDebug { "$dexMethod" }
             }

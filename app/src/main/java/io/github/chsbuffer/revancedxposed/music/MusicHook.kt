@@ -91,7 +91,7 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
             }
         }.hookMethod(object : XC_MethodHook() {
             val pivotBarElementField =
-                getDexField("pivotBarElementField").getFieldInstance(classLoader)
+                getDexField("pivotBarElementField").toField()
 
             override fun afterHookedMethod(param: MethodHookParam) {
                 val list = pivotBarElementField.get(param.thisObject)

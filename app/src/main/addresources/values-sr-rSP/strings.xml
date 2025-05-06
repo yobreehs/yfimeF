@@ -524,7 +524,7 @@ Second \"item\" text"</string>
   <string name="revanced_hide_thanks_button_summary_off">Дугме „Хвала” је приказано</string>
   <!-- 'Ask' should be translated with the same localized wording that YouTube displays.
                  Button only shows if the user ip is from specific region such as the USA or EU. -->
-  <string name="revanced_hide_ask_button_title">Сакриј „Питај”</string>
+  <string name="revanced_hide_ask_button_title">Сакриј дугме „Питај”</string>
   <string name="revanced_hide_ask_button_summary_on">Дугме „Питај” је скривено</string>
   <string name="revanced_hide_ask_button_summary_off">Дугме „Питај” је приказано</string>
   <!-- 'Clip' should be translated with the same localized wording that YouTube displays. -->
@@ -712,8 +712,8 @@ Second \"item\" text"</string>
   <string name="revanced_hide_shorts_paused_overlay_buttons_summary_on">Дугмад у плејеру при паузи су скривена</string>
   <string name="revanced_hide_shorts_paused_overlay_buttons_summary_off">Дугмад у плејеру при паузи су приказана</string>
   <string name="revanced_hide_shorts_shop_button_title">Сакриј дугме „Продавница”</string>
-  <string name="revanced_hide_shorts_shop_button_summary_on">Дугме „Куповина” је скривено</string>
-  <string name="revanced_hide_shorts_shop_button_summary_off">Дугме „Куповина” је приказано</string>
+  <string name="revanced_hide_shorts_shop_button_summary_on">Дугме „Продавница” је скривено</string>
+  <string name="revanced_hide_shorts_shop_button_summary_off">Дугме „Продавница” је приказано</string>
   <string name="revanced_hide_shorts_super_thanks_button_title">Сакриј дугме за куповину „Суперхвала”</string>
   <string name="revanced_hide_shorts_super_thanks_button_summary_on">Дугме „Суперхвала” је скривено</string>
   <string name="revanced_hide_shorts_super_thanks_button_summary_off">Дугме „Суперхвала” је приказано</string>
@@ -733,8 +733,8 @@ Second \"item\" text"</string>
   <string name="revanced_hide_shorts_upcoming_button_summary_on">Дугме „Предстојеће” је скривено</string>
   <string name="revanced_hide_shorts_upcoming_button_summary_off">Дугме „Предстојеће” је приказано</string>
   <string name="revanced_hide_shorts_green_screen_button_title">Сакриј дугме „Зелени екран”</string>
-  <string name="revanced_hide_shorts_green_screen_button_summary_on">Дугме „Green Screen” је скривено</string>
-  <string name="revanced_hide_shorts_green_screen_button_summary_off">Дугме „Green Screen” је приказано</string>
+  <string name="revanced_hide_shorts_green_screen_button_summary_on">Дугме „Зелени екран” је скривено</string>
+  <string name="revanced_hide_shorts_green_screen_button_summary_off">Дугме „Зелени екран” је приказано</string>
   <string name="revanced_hide_shorts_hashtag_button_title">Сакриј дугме хеш-ознаке</string>
   <string name="revanced_hide_shorts_hashtag_button_summary_on">Дугме хеш-ознаке је скривено</string>
   <string name="revanced_hide_shorts_hashtag_button_summary_off">Дугме хеш-ознаке је приказано</string>
@@ -1309,6 +1309,9 @@ Second \"item\" text"</string>
   <patch id="misc.gms.gmsCoreSupportResourcePatch">
   <string name="microg_settings_title">Подешавања GmsCore-а</string>
   <string name="microg_settings_summary">Подешавања за GmsCore</string>
+  </patch>
+  <patch id="misc.gms.accountCredentialsInvalidTextPatch">
+  <string name="microg_offline_account_login_error">Ако сте недавно променили податке за пријаву на налог, деинсталирајте и поново инсталирајте MicroG.</string>
   </patch>
   <patch id="misc.links.bypassURLRedirectsPatch">
   <string name="revanced_bypass_url_redirects_title">Заобиђи URL преусмеравања</string>

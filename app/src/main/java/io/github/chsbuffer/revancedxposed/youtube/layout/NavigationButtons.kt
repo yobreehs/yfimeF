@@ -41,7 +41,7 @@ fun YoutubeHook.NavigationButtons() {
             }
         }
     }.hookMethod(
-        ScopedHookSafe(getDexMethod("AutoMotiveFeatureMethod").getMethodInstance(classLoader)) {
+        ScopedHookSafe(getDexMethod("AutoMotiveFeatureMethod").toMethod()) {
             before { param, _ ->
                 param.result = NavigationButtonsPatch.switchCreateWithNotificationButton()
             }

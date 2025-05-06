@@ -51,6 +51,7 @@ public class LicenseActivityHook {
     public static void initialize(Activity licenseActivity) {
         try {
             ThemeHelper.setActivityTheme(licenseActivity);
+            ThemeHelper.setNavigationBarColor(licenseActivity.getWindow());
             RevancedSettingsLayout layout = new RevancedSettingsLayout(licenseActivity);
             licenseActivity.setContentView(layout);
 

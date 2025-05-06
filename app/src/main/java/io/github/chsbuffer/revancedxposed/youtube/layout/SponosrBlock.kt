@@ -78,7 +78,7 @@ fun YoutubeHook.SponsorBlock() {
     val seekbarDrawLock = ThreadLocal<Boolean?>()
 
     seekbarOnDrawMethod.hookMethod(object : XC_MethodHook() {
-        val SponsorBarRectField = getDexField("SponsorBarRect").getFieldInstance(classLoader)
+        val SponsorBarRectField = getDexField("SponsorBarRect").toField()
         override fun beforeHookedMethod(param: MethodHookParam) {
             // Get left and right of seekbar rectangle.
             SegmentPlaybackController.setSponsorBarRect(SponsorBarRectField.get(param.thisObject) as Rect)
@@ -128,7 +128,7 @@ fun YoutubeHook.SponsorBlock() {
             getDexField("controlsOverlayParentLayout") { it.usingFields.first().field }
         }
     }.hookMethod(object : XC_MethodHook() {
-        val field = getDexField("controlsOverlayParentLayout").getFieldInstance(classLoader)
+        val field = getDexField("controlsOverlayParentLayout").toField()
         val id = app.resources.getIdentifier("inset_overlay_view_layout", "id", lpparam.packageName)
         override fun afterHookedMethod(param: MethodHookParam) {
             val layout = field.get(param.thisObject) as FrameLayout

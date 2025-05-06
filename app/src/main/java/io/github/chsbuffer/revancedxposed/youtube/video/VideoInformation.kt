@@ -76,12 +76,12 @@ fun YoutubeHook.VideoInformationHook() {
     }
 
     playerInitMethod.apply {
-        val seekSourceType = getDexClass("seekSourceType").getInstance(classLoader)
+        val seekSourceType = getDexClass("seekSourceType").toClass()
         val seekSourceNone = seekSourceType.getStaticObjectField("a")!!
         hookMethod(object : XC_MethodHook() {
-            val seekFingerprint = getDexMethod("seekFingerprint").getMethodInstance(classLoader)
+            val seekFingerprint = getDexMethod("seekFingerprint").toMethod()
             val seekRelativeFingerprint =
-                getDexMethod("seekRelativeFingerprint").getMethodInstance(classLoader)
+                getDexMethod("seekRelativeFingerprint").toMethod()
 
             var playerController: PlaybackController? = null
 
@@ -143,13 +143,13 @@ fun YoutubeHook.VideoInformationHook() {
 
     mdxInitMethod.apply {
 
-        val seekSourceType = getDexClass("mkxSeekSourceType").getInstance(classLoader)
+        val seekSourceType = getDexClass("mkxSeekSourceType").toClass()
         val seekSourceNone = seekSourceType.getStaticObjectField("a")!!
         hookMethod(object : XC_MethodHook() {
             val mdxSeekFingerprint =
-                getDexMethod("mdxSeekFingerprint").getMethodInstance(classLoader)
+                getDexMethod("mdxSeekFingerprint").toMethod()
             val mdxSeekRelativeFingerprint =
-                getDexMethod("mdxSeekRelativeFingerprint").getMethodInstance(classLoader)
+                getDexMethod("mdxSeekRelativeFingerprint").toMethod()
 
             var playerController: PlaybackController? = null
             override fun afterHookedMethod(param: MethodHookParam) {
@@ -196,9 +196,9 @@ fun YoutubeHook.VideoInformationHook() {
             getDexField("videoLengthHolderField") { videoLengthHolderField }
         }
     }.hookMethod(object : XC_MethodHook() {
-        val videoLengthField = getDexField("videoLengthField").getFieldInstance(classLoader)
+        val videoLengthField = getDexField("videoLengthField").toField()
         val videoLengthHolderField =
-            getDexField("videoLengthHolderField").getFieldInstance(classLoader)
+            getDexField("videoLengthHolderField").toField()
 
         override fun afterHookedMethod(param: MethodHookParam) {
             val videoLengthHolder = videoLengthHolderField.get(param.thisObject)

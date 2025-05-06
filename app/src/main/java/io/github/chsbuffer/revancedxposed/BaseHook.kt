@@ -210,11 +210,15 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) {
     }
 
     fun DexMethod.hookMethod(callback: XC_MethodHook) {
-        if (isMethod) {
-            XposedBridge.hookMethod(getMethodInstance(lpparam.classLoader), callback)
-        } else {
-            XposedBridge.hookMethod(getConstructorInstance(lpparam.classLoader), callback)
+        when {
+            isMethod -> XposedBridge.hookMethod(getMethodInstance(lpparam.classLoader), callback)
+            isConstructor -> XposedBridge.hookMethod(getConstructorInstance(lpparam.classLoader), callback)
+            else -> throw NotImplementedError()
         }
     }
+
+    fun DexClass.toClass() = getInstance(classLoader)
+    fun DexMethod.toMethod() = getMethodInstance(classLoader)
+    fun DexField.toField() = getFieldInstance(classLoader)
 
 }

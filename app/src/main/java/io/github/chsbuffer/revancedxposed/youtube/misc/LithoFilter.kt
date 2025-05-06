@@ -41,8 +41,6 @@ fun YoutubeHook.LithoFilter() {
 
     //region check if the ComponentContext should be filtered, and save the result to a thread local.
 
-    val filtered = ThreadLocal<Boolean>()
-
     // In 19.17 and earlier, this resolves to the same method as [ComponentContextParserFingerprint],
     // instead of a separate method returns a ConversionContext. In which case,
     // a ScopedHookSafe on `ConversionContext(...)` or `ConversionContextBuilder.build()` is needed,
@@ -68,14 +66,14 @@ fun YoutubeHook.LithoFilter() {
             }
         }
     }.hookMethod(object : XC_MethodHook() {
-        val identifierField = getDexField("identifierFieldData").getFieldInstance(classLoader)
-        val pathBuilderField = getDexField("pathBuilderFieldData").getFieldInstance(classLoader)
+        val identifierField = getDexField("identifierFieldData").toField()
+        val pathBuilderField = getDexField("pathBuilderFieldData").toField()
         override fun afterHookedMethod(param: MethodHookParam) {
             val conversion = param.result
 
             val identifier = identifierField.get(conversion) as String?
             val pathBuilder = pathBuilderField.get(conversion) as StringBuilder
-            filtered.set(LithoFilterPatch.filter(identifier, pathBuilder))
+            LithoFilterPatch.filter(identifier, pathBuilder)
         }
     })
 
@@ -104,9 +102,9 @@ fun YoutubeHook.LithoFilter() {
             }
         }.single()
     }.hookMethod(object : XC_MethodHook() {
-        val emptyComponentClazz = emptyComponentClass.getInstance(classLoader)
+        val emptyComponentClazz = emptyComponentClass.toClass()
         override fun afterHookedMethod(param: MethodHookParam) {
-            if (filtered.get() == true) {
+            if (LithoFilterPatch.shouldFilter()) {
                 param.result = emptyComponentClazz.new()
             }
         }
@@ -148,7 +146,7 @@ fun YoutubeHook.LithoFilter() {
         }
     }.hookMethod(
         ScopedHook(
-            getDexMethod("featureFlagCheck").getMethodInstance(classLoader),
+            getDexMethod("featureFlagCheck").toMethod(),
             XC_MethodReplacement.returnConstant(false)
         )
     )
