@@ -37,6 +37,7 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
         Utils.setContext(app)
 
         UnlockPremiumPatch.IS_SPOTIFY_LEGACY_APP_TARGET = IS_SPOTIFY_LEGACY_APP_TARGET
+        UnlockPremiumPatch.classLoader = classLoader
     }
 
     fun UnlockPremium() {
@@ -162,7 +163,7 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
                 // Set sections mutable
                 sections.javaClass.findFirstFieldByExactType(Boolean::class.java)
                     .set(sections, true)
-                UnlockPremiumPatch.removeHomeSections(param.result as List<*>)
+                UnlockPremiumPatch.removeHomeSections(param.result as MutableList<Any>)
             }
         })
 

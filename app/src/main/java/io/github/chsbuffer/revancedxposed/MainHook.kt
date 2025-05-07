@@ -16,14 +16,11 @@ import io.github.chsbuffer.revancedxposed.spotify.SpotifyHook
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import kotlin.system.measureTimeMillis
 
-lateinit var HostClassLoader: ClassLoader
-
 class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources, IXposedHookZygoteInit {
     lateinit var startupParam: IXposedHookZygoteInit.StartupParam
     lateinit var resparam: XC_InitPackageResources.InitPackageResourcesParam
 
     override fun handleLoadPackage(lpparam: LoadPackageParam) {
-        HostClassLoader = lpparam.classLoader
         when (lpparam.packageName) {
             "com.google.android.apps.youtube.music" -> {
                 inContext(lpparam) { app ->
