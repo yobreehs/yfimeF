@@ -5,10 +5,11 @@ import app.revanced.extension.shared.Logger
 import de.robv.android.xposed.IXposedHookInitPackageResources
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.IXposedHookZygoteInit
+import de.robv.android.xposed.IXposedHookZygoteInit.StartupParam
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
-import de.robv.android.xposed.callbacks.XC_InitPackageResources
+import de.robv.android.xposed.callbacks.XC_InitPackageResources.InitPackageResourcesParam
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.common.UpdateChecker
 import io.github.chsbuffer.revancedxposed.music.MusicHook
@@ -17,42 +18,43 @@ import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import kotlin.system.measureTimeMillis
 
 class MainHook : IXposedHookLoadPackage, IXposedHookInitPackageResources, IXposedHookZygoteInit {
-    lateinit var startupParam: IXposedHookZygoteInit.StartupParam
-    lateinit var resparam: XC_InitPackageResources.InitPackageResourcesParam
+    lateinit var startupParam: StartupParam
+    lateinit var resparam: InitPackageResourcesParam
+    lateinit var lpparam: LoadPackageParam
+    lateinit var app: Application
+    var targetPackageName: String? = null
+    val hooksByPackage = mapOf(
+        "com.google.android.apps.youtube.music" to { MusicHook(app, lpparam) },
+        "com.google.android.youtube" to { YoutubeHook(app, lpparam, resparam, startupParam) },
+        "com.spotify.music" to { SpotifyHook(app, lpparam) },
+    )
+
+    fun shouldHook(packageName: String): Boolean {
+        if (!hooksByPackage.containsKey(packageName)) return false
+        if (targetPackageName == null) targetPackageName = packageName
+        return targetPackageName == packageName
+    }
 
     override fun handleLoadPackage(lpparam: LoadPackageParam) {
-        when (lpparam.packageName) {
-            "com.google.android.apps.youtube.music" -> {
-                inContext(lpparam) { app ->
-                    val t = measureTimeMillis {
-                        MusicHook(app, lpparam).Hook()
-                    }
-                    Logger.printDebug { "Youtube Music handleLoadPackage: ${t}ms" }
-                }
-            }
+        if (!lpparam.isFirstApplication) return
+        if (!shouldHook(lpparam.packageName)) return
+        this.lpparam = lpparam
 
-            "com.google.android.youtube" -> {
-                inContext(lpparam) { app ->
-                    val t = measureTimeMillis {
-                        YoutubeHook(app, lpparam, resparam, startupParam).Hook()
-                    }
-                    Logger.printDebug { "Youtube handleLoadPackage: ${t}ms" }
-                }
+        inContext(lpparam) { app ->
+            val t = measureTimeMillis {
+                this.app = app
+                hooksByPackage[lpparam.packageName]?.invoke()?.Hook()
             }
-
-            "com.spotify.music" -> {
-                inContext(lpparam) { app ->
-                    SpotifyHook(app, lpparam).Hook()
-                }
-            }
+            Logger.printDebug { "$targetPackageName handleLoadPackage: ${t}ms" }
         }
     }
 
-    override fun handleInitPackageResources(resparam: XC_InitPackageResources.InitPackageResourcesParam) {
+    override fun handleInitPackageResources(resparam: InitPackageResourcesParam) {
+        if (!shouldHook(resparam.packageName)) return
         this.resparam = resparam
     }
 
-    override fun initZygote(startupParam: IXposedHookZygoteInit.StartupParam) {
+    override fun initZygote(startupParam: StartupParam) {
         this.startupParam = startupParam
     }
 }

@@ -1,13 +1,5 @@
 package io.github.chsbuffer.revancedxposed
 
-import org.luckypray.dexkit.query.matchers.MethodMatcher
-import org.luckypray.dexkit.query.matchers.base.OpCodesMatcher
-
-fun MethodMatcher.opcodes(vararg opcodes: Opcode): OpCodesMatcher =
-    OpCodesMatcher(opcodes.map { it.opCode }).also {
-        opCodes(it)
-    }
-
 @Suppress("unused")
 enum class Opcode(val opName: String) {
     NOP("nop"),

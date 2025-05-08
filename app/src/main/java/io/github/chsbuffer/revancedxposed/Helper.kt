@@ -2,7 +2,6 @@ package io.github.chsbuffer.revancedxposed
 
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
-import org.luckypray.dexkit.query.matchers.MethodMatcher
 import java.lang.reflect.Member
 
 /**
@@ -81,8 +80,4 @@ class ScopedHookSafe(hookMethod: Member, f: XFuncBuilder.() -> Unit) : XC_Method
     override fun afterHookedMethod(param: MethodHookParam) {
         lock.set(false)
     }
-}
-
-fun MethodMatcher.strings(vararg strings: String) {
-    this.usingStrings(strings.toList())
 }
