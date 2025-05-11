@@ -4,11 +4,10 @@ import android.graphics.Canvas
 import android.graphics.Rect
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import app.revanced.extension.shared.Utils
 import app.revanced.extension.youtube.sponsorblock.SegmentPlaybackController
 import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockViewController
 import de.robv.android.xposed.XC_MethodHook
-import io.github.chsbuffer.revancedxposed.Opcode
-import io.github.chsbuffer.revancedxposed.opcodes
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.IntentPreference
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import io.github.chsbuffer.revancedxposed.youtube.misc.PlayerTypeHook
@@ -106,21 +105,11 @@ fun YoutubeHook.SponsorBlock() {
         })
 
     // Initialize the SponsorBlock view.
+    val inset_overlay_view_layout = Utils.getResourceIdentifier("inset_overlay_view_layout", "id")
     getDexMethod("controlsOverlayFingerprint") {
         findMethod {
             matcher {
-                opcodes(
-                    Opcode.INVOKE_VIRTUAL,
-                    Opcode.MOVE_RESULT_OBJECT,
-                    Opcode.CHECK_CAST, // R.id.inset_overlay_view_layout
-                    Opcode.IPUT_OBJECT,
-                    Opcode.INVOKE_VIRTUAL,
-                    Opcode.CONST,
-                    Opcode.INVOKE_VIRTUAL,
-                    Opcode.MOVE_RESULT_OBJECT,
-                    Opcode.CHECK_CAST,
-                    Opcode.NEW_INSTANCE,
-                )
+                addUsingNumber(inset_overlay_view_layout)
                 paramCount = 0
                 returnType = "void"
             }
@@ -129,7 +118,7 @@ fun YoutubeHook.SponsorBlock() {
         }
     }.hookMethod(object : XC_MethodHook() {
         val field = getDexField("controlsOverlayParentLayout").toField()
-        val id = app.resources.getIdentifier("inset_overlay_view_layout", "id", lpparam.packageName)
+        val id = inset_overlay_view_layout
         override fun afterHookedMethod(param: MethodHookParam) {
             val layout = field.get(param.thisObject) as FrameLayout
             val overlay_view = layout.findViewById<ViewGroup>(id)

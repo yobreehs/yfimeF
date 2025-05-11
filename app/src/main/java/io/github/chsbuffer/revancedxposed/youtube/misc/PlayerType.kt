@@ -1,6 +1,7 @@
 package io.github.chsbuffer.revancedxposed.youtube.misc
 
 import android.view.View
+import app.revanced.extension.shared.Utils
 import app.revanced.extension.youtube.patches.PlayerTypeHookPatch
 import de.robv.android.xposed.XC_MethodHook
 import io.github.chsbuffer.revancedxposed.Opcode
@@ -38,11 +39,7 @@ fun YoutubeHook.PlayerTypeHook() {
     getDexMethod("reelWatchPagerFingerprint") {
         findMethod {
             matcher {
-                addUsingNumber(
-                    app.resources.getIdentifier(
-                        "reel_watch_player", "id", lpparam.packageName
-                    )
-                )
+                addUsingNumber(Utils.getResourceIdentifier("reel_watch_player", "id"))
             }
         }.single().also { method ->
             getDexField("ReelPlayerViewField") {

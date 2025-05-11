@@ -1,5 +1,6 @@
 package io.github.chsbuffer.revancedxposed.youtube.misc
 
+import app.revanced.extension.shared.Utils
 import de.robv.android.xposed.XC_MethodReplacement
 import io.github.chsbuffer.revancedxposed.Opcode
 import io.github.chsbuffer.revancedxposed.opcodes
@@ -8,9 +9,7 @@ import java.lang.reflect.Modifier
 
 fun YoutubeHook.BackgroundPlayback() {
     val prefBackgroundAndOfflineCategoryId = getNumber("prefBackgroundAndOfflineCategoryId") {
-        app.resources.getIdentifier(
-            "pref_background_and_offline_category", "string", app.packageName
-        )
+        Utils.getResourceIdentifier("pref_background_and_offline_category", "string")
     }
 
     // isBackgroundPlaybackAllowed
