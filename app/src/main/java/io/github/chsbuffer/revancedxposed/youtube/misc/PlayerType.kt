@@ -1,6 +1,8 @@
 package io.github.chsbuffer.revancedxposed.youtube.misc
 
+import android.annotation.SuppressLint
 import android.view.View
+import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.youtube.patches.PlayerTypeHookPatch
 import de.robv.android.xposed.XC_MethodHook
@@ -10,6 +12,7 @@ import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.result.FieldUsingType
 
+@SuppressLint("NonUniqueDexKitData")
 fun YoutubeHook.PlayerTypeHook() {
 
     getDexMethod("playerTypeFingerprint") {
@@ -67,7 +70,9 @@ fun YoutubeHook.PlayerTypeHook() {
                     Opcode.IGET_OBJECT, // obfuscated parameter field name
                 )
             }
-        }.single().also { method ->
+        }.also {
+            if (it.count() > 1) Logger.printDebug { "multiple videoState methods found" }
+        }.first().also { method ->
             getDexField("videoStateParameterField") {
                 method.usingFields.distinct().single { field ->
                     // obfuscated parameter field name

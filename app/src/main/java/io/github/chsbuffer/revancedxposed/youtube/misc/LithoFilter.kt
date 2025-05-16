@@ -1,10 +1,12 @@
 package io.github.chsbuffer.revancedxposed.youtube.misc
 
+import android.annotation.SuppressLint
 import app.revanced.extension.youtube.patches.components.LithoFilterPatch
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import io.github.chsbuffer.revancedxposed.Opcode
 import io.github.chsbuffer.revancedxposed.ScopedHook
+import io.github.chsbuffer.revancedxposed.ScopedHookSafe
 import io.github.chsbuffer.revancedxposed.new
 import io.github.chsbuffer.revancedxposed.opcodes
 import io.github.chsbuffer.revancedxposed.strings
@@ -14,6 +16,7 @@ import java.lang.reflect.Modifier
 import java.nio.ByteBuffer
 
 
+@SuppressLint("NonUniqueDexKitData")
 fun YoutubeHook.LithoFilter() {
 
     //region Pass the buffer into extension.
@@ -39,47 +42,42 @@ fun YoutubeHook.LithoFilter() {
 
     //endregion
 
-    //region check if the ComponentContext should be filtered, and save the result to a thread local.
-
-    // In 19.17 and earlier, this resolves to the same method as [ComponentContextParserFingerprint],
-    // instead of a separate method returns a ConversionContext. In which case,
-    // a ScopedHookSafe on `ConversionContext(...)` or `ConversionContextBuilder.build()` is needed,
-    // So I don't want to support these versions.
-    getDexMethod("readComponentIdentifierFingerprint") {
-        findMethod {
+    // region Hook the method that parses bytes into a ComponentContext.
+    val conversionContextClass = getDexClass("conversionContextClass") {
+        findClass {
             matcher {
-                usingEqStrings("Number of bits must be positive")
+                usingStrings("ConversionContext{")
             }
-        }.single().also { method ->
-            val conversionContextClass = method.returnType!!
+        }.single().also { clazz ->
             // Identifier field is the second string type field initialized in the constructor.
             // 0 elementId, 1 identifierProperty
             getDexField("identifierFieldData") {
-                conversionContextClass.methods.single {
+                clazz.methods.single {
                     it.isConstructor && it.paramCount != 0
                 }.usingFields.filter {
                     it.usingType == FieldUsingType.Write && it.field.typeName == String::class.java.name
                 }[1].field
             }
             getDexField("pathBuilderFieldData") {
-                conversionContextClass.fields.single { it.typeSign == "Ljava/lang/StringBuilder;" }
+                clazz.fields.single { it.typeSign == "Ljava/lang/StringBuilder;" }
             }
         }
-    }.hookMethod(object : XC_MethodHook() {
-        val identifierField = getDexField("identifierFieldData").toField()
-        val pathBuilderField = getDexField("pathBuilderFieldData").toField()
-        override fun afterHookedMethod(param: MethodHookParam) {
-            val conversion = param.result
+    }
 
-            val identifier = identifierField.get(conversion) as String?
-            val pathBuilder = pathBuilderField.get(conversion) as StringBuilder
-            LithoFilterPatch.filter(identifier, pathBuilder)
+    val componentContextParserMethod = getDexMethod("ComponentContextParserFingerprint") {
+        findMethod {
+            matcher {
+                // String is a partial match and changed slightly in 20.03+
+                strings("it was removed due to duplicate converter bindings.")
+            }
+        }.single()
+    }
+
+    val componentContextSubParser = getDexMethod("ComponentContextSubParserFingerprint") {
+        getMethodData(componentContextParserMethod.toString())!!.invokes.first {
+            it.returnTypeName == conversionContextClass.typeName
         }
-    })
-
-    // endregion
-
-    // region return an empty component if filtering is needed.
+    }
 
     // Return an EmptyComponent instead of the original component if the filterState method returns true.
     val emptyComponentClass = getDexClass("emptyComponentClass") {
@@ -91,17 +89,20 @@ fun YoutubeHook.LithoFilter() {
         }.single().declaredClass!!
     }
 
-    getDexMethod("ComponentContextParserFingerprint") {
-        findMethod {
-            matcher {
-                strings(
-                    "TreeNode result must be set.",
-                    // String is a partial match and changed slightly in 20.03+
-                    "it was removed due to duplicate converter bindings."
-                )
-            }
-        }.single()
-    }.hookMethod(object : XC_MethodHook() {
+    // check if the ComponentContext should be filtered, and save the result to a thread local.
+    componentContextParserMethod.hookMethod(ScopedHookSafe(componentContextSubParser.toMethod()) {
+        val identifierField = getDexField("identifierFieldData").toField()
+        val pathBuilderField = getDexField("pathBuilderFieldData").toField()
+        after { param, _ ->
+            val conversion = param.result
+            val identifier = identifierField.get(conversion) as String?
+            val pathBuilder = pathBuilderField.get(conversion) as StringBuilder
+            LithoFilterPatch.filter(identifier, pathBuilder)
+        }
+    })
+
+    // return an empty component if filtering is needed.
+    componentContextParserMethod.hookMethod(object : XC_MethodHook(PRIORITY_DEFAULT - 1) {
         val emptyComponentClazz = emptyComponentClass.toClass()
         override fun afterHookedMethod(param: MethodHookParam) {
             if (LithoFilterPatch.shouldFilter()) {
@@ -109,6 +110,7 @@ fun YoutubeHook.LithoFilter() {
             }
         }
     })
+
     //endregion
 
     // region A/B test of new Litho native code.
