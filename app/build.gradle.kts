@@ -36,7 +36,9 @@ android {
             dimension = "abi"
         }
     }
-
+    androidResources {
+        additionalParameters += arrayOf("--allow-reserved-package-id", "--package-id", "0x4b")
+    }
     packagingOptions.resources {
         excludes.addAll(
             arrayOf(

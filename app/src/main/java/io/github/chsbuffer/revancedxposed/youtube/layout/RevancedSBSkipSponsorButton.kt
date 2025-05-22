@@ -9,7 +9,6 @@ import android.widget.TextView
 import app.revanced.extension.shared.Utils
 import io.github.chsbuffer.revancedxposed.R
 import io.github.chsbuffer.revancedxposed.new
-import io.github.chsbuffer.revancedxposed.youtube.modRes
 
 // revanced_sb_skip_sponsor_button.xml
 class RevancedSBSkipSponsorButton(context: Context, hostCl: ClassLoader) : LinearLayout(context) {
@@ -52,7 +51,7 @@ class RevancedSBSkipSponsorButton(context: Context, hostCl: ClassLoader) : Linea
                     ).toInt(), 0
                 )
                 isSingleLine = true
-                text = modRes.getString(R.string.revanced_sb_skip_button_compact)
+                text = context.getString(R.string.revanced_sb_skip_button_compact)
                 setTextColor(0xFFFF_FFFF.toInt()) // White color
                 textSize = 12f
             }

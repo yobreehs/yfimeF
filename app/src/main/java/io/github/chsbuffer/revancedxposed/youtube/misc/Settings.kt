@@ -10,6 +10,7 @@ import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import io.github.chsbuffer.revancedxposed.R
 import io.github.chsbuffer.revancedxposed.ScopedHookSafe
+import io.github.chsbuffer.revancedxposed.addModuleAssets
 import io.github.chsbuffer.revancedxposed.invokeOriginalMethod
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.BasePreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.BasePreferenceScreen
@@ -17,7 +18,6 @@ import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.Intent
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference.Sorting
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
-import io.github.chsbuffer.revancedxposed.youtube.modRes
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.wrap.DexMethod
 import java.lang.reflect.Modifier
@@ -64,7 +64,7 @@ fun YoutubeHook.SettingsHook() {
                 if (!preferencesName.contains("settings_fragment")) return@after
                 XposedBridge.invokeOriginalMethod(
                     param.method, param.thisObject, param.args.clone().apply {
-                        this[0] = modRes.getXml(R.xml.yt_revanced_settings)
+                        this[0] = app.resources.getXml(R.xml.yt_revanced_settings)
                     })
             }
         })
@@ -89,6 +89,7 @@ fun YoutubeHook.SettingsHook() {
             }
 
             val activity = param.thisObject as Activity
+            activity.addModuleAssets()
             LicenseActivityHook.initialize(activity)
         }
     })

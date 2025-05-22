@@ -1,7 +1,15 @@
 package io.github.chsbuffer.revancedxposed
 
+import android.content.Context
+import android.content.res.loader.ResourcesLoader
+import android.content.res.loader.ResourcesProvider
+import android.os.Build
+import android.os.ParcelFileDescriptor
+import androidx.annotation.RequiresApi
+import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
+import java.io.File
 import java.lang.reflect.Member
 
 /**
@@ -80,4 +88,26 @@ class ScopedHookSafe(hookMethod: Member, f: XFuncBuilder.() -> Unit) : XC_Method
     override fun afterHookedMethod(param: MethodHookParam) {
         lock.set(false)
     }
+}
+
+lateinit var XposedInit: IXposedHookZygoteInit.StartupParam
+
+private val resourceLoader by lazy @RequiresApi(Build.VERSION_CODES.R) {
+    val fileDescriptor = ParcelFileDescriptor.open(
+        File(XposedInit.modulePath),
+        ParcelFileDescriptor.MODE_READ_ONLY
+    )
+    val provider = ResourcesProvider.loadFromApk(fileDescriptor)
+    val loader = ResourcesLoader()
+    loader.addProvider(provider)
+    return@lazy loader
+}
+
+fun Context.addModuleAssets() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        resources.addLoaders(resourceLoader)
+        return
+    }
+
+    resources.assets.callMethod("addAssetPath", XposedInit.modulePath)
 }

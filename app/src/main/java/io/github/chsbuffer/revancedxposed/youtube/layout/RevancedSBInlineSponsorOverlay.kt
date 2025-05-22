@@ -7,7 +7,6 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.RelativeLayout
 import app.revanced.extension.youtube.sponsorblock.ui.SkipSponsorButton
 import io.github.chsbuffer.revancedxposed.R
-import io.github.chsbuffer.revancedxposed.youtube.modRes
 
 // revanced_sb_inline_sponsor_overlay.xml
 class RevancedSBInlineSponsorOverlay(context: Context) : RelativeLayout(context) {
@@ -21,7 +20,7 @@ class RevancedSBInlineSponsorOverlay(context: Context) : RelativeLayout(context)
 
         skipHighlightButton = SkipSponsorButton(context).apply {
             id = generateViewId()
-            contentDescription = modRes.getString(R.string.revanced_sb_skip_button_compact_highlight)
+            contentDescription = context.getString(R.string.revanced_sb_skip_button_compact_highlight)
             layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                 addRule(ALIGN_PARENT_LEFT)
                 addRule(ALIGN_PARENT_BOTTOM)
@@ -34,7 +33,7 @@ class RevancedSBInlineSponsorOverlay(context: Context) : RelativeLayout(context)
 
         skipSponsorButton = SkipSponsorButton(context).apply {
             id = generateViewId()
-            contentDescription = modRes.getString(R.string.revanced_sb_skip_button_compact)
+            contentDescription = context.getString(R.string.revanced_sb_skip_button_compact)
             layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                 addRule(ALIGN_PARENT_RIGHT)
                 addRule(ALIGN_PARENT_BOTTOM)

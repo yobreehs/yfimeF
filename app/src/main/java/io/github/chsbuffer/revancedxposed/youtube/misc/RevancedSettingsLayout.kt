@@ -13,7 +13,6 @@ import app.revanced.extension.shared.Utils
 import app.revanced.extension.youtube.ThemeHelper
 import app.revanced.extension.youtube.settings.preference.ReVancedPreferenceFragment
 import io.github.chsbuffer.revancedxposed.BuildConfig
-import io.github.chsbuffer.revancedxposed.youtube.modRes
 
 
 // revanced_settings_with_toolbar.xml
@@ -78,8 +77,8 @@ class RevancedSettingsLayout(activity: Activity) : LinearLayout(activity) {
     }
 
     fun setTitle(resourceName: String) {
-        toolbar.title = modRes.getString(
-            modRes.getIdentifier(
+        toolbar.title = context.getString(
+            context.resources.getIdentifier(
                 resourceName,
                 "string",
                 BuildConfig.APPLICATION_ID

@@ -10,7 +10,6 @@ import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
 import io.github.chsbuffer.revancedxposed.BuildConfig
 import io.github.chsbuffer.revancedxposed.R
-import io.github.chsbuffer.revancedxposed.youtube.modRes
 
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class BasePreference(
@@ -23,15 +22,15 @@ abstract class BasePreference(
 ) {
     fun trySetString(
         key: String?,
-        resources: Resources = modRes,
+        resources: Resources = Utils.getContext().resources,
         pkg: String = BuildConfig.APPLICATION_ID,
-        setRes: (str: String) -> Unit
-    ) = trySetRes(key, "string", resources, pkg) { res, id -> setRes(resources.getString(id)) }
+        setString: (str: String) -> Unit
+    ) = trySetRes(key, "string", resources, pkg) { res, id -> setString(resources.getString(id)) }
 
     fun trySetRes(
         key: String?,
         type: String,
-        resources: Resources = modRes,
+        resources: Resources = Utils.getContext().resources,
         pkg: String = BuildConfig.APPLICATION_ID,
         setRes: (res: Resources, id: Int) -> Unit,
     ) {

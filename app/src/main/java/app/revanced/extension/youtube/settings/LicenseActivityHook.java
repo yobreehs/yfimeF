@@ -1,7 +1,5 @@
 package app.revanced.extension.youtube.settings;
 
-import static io.github.chsbuffer.revancedxposed.youtube.misc.SettingsKt.getPreferences;
-
 import android.app.Activity;
 import android.preference.PreferenceFragment;
 import android.view.View;
