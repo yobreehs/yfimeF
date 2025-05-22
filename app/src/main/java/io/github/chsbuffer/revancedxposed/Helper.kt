@@ -104,7 +104,7 @@ private val resourceLoader by lazy @RequiresApi(Build.VERSION_CODES.R) {
 }
 
 fun Context.addModuleAssets() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+    if (!BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         resources.addLoaders(resourceLoader)
         return
     }

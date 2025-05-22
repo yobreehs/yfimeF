@@ -1,18 +1,22 @@
 package app.revanced.extension.youtube.settings;
 
+import static app.revanced.extension.shared.Utils.getResourceIdentifier;
+
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.preference.PreferenceFragment;
-import android.view.View;
+import android.util.TypedValue;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toolbar;
 
 import java.util.Objects;
 
 import app.revanced.extension.shared.Logger;
+import app.revanced.extension.shared.Utils;
 import app.revanced.extension.youtube.ThemeHelper;
 import app.revanced.extension.youtube.settings.preference.ReVancedPreferenceFragment;
 import app.revanced.extension.youtube.settings.preference.SponsorBlockPreferenceFragment;
-import io.github.chsbuffer.revancedxposed.youtube.misc.RevancedSettingsLayout;
 
 /**
  * Hooks LicenseActivity.
@@ -50,8 +54,8 @@ public class LicenseActivityHook {
         try {
             ThemeHelper.setActivityTheme(licenseActivity);
             ThemeHelper.setNavigationBarColor(licenseActivity.getWindow());
-            RevancedSettingsLayout layout = new RevancedSettingsLayout(licenseActivity);
-            licenseActivity.setContentView(layout);
+            licenseActivity.setContentView(getResourceIdentifier(
+                    "revanced_settings_with_toolbar", "layout"));
 
             PreferenceFragment fragment;
             String toolbarTitleResourceName;
@@ -62,11 +66,10 @@ public class LicenseActivityHook {
                     toolbarTitleResourceName = "revanced_sb_settings_title";
                     fragment = new SponsorBlockPreferenceFragment();
                     break;
-/*                case "revanced_ryd_settings_intent":
-                    toolbarTitleResourceName = "revanced_ryd_settings_title";
-                    fragment = new ReturnYouTubeDislikePreferenceFragment();
-                    break;
-                    */
+//                case "revanced_ryd_settings_intent":
+//                    toolbarTitleResourceName = "revanced_ryd_settings_title";
+//                    fragment = new ReturnYouTubeDislikePreferenceFragment();
+//                    break;
                 case "revanced_settings_intent":
                     toolbarTitleResourceName = "revanced_settings_title";
                     fragment = new ReVancedPreferenceFragment();
@@ -76,17 +79,45 @@ public class LicenseActivityHook {
                     return;
             }
 
-            layout.setTitle(toolbarTitleResourceName);
+            createToolbar(licenseActivity, toolbarTitleResourceName);
 
-            var containerId = View.generateViewId();
-            layout.getFragmentsContainer().setId(containerId);
             //noinspection deprecation
             licenseActivity.getFragmentManager()
                     .beginTransaction()
-                    .replace(containerId, fragment)
+                    .replace(getResourceIdentifier("revanced_settings_fragments", "id"), fragment)
                     .commit();
         } catch (Exception ex) {
             Logger.printException(() -> "initialize failure", ex);
         }
+    }
+
+    @SuppressLint("UseCompatLoadingForDrawables")
+    private static void createToolbar(Activity activity, String toolbarTitleResourceName) {
+        // Replace dummy placeholder toolbar.
+        // This is required to fix submenu title alignment issue with Android ASOP 15+
+        ViewGroup toolBarParent = activity.findViewById(
+                getResourceIdentifier("revanced_toolbar_parent", "id"));
+        ViewGroup dummyToolbar = Utils.getChildViewByResourceName(toolBarParent, "revanced_toolbar");
+        toolbarLayoutParams = dummyToolbar.getLayoutParams();
+        toolBarParent.removeView(dummyToolbar);
+
+        Toolbar toolbar = new Toolbar(toolBarParent.getContext());
+        toolbar.setBackgroundColor(ThemeHelper.getToolbarBackgroundColor());
+        toolbar.setNavigationIcon(ReVancedPreferenceFragment.getBackButtonDrawable());
+        toolbar.setNavigationOnClickListener(view -> activity.onBackPressed());
+        toolbar.setTitle(getResourceIdentifier(toolbarTitleResourceName, "string"));
+
+        final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16,
+                Utils.getContext().getResources().getDisplayMetrics());
+        toolbar.setTitleMarginStart(margin);
+        toolbar.setTitleMarginEnd(margin);
+        TextView toolbarTextView = Utils.getChildView(toolbar, false,
+                view -> view instanceof TextView);
+        if (toolbarTextView != null) {
+            toolbarTextView.setTextColor(ThemeHelper.getForegroundColor());
+        }
+        setToolbarLayoutParams(toolbar);
+
+        toolBarParent.addView(toolbar, 0);
     }
 }

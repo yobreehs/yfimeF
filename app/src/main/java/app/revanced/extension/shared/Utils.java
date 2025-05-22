@@ -256,7 +256,9 @@ public class Utils {
      */
     @SuppressLint("DiscouragedApi")
     public static int getResourceIdentifier(@NonNull Context context, @NonNull String resourceIdentifierName, @NonNull String type) {
-        return context.getResources().getIdentifier(resourceIdentifierName, type, context.getPackageName());
+        var result = context.getResources().getIdentifier(resourceIdentifierName, type, context.getPackageName());
+        if (result != 0) return result;
+        return context.getResources().getIdentifier(resourceIdentifierName, type, BuildConfig.APPLICATION_ID);
     }
 
     /**
