@@ -5,6 +5,7 @@ package io.github.chsbuffer.revancedxposed.shared.misc.settings.preference
 import android.content.Context
 import android.preference.Preference
 import android.preference.PreferenceCategory
+import android.preference.PreferenceGroup
 import android.preference.PreferenceManager
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference.*
 
@@ -14,13 +15,22 @@ open class PreferenceCategory(
     icon: String? = null,
     layout: String? = null,
     sorting: Sorting = Sorting.BY_TITLE,
-    tag: String = "PreferenceCategory",
+    tag: Class<out PreferenceGroup> = PreferenceCategory::class.java,
     val preferences: Set<BasePreference>
 ) : BasePreference(sorting.appendSortType(key), titleKey, null, icon, layout, tag) {
+    lateinit var children: List<Preference>
+    lateinit var preferenceGroup: PreferenceGroup
     override fun build(ctx: Context, prefMgr: PreferenceManager): Preference {
-        return PreferenceCategory(ctx).apply {
-            applyBaseAttrs(this)
-            preferences.forEach { pref -> addPreference(pref.build(ctx, prefMgr)) }
+        return (super.build(ctx, prefMgr) as PreferenceGroup).apply {
+            preferenceGroup = this
+            children = preferences.map { it.build(ctx, prefMgr) }
+        }
+    }
+
+    override fun onAttachedToHierarchy() {
+        preferenceGroup.apply {
+            children.forEach { addPreference(it) }
+            preferences.forEach { it.onAttachedToHierarchy() }
         }
     }
 }

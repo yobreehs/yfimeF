@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import app.revanced.extension.shared.Logger;
+import app.revanced.extension.shared.settings.BaseSettings;
 import app.revanced.extension.youtube.StringTrieSearch;
 import app.revanced.extension.youtube.settings.Settings;
 
@@ -32,7 +33,7 @@ public final class LithoFilterPatch {
         public String toString() {
             // Estimate the percentage of the buffer that are Strings.
             StringBuilder builder = new StringBuilder(Math.max(100, protoBuffer.length / 2));
-            builder.append("ID: ");
+            builder.append( "ID: ");
             builder.append(identifier);
             builder.append(" Path: ");
             builder.append(path);
@@ -73,7 +74,7 @@ public final class LithoFilterPatch {
         }
     }
 
-    private static final Filter[] filters = new Filter[]{
+    private static final Filter[] filters = new Filter[] {
             new AdsFilter() // Replaced by patch.
     };
 
@@ -114,12 +115,29 @@ public final class LithoFilterPatch {
             if (!group.includeInSearch()) {
                 continue;
             }
+
             for (String pattern : group.filters) {
-                pathSearchTree.addPattern(pattern, (textSearched, matchedStartIndex, matchedLength, callbackParameter) -> {
+                String filterSimpleName = filter.getClass().getSimpleName();
+
+                pathSearchTree.addPattern(pattern, (textSearched, matchedStartIndex,
+                                                    matchedLength, callbackParameter) -> {
                             if (!group.isEnabled()) return false;
+
                             LithoFilterParameters parameters = (LithoFilterParameters) callbackParameter;
-                            return filter.isFiltered(parameters.identifier, parameters.path, parameters.protoBuffer,
-                                    group, type, matchedStartIndex);
+                            final boolean isFiltered = filter.isFiltered(parameters.identifier,
+                                    parameters.path, parameters.protoBuffer, group, type, matchedStartIndex);
+
+                            if (isFiltered && BaseSettings.DEBUG.get()) {
+                                if (type == Filter.FilterContentType.IDENTIFIER) {
+                                    Logger.printDebug(() -> "Filtered " + filterSimpleName
+                                            + " identifier: " + parameters.identifier);
+                                } else {
+                                    Logger.printDebug(() -> "Filtered " + filterSimpleName
+                                            + " path: " + parameters.path);
+                                }
+                            }
+
+                            return isFiltered;
                         }
                 );
             }
@@ -170,7 +188,6 @@ public final class LithoFilterPatch {
             // Potentially the buffer may have been null or never set up until now.
             // Use an empty buffer so the litho id/path filters still work correctly.
             if (protobufBuffer == null) {
-                Logger.printDebug(() -> "Proto buffer is null, using an empty buffer array");
                 bufferArray = EMPTY_BYTE_ARRAY;
             } else if (!protobufBuffer.hasArray()) {
                 Logger.printDebug(() -> "Proto buffer does not have an array, using an empty buffer array");

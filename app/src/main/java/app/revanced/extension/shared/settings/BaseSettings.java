@@ -9,5 +9,7 @@ public class BaseSettings {
     public static final BooleanSetting DEBUG = new BooleanSetting("revanced_debug", BuildConfig.DEBUG);
     public static final BooleanSetting DEBUG_STACKTRACE = new BooleanSetting("revanced_debug_stacktrace", FALSE/*, parent(DEBUG)*/);
     public static final BooleanSetting DEBUG_TOAST_ON_ERROR = new BooleanSetting("revanced_debug_toast_on_error", TRUE, "revanced_debug_toast_on_error_user_dialog_message");
-    public static final BooleanSetting DEBUG_PROTOBUFFER = new BooleanSetting("revanced_debug_protobuffer", FALSE/*, parent(DEBUG)*/);
+
+    public static final EnumSetting<AppLanguage> REVANCED_LANGUAGE = new EnumSetting<>("revanced_language", AppLanguage.DEFAULT, true, "revanced_language_user_dialog_message");
+
 }

@@ -194,10 +194,20 @@ object PreferenceScreen : BasePreferenceScreen() {
         layout = "@layout/preference_with_icon",
         sorting = Sorting.UNSORTED,
     )
-
-    // RYD and SB are items 9 and 10.
-    // Menus are added in their own patch because they use an Intent and not a Screen.
-
+    val RETURN_YOUTUBE_DISLIKE = Screen(
+        key = "revanced_settings_screen_09_return_youtube_dislike",
+        summaryKey = null,
+        icon = "@drawable/revanced_settings_screen_09_return_youtube_dislike",
+        layout = "@layout/preference_with_icon",
+        sorting = Sorting.UNSORTED,
+    )
+    val SPONSORBLOCK = Screen(
+        key = "revanced_settings_screen_10_sponsorblock",
+        summaryKey = null,
+        icon = "@drawable/revanced_settings_screen_10_sponsorblock",
+        layout = "@layout/preference_with_icon",
+        sorting = Sorting.UNSORTED,
+    )
     val MISC = Screen(
         key = "revanced_settings_screen_11_misc",
         summaryKey = null,

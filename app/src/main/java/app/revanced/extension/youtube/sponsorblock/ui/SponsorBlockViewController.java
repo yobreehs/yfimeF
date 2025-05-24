@@ -89,10 +89,10 @@ public class SponsorBlockViewController {
             skipSponsorButtonRef = new WeakReference<>(Objects.requireNonNull(
                     layout.findViewById(getResourceIdentifier("revanced_sb_skip_sponsor_button", "id"))));
 
-//            NewSegmentLayout newSegmentLayout = Objects.requireNonNull(
-//                    layout.findViewById(getResourceIdentifier("revanced_sb_new_segment_view", "id")));
-//            newSegmentLayoutRef = new WeakReference<>(newSegmentLayout);
-//            newSegmentLayout.updateLayout();
+            NewSegmentLayout newSegmentLayout = Objects.requireNonNull(
+                    layout.findViewById(getResourceIdentifier("revanced_sb_new_segment_view", "id")));
+            newSegmentLayoutRef = new WeakReference<>(newSegmentLayout);
+            newSegmentLayout.updateLayout();
 
             newSegmentLayoutVisible = false;
             skipHighlight = null;
@@ -208,7 +208,7 @@ public class SponsorBlockViewController {
     }
 
     private static void setNewSegmentLayoutMargins(@Nullable NewSegmentLayout layout, boolean fullScreen) {
-        if (layout != null) {
+         if (layout != null) {
             setLayoutMargins(layout, fullScreen, layout.defaultBottomMargin, layout.ctaBottomMargin);
         }
     }

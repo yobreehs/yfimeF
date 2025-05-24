@@ -14,7 +14,7 @@ class IntentPreference(
     summaryKey: String? = "${key}_summary",
     icon: String? = null,
     layout: String? = null,
-    tag: String = "Preference",
+    tag: Class<out Preference> = Preference::class.java,
     val intent: Intent,
 ) : BasePreference(key, titleKey, summaryKey, icon, layout, tag) {
     override fun build(ctx: Context, prefMgr: PreferenceManager): Preference {

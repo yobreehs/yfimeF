@@ -5,6 +5,8 @@ package io.github.chsbuffer.revancedxposed.shared.misc.settings.preference
 import android.content.Context
 import android.preference.Preference
 import android.preference.PreferenceManager
+import android.preference.PreferenceScreen
+import app.revanced.extension.shared.Logger
 
 @Suppress("MemberVisibilityCanBePrivate")
 open class PreferenceScreenPreference(
@@ -14,7 +16,7 @@ open class PreferenceScreenPreference(
     icon: String? = null,
     layout: String? = null,
     sorting: Sorting = Sorting.BY_TITLE,
-    tag: String = "PreferenceScreen",
+    tag: Class<out Preference> = PreferenceScreen::class.java,
     val preferences: Set<BasePreference>,
     // Alternatively, instead of repurposing the key for sorting,
     // an extra bundle parameter can be added to the preferences XML declaration.
@@ -24,12 +26,21 @@ open class PreferenceScreenPreference(
     // for now it's much simpler to modify the key to include the sort parameter.
 ) : BasePreference(sorting.appendSortType(key), titleKey, summaryKey, icon, layout, tag) {
 
+    lateinit var children: List<Preference>
+    lateinit var preferenceScreen: PreferenceScreen
     override fun build(ctx: Context, prefMgr: PreferenceManager): Preference {
+        Logger.printDebug { "build $key" }
         return prefMgr.createPreferenceScreen(ctx).apply {
             applyBaseAttrs(this)
-            preferences.forEach {
-                this.addPreference(it.build(ctx, prefMgr))
-            }
+            preferenceScreen = this
+            children = preferences.map { it.build(ctx, prefMgr) }
+        }
+    }
+
+    override fun onAttachedToHierarchy() {
+        preferenceScreen.apply {
+            children.forEach { addPreference(it) }
+            preferences.forEach { it.onAttachedToHierarchy() }
         }
     }
 

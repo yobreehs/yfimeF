@@ -4,5 +4,11 @@
     <dimen name="brand_interaction_default_bottom_margin">44dp</dimen>
     <dimen name="add_text_side_padding">6dp</dimen>
     <dimen name="ad_overlay_ad_text_padding">4dp</dimen>
+    <dimen name="extra_extra_small_font_size">10sp</dimen>
+    <dimen name="extra_large_font_size">20sp</dimen>
     <dimen name="extra_small_font_size">12sp</dimen>
+    <dimen name="huge_font_size">22sp</dimen>
+    <dimen name="large_font_size">18sp</dimen>
+    <dimen name="medium_font_size">16sp</dimen>
+    <dimen name="small_font_size">14sp</dimen>
 </resources>

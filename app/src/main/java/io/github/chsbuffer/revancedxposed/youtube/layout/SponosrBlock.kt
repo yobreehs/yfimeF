@@ -7,21 +7,26 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.youtube.sponsorblock.SegmentPlaybackController
+import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockAboutPreference
+import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockPreferenceGroup
+import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockStatsPreferenceCategory
 import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockViewController
 import de.robv.android.xposed.XC_MethodHook
 import io.github.chsbuffer.revancedxposed.addModuleAssets
 import io.github.chsbuffer.revancedxposed.setObjectField
-import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.IntentPreference
+import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.NonInteractivePreference
+import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceCategory
+import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import io.github.chsbuffer.revancedxposed.youtube.misc.PlayerTypeHook
-import io.github.chsbuffer.revancedxposed.youtube.misc.addSettingPreference
-import io.github.chsbuffer.revancedxposed.youtube.misc.newIntent
+import io.github.chsbuffer.revancedxposed.youtube.misc.PreferenceScreen
 import io.github.chsbuffer.revancedxposed.youtube.video.VideoIdPatch
 import io.github.chsbuffer.revancedxposed.youtube.video.VideoInformationHook
 import io.github.chsbuffer.revancedxposed.youtube.video.playerInitHooks
 import io.github.chsbuffer.revancedxposed.youtube.video.videoIdHooks
 import io.github.chsbuffer.revancedxposed.youtube.video.videoTimeHooks
 import org.luckypray.dexkit.wrap.DexMethod
+import kotlin.jvm.java
 
 fun YoutubeHook.SponsorBlock() {
     dependsOn(
@@ -30,15 +35,32 @@ fun YoutubeHook.SponsorBlock() {
         ::PlayerTypeHook
     )
 
-    addSettingPreference(
-        IntentPreference(
-            key = "revanced_settings_screen_10",
-            titleKey = "revanced_sb_settings_title",
-            summaryKey = null,
-            icon = "@drawable/revanced_settings_screen_10_sb",
-            layout = "@layout/preference_with_icon",
-            intent = newIntent("revanced_sb_settings_intent"),
+    PreferenceScreen.SPONSORBLOCK.addPreferences(
+        // SB setting is old code with lots of custom preferences and updating behavior.
+        // Added as a preference group and not a fragment so the preferences are searchable.
+        PreferenceCategory(
+            key = "revanced_settings_screen_10_sponsorblock",
+            sorting = PreferenceScreenPreference.Sorting.UNSORTED,
+            preferences = emptySet(), // Preferences are added by custom class at runtime.
+            tag = SponsorBlockPreferenceGroup::class.java
         ),
+        PreferenceCategory(
+            key = "revanced_sb_stats",
+            sorting = PreferenceScreenPreference.Sorting.UNSORTED,
+            preferences = emptySet(), // Preferences are added by custom class at runtime.
+            tag = SponsorBlockStatsPreferenceCategory::class.java
+        ),
+        PreferenceCategory(
+            key = "revanced_sb_about",
+            sorting = PreferenceScreenPreference.Sorting.UNSORTED,
+            preferences = setOf(
+                NonInteractivePreference(
+                    key = "revanced_sb_about_api",
+                    tag = SponsorBlockAboutPreference::class.java,
+                    selectable = true,
+                )
+            )
+        )
     )
 
     // Hook the video time methods.

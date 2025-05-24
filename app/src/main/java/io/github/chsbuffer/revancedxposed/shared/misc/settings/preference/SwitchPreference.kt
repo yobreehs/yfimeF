@@ -11,7 +11,7 @@ import android.preference.SwitchPreference
 class SwitchPreference(
     key: String? = null,
     titleKey: String = "${key}_title",
-    tag: String = "SwitchPreference",
+    tag: Class<out Preference> = SwitchPreference::class.java,
     icon: String? = null,
     layout: String? = null,
     val summaryOnKey: String = "${key}_summary_on",

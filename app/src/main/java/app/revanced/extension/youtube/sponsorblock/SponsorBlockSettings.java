@@ -18,6 +18,7 @@ import app.revanced.extension.shared.Logger;
 import app.revanced.extension.shared.Utils;
 import app.revanced.extension.shared.settings.Setting;
 import app.revanced.extension.youtube.settings.Settings;
+import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockPreferenceGroup;
 import app.revanced.extension.youtube.sponsorblock.objects.CategoryBehaviour;
 import app.revanced.extension.youtube.sponsorblock.objects.SegmentCategory;
 
@@ -31,6 +32,7 @@ public class SponsorBlockSettings {
         @Override
         public void settingsImported(@Nullable Context context) {
             SegmentCategory.loadAllCategoriesFromSettings();
+            SponsorBlockPreferenceGroup.settingsImported = true;
         }
         @Override
         public void settingsExported(@Nullable Context context) {
@@ -136,7 +138,7 @@ public class SponsorBlockSettings {
             for (SegmentCategory category : categories) {
                 JSONObject categoryObject = new JSONObject();
                 String categoryKey = category.keyValue;
-                categoryObject.put("color", category.colorString());
+                categoryObject.put("color", category.getColorString());
                 barTypesObject.put(categoryKey, categoryObject);
 
                 if (category.behaviour != CategoryBehaviour.IGNORE) {

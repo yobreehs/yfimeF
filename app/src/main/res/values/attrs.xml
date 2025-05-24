@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <attr name="ytTextPrimary" format="reference|color" />
+    <attr name="ytTextSecondary" format="reference|color" />
+    <attr name="actionBarSize" format="dimension">
+        <enum name="wrap_content" value="0" />
+    </attr>
+    <attr name="ytBrandBackgroundSolid" format="reference|color">
+    </attr>
 </resources>

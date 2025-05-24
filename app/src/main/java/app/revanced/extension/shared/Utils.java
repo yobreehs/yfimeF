@@ -48,6 +48,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import app.revanced.extension.shared.settings.BaseSettings;
 import app.revanced.extension.shared.settings.BooleanSetting;
 import app.revanced.extension.shared.settings.preference.ReVancedAboutPreference;
 import io.github.chsbuffer.revancedxposed.BuildConfig;
@@ -408,14 +409,45 @@ public class Utils {
     private static Boolean isRightToLeftTextLayout;
 
     /**
-     * If the device language uses right to left text layout (hebrew, arabic, etc)
+     * @return If the device language uses right to left text layout (Hebrew, Arabic, etc).
+     *         If this should match any ReVanced language override then instead use
+     *         {@link #isRightToLeftLocale(Locale)} with {@link BaseSettings#REVANCED_LANGUAGE}.
+     *         This is the default locale of the device, which may differ if
+     *         {@link BaseSettings#REVANCED_LANGUAGE} is set to a different language.
      */
-    public static boolean isRightToLeftTextLayout() {
+    public static boolean isRightToLeftLocale() {
         if (isRightToLeftTextLayout == null) {
-            String displayLanguage = Locale.getDefault().getDisplayLanguage();
-            isRightToLeftTextLayout = new Bidi(displayLanguage, Bidi.DIRECTION_DEFAULT_LEFT_TO_RIGHT).isRightToLeft();
+            isRightToLeftTextLayout = isRightToLeftLocale(Locale.getDefault());
         }
         return isRightToLeftTextLayout;
+    }
+
+    /**
+     * @return If the locale uses right to left text layout (Hebrew, Arabic, etc).
+     */
+    public static boolean isRightToLeftLocale(Locale locale) {
+        String displayLanguage = locale.getDisplayLanguage();
+        return new Bidi(displayLanguage, Bidi.DIRECTION_DEFAULT_LEFT_TO_RIGHT).isRightToLeft();
+    }
+
+    /**
+     * @return A UTF8 string containing a left-to-right or right-to-left
+     *         character of the device locale. If this should match any ReVanced language
+     *         override then instead use {@link #getTextDirectionString(Locale)} with
+     *         {@link BaseSettings#REVANCED_LANGUAGE}.
+     */
+    public static String getTextDirectionString() {
+        return  getTextDirectionString(isRightToLeftLocale());
+    }
+
+    public static String getTextDirectionString(Locale locale) {
+        return getTextDirectionString(isRightToLeftLocale(locale));
+    }
+
+    private static String getTextDirectionString(boolean isRightToLeft) {
+        return isRightToLeft
+                ? "\u200F"  // u200F = right to left character.
+                : "\u200E"; // u200E = left to right character.
     }
 
     /**
@@ -709,103 +741,11 @@ public class Utils {
     /**
      * Strips all punctuation and converts to lower case.  A null parameter returns an empty string.
      */
-    public static String removePunctuationConvertToLowercase(@Nullable CharSequence original) {
+    public static String removePunctuationToLowercase(@Nullable CharSequence original) {
         if (original == null) return "";
-        return punctuationPattern.matcher(original).replaceAll("").toLowerCase();
+        return punctuationPattern.matcher(original).replaceAll("")
+                .toLowerCase();
     }
-/*
-
-     */
-/**
- * Sort a PreferenceGroup and all it's sub groups by title or key.
- *
- * Sort order is determined by the preferences key {@link Sort} suffix.
- *
- * If a preference has no key or no {@link Sort} suffix,
- * then the preferences are left unsorted.
- *//*
-
-    @SuppressWarnings("deprecation")
-    public static void sortPreferenceGroups(@NonNull PreferenceGroup group) {
-        Sort groupSort = Sort.fromKey(group.getKey(), Sort.UNSORTED);
-        SortedMap<String, Preference> preferences = new TreeMap<>();
-
-        for (int i = 0, prefCount = group.getPreferenceCount(); i < prefCount; i++) {
-            Preference preference = group.getPreference(i);
-
-            final Sort preferenceSort;
-            if (preference instanceof PreferenceGroup subGroup) {
-                sortPreferenceGroups(subGroup);
-                preferenceSort = groupSort; // Sort value for groups is for it's content, not itself.
-            } else {
-                // Allow individual preferences to set a key sorting.
-                // Used to force a preference to the top or bottom of a group.
-                preferenceSort = Sort.fromKey(preference.getKey(), groupSort);
-            }
-
-            final String sortValue;
-            switch (preferenceSort) {
-                case BY_TITLE:
-                    sortValue = removePunctuationConvertToLowercase(preference.getTitle());
-                    break;
-                case BY_KEY:
-                    sortValue = preference.getKey();
-                    break;
-                case UNSORTED:
-                    continue; // Keep original sorting.
-                default:
-                    throw new IllegalStateException();
-            }
-
-            preferences.put(sortValue, preference);
-        }
-
-        int index = 0;
-        for (Preference pref : preferences.values()) {
-            int order = index++;
-
-            // Move any screens, intents, and the one off About preference to the top.
-            if (pref instanceof PreferenceScreen || pref instanceof ReVancedAboutPreference
-                    || pref.getIntent() != null) {
-                // Arbitrary high number.
-                order -= 1000;
-            }
-
-            pref.setOrder(order);
-        }
-    }
-
-    */
-/**
- * Set all preferences to multiline titles if the device is not using an English variant.
- * The English strings are heavily scrutinized and all titles fit on screen
- * except 2 or 3 preference strings and those do not affect readability.
- *
- * Allowing multiline for those 2 or 3 English preferences looks weird and out of place,
- * and visually it looks better to clip the text and keep all titles 1 line.
- *//*
-
-    @SuppressWarnings("deprecation")
-    public static void setPreferenceTitlesToMultiLineIfNeeded(PreferenceGroup group) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            return;
-        }
-
-        String revancedLocale = Utils.getContext().getResources().getConfiguration().locale.getLanguage();
-        if (revancedLocale.equals(Locale.ENGLISH.getLanguage())) {
-            return;
-        }
-
-        for (int i = 0, prefCount = group.getPreferenceCount(); i < prefCount; i++) {
-            Preference pref = group.getPreference(i);
-            pref.setSingleLineTitle(false);
-
-            if (pref instanceof PreferenceGroup subGroup) {
-                setPreferenceTitlesToMultiLineIfNeeded(subGroup);
-            }
-        }
-    }
-*/
 
     /**
      * Sort a PreferenceGroup and all it's sub groups by title or key.
@@ -836,7 +776,7 @@ public class Utils {
             final String sortValue;
             switch (preferenceSort) {
                 case BY_TITLE:
-                    sortValue = removePunctuationConvertToLowercase(preference.getTitle());
+                    sortValue = removePunctuationToLowercase(preference.getTitle());
                     break;
                 case BY_KEY:
                     sortValue = preference.getKey();
@@ -904,11 +844,11 @@ public class Utils {
      * To prevent these issues, apply the Dialog theme corresponding to [Android library].
      */
     public static void setEditTextDialogTheme(AlertDialog.Builder builder) {
-//        final int editTextDialogStyle = getResourceIdentifier(
-//                "revanced_edit_text_dialog_style", "style");
-//        if (editTextDialogStyle != 0) {
-//            builder.getContext().setTheme(editTextDialogStyle);
-//        }
+        final int editTextDialogStyle = getResourceIdentifier(
+                "revanced_edit_text_dialog_style", "style");
+        if (editTextDialogStyle != 0) {
+            builder.getContext().setTheme(editTextDialogStyle);
+        }
     }
 
     /**
@@ -919,5 +859,13 @@ public class Utils {
             return Color.parseColor(colorString);
         }
         return getResourceColor(colorString);
+    }
+
+    public static int clamp(int value, int lower, int upper) {
+        return Math.max(lower, Math.min(value, upper));
+    }
+
+    public static float clamp(float value, float lower, float upper) {
+        return Math.max(lower, Math.min(value, upper));
     }
 }

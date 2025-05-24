@@ -6,10 +6,12 @@ import android.content.Context
 import android.content.res.Resources
 import android.preference.Preference
 import android.preference.PreferenceManager
+import android.util.AttributeSet
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
 import io.github.chsbuffer.revancedxposed.BuildConfig
 import io.github.chsbuffer.revancedxposed.R
+import io.github.chsbuffer.revancedxposed.new
 
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class BasePreference(
@@ -18,7 +20,7 @@ abstract class BasePreference(
     val summaryKey: String? = "${key}_summary",
     val icon: String? = null,
     val layout: String? = null,
-    val tag: String
+    val tag: Class<out Preference>
 ) {
     fun trySetString(
         key: String?,
@@ -59,6 +61,16 @@ abstract class BasePreference(
     }
 
     open fun build(ctx: Context, prefMgr: PreferenceManager): Preference {
-        return Preference(ctx).apply { applyBaseAttrs(this) }
+        Logger.printDebug { "build $key" }
+        return (tag.new(
+            arrayOf(Context::class.java, AttributeSet::class.java),
+            ctx, null
+        ) as Preference).apply {
+            applyBaseAttrs(this)
+        }
+    }
+
+    open fun onAttachedToHierarchy() {
+
     }
 }
