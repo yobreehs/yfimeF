@@ -33,6 +33,7 @@ import app.revanced.extension.shared.settings.BaseSettings;
 import app.revanced.extension.shared.settings.StringSetting;
 import app.revanced.extension.youtube.ThemeHelper;
 import app.revanced.extension.youtube.settings.preference.ReVancedPreferenceFragment;
+import io.github.chsbuffer.revancedxposed.R;
 
 /**
  * Controller for managing the search view in ReVanced settings.
@@ -352,8 +353,7 @@ public class SearchViewController {
             String query = getItem(position);
 
             // Set query text.
-            TextView textView = convertView.findViewById(getResourceIdentifier(
-                    "suggestion_text", "id"));
+            TextView textView = convertView.findViewById(R.id.suggestion_text);
             if (textView != null) {
                 textView.setText(query);
             }

@@ -17,6 +17,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
+import androidx.annotation.Keep;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,6 +76,7 @@ public class SponsorBlockPreferenceGroup extends PreferenceGroup {
         super(context, attrs, defStyleAttr);
     }
 
+    @Keep
     public SponsorBlockPreferenceGroup(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -197,7 +200,7 @@ public class SponsorBlockPreferenceGroup extends PreferenceGroup {
                 updateUI();
                 return true;
             });
-            appearanceCategory.addPreference(votingEnabled);
+//            appearanceCategory.addPreference(votingEnabled);
 
             autoHideSkipSegmentButton = new SwitchPreference(context);
             autoHideSkipSegmentButton.setTitle(str("revanced_sb_enable_auto_hide_skip_segment_button"));
@@ -270,7 +273,7 @@ public class SponsorBlockPreferenceGroup extends PreferenceGroup {
 
             PreferenceCategory createSegmentCategory = new PreferenceCategory(context);
             createSegmentCategory.setTitle(str("revanced_sb_create_segment_category"));
-            addPreference(createSegmentCategory);
+//            addPreference(createSegmentCategory);
 
             addNewSegment = new SwitchPreference(context);
             addNewSegment.setTitle(str("revanced_sb_enable_create_segment"));
@@ -292,7 +295,7 @@ public class SponsorBlockPreferenceGroup extends PreferenceGroup {
                 updateUI();
                 return true;
             });
-            createSegmentCategory.addPreference(addNewSegment);
+//            createSegmentCategory.addPreference(addNewSegment);
 
             newSegmentStep = new ResettableEditTextPreference(context);
             newSegmentStep.setSetting(Settings.SB_CREATE_NEW_SEGMENT_STEP);
@@ -314,7 +317,7 @@ public class SponsorBlockPreferenceGroup extends PreferenceGroup {
                 updateUI();
                 return false;
             });
-            createSegmentCategory.addPreference(newSegmentStep);
+//            createSegmentCategory.addPreference(newSegmentStep);
 
             Preference guidelinePreferences = new Preference(context);
             guidelinePreferences.setTitle(str("revanced_sb_guidelines_preference_title"));
@@ -323,7 +326,7 @@ public class SponsorBlockPreferenceGroup extends PreferenceGroup {
                 openGuidelines();
                 return true;
             });
-            createSegmentCategory.addPreference(guidelinePreferences);
+//            createSegmentCategory.addPreference(guidelinePreferences);
 
             PreferenceCategory generalCategory = new PreferenceCategory(context);
             generalCategory.setTitle(str("revanced_sb_general"));
