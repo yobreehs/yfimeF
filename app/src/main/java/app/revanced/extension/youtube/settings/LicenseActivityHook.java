@@ -4,6 +4,7 @@ import static app.revanced.extension.shared.Utils.getResourceIdentifier;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.res.Resources;
 import android.preference.PreferenceFragment;
 import android.util.TypedValue;
 import android.view.ViewGroup;
@@ -86,7 +87,10 @@ public class LicenseActivityHook {
                     .beginTransaction()
                     .replace(getResourceIdentifier("revanced_settings_fragments", "id"), fragment)
                     .commit();
-        } catch (Exception ex) {
+        } catch (Resources.NotFoundException err) {
+            throw err;
+        }
+        catch (Exception ex) {
             Logger.printException(() -> "initialize failure", ex);
         }
     }

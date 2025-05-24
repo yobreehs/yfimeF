@@ -104,10 +104,10 @@ private val resourceLoader by lazy @RequiresApi(Build.VERSION_CODES.R) {
 }
 
 fun Context.addModuleAssets() {
-    if (!BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        resources.addLoaders(resourceLoader)
-        return
-    }
+//    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+//        resources.addLoaders(resourceLoader)
+//        return
+//    }
 
     resources.assets.callMethod("addAssetPath", XposedInit.modulePath)
 }

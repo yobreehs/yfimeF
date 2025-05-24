@@ -38,7 +38,6 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
         this.lpparam = lpparam
 
         inContext(lpparam) { app ->
-            app.addModuleAssets()
             val t = measureTimeMillis {
                 this.app = app
                 hooksByPackage[lpparam.packageName]?.invoke()?.Hook()

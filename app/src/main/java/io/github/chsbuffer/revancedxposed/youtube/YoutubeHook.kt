@@ -6,6 +6,7 @@ import app.revanced.extension.shared.Utils
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.BaseHook
 import io.github.chsbuffer.revancedxposed.BuildConfig
+import io.github.chsbuffer.revancedxposed.addModuleAssets
 import io.github.chsbuffer.revancedxposed.youtube.ad.HideAds
 import io.github.chsbuffer.revancedxposed.youtube.ad.VideoAds
 import io.github.chsbuffer.revancedxposed.youtube.layout.NavigationButtons
@@ -35,6 +36,7 @@ class YoutubeHook(
 
     fun ExtensionHook() {
         Utils.setContext(app)
+        app.addModuleAssets()
         StringRef.resources = app.resources
         StringRef.packageName = BuildConfig.APPLICATION_ID
     }

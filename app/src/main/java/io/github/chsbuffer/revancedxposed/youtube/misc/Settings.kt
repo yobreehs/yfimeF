@@ -1,6 +1,8 @@
 package io.github.chsbuffer.revancedxposed.youtube.misc
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.res.Resources
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.youtube.ThemeHelper
@@ -21,6 +23,7 @@ import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.wrap.DexMethod
 import java.lang.reflect.Modifier
+import kotlin.system.exitProcess
 
 val preferences = mutableSetOf<BasePreference>()
 
@@ -90,7 +93,26 @@ fun YoutubeHook.SettingsHook() {
 
             val activity = param.thisObject as Activity
             activity.addModuleAssets()
-            LicenseActivityHook.initialize(activity)
+
+            try {
+                LicenseActivityHook.initialize(activity)
+            } catch (_: Resources.NotFoundException) {
+                AlertDialog.Builder(activity)
+                    .setTitle("Restart needed")
+                    .setMessage("ReVanced Xposed has been updated")
+                    .setPositiveButton("Restart now") { _, _ ->
+                        restartApplication(activity)
+                    }.show()
+            }
+        }
+
+        fun restartApplication(activity: Activity) {
+            // https://stackoverflow.com/a/58530756
+            val pm = activity.packageManager
+            val intent = pm.getLaunchIntentForPackage(activity.packageName)
+            activity.finishAffinity()
+            activity.startActivity(intent)
+            exitProcess(0)
         }
     })
     getString("licenseActivityNOTonCreate").split('|').forEach {
