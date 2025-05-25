@@ -29,6 +29,10 @@
 - Hide 'Get Music Premium' label
 - Enable exclusive audio playback
 
+### Reddit
+- Hide ads
+- Sanitize sharing links
+
 ## Supports
 [![Discord Server](https://img.shields.io/badge/Join-Discord-5865F2.svg?logo=discord)](https://discord.gg/QWUrAA2mKq)
 or [Create an issue](https://github.com/chsbuffer/ReVancedXposed/issues/new)

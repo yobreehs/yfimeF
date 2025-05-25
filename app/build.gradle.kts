@@ -9,12 +9,9 @@ plugins {
 
 android {
     namespace = "io.github.chsbuffer.revancedxposed"
-    compileSdk = 35
 
     defaultConfig {
         applicationId = "io.github.chsbuffer.revancedxposed"
-        minSdk = 27
-        targetSdk = 35
         versionCode = 13
         versionName = "1.0.$versionCode"
     }

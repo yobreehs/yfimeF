@@ -11,6 +11,7 @@ import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.common.UpdateChecker
 import io.github.chsbuffer.revancedxposed.music.MusicHook
+import io.github.chsbuffer.revancedxposed.reddit.RedditHook
 import io.github.chsbuffer.revancedxposed.spotify.SpotifyHook
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import kotlin.system.measureTimeMillis
@@ -24,6 +25,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
         "com.google.android.apps.youtube.music" to { MusicHook(app, lpparam) },
         "com.google.android.youtube" to { YoutubeHook(app, lpparam) },
         "com.spotify.music" to { SpotifyHook(app, lpparam) },
+        "com.reddit.frontpage" to { RedditHook(app, lpparam) },
     )
 
     fun shouldHook(packageName: String): Boolean {

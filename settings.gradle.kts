@@ -1,5 +1,3 @@
-import java.net.URI
-
 pluginManagement {
     repositories {
         google {
@@ -13,6 +11,7 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -20,6 +19,17 @@ dependencyResolutionManagement {
         mavenCentral()
         maven(url = "https://api.xposed.info")
     }
+}
+
+
+plugins {
+    id("com.android.settings") version("8.10.0")
+}
+
+android {
+    compileSdk = 35
+    targetSdk = 35
+    minSdk = 27
 }
 
 rootProject.name = "Revanced Xposed"
