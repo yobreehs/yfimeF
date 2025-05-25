@@ -147,6 +147,7 @@ fun YoutubeHook.SponsorBlock() {
         override fun afterHookedMethod(param: MethodHookParam) {
             val layout = field.get(param.thisObject) as FrameLayout
             layout.context.addModuleAssets()
+            Utils.getContext().addModuleAssets()
             val overlay_view = layout.findViewById<ViewGroup>(id)
             SponsorBlockViewController.initialize(overlay_view)
         }

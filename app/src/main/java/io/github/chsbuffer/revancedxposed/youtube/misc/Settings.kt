@@ -67,6 +67,7 @@ fun YoutubeHook.SettingsHook() {
                 if (!preferencesName.contains("settings_fragment")) return@after
                 XposedBridge.invokeOriginalMethod(
                     param.method, param.thisObject, param.args.clone().apply {
+                        app.addModuleAssets()
                         this[0] = app.resources.getXml(R.xml.yt_revanced_settings)
                     })
             }
