@@ -85,13 +85,14 @@ fun YoutubeHook.SettingsHook() {
         }.findMethod { matcher { name = "onCreate" } }.single()
     }.hookMethod(object : XC_MethodReplacement() {
         override fun replaceHookedMethod(param: MethodHookParam) {
+            val activity = param.thisObject as Activity
+            ThemeHelper.setActivityTheme(activity)
             try {
                 param.invokeOriginalMethod()
             } catch (e: Throwable) {
                 // ignored
             }
 
-            val activity = param.thisObject as Activity
             activity.addModuleAssets()
 
             try {

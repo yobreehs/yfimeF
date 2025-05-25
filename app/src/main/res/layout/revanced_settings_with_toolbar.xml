@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -5,13 +6,14 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
-    android:transitionGroup="true">
+    android:transitionGroup="true"
+    tools:ignore="all">
 
     <!-- Parent container for Toolbar and SearchView -->
     <FrameLayout
         android:id="@+id/revanced_toolbar_parent"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="?android:attr/actionBarSize"
         android:background="@color/yt_white1"
         android:elevation="0dp">
 
@@ -19,8 +21,7 @@
         <android.support.v7.widget.Toolbar
             android:id="@+id/revanced_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:ignore="MissingClass" />
+            android:layout_height="?android:attr/actionBarSize" />
 
         <!-- Container for SearchView -->
         <FrameLayout
