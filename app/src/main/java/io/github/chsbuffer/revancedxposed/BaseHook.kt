@@ -21,12 +21,16 @@ import kotlin.reflect.KFunction0
 
 private typealias HookFunction = KFunction0<Unit>
 
+interface IHook {
+    fun Hook()
+}
+
 class DependedHookFailedException(
     subHookName: String, exception: Throwable
 ) : Exception("Depended hook $subHookName failed.", exception)
 
 @SuppressLint("CommitPrefEdits")
-abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) {
+abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : IHook {
     val classLoader = lpparam.classLoader!!
 
     // hooks
@@ -41,7 +45,7 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) {
     private lateinit var dexkit: DexKitBridge
     private var isCached: Boolean = false
 
-    fun Hook() {
+    override fun Hook() {
         tryLoadCache()
         try {
             applyHooks()

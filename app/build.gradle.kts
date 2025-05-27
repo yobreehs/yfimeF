@@ -1,6 +1,7 @@
 import groovy.xml.MarkupBuilder
 import groovy.xml.XmlSlurper
 import groovy.xml.slurpersupport.NodeChild
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
@@ -58,12 +59,14 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-        compileOptions {
-            freeCompilerArgs = listOf(
-                "-Xno-param-assertions", "-Xno-receiver-assertions", "-Xno-call-assertions"
+    kotlin {
+        compilerOptions {
+            freeCompilerArgs.addAll(
+                "-Xno-param-assertions",
+                "-Xno-receiver-assertions",
+                "-Xno-call-assertions"
             )
+            jvmTarget = JvmTarget.JVM_17
         }
     }
 }

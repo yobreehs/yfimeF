@@ -10,6 +10,7 @@ import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.common.UpdateChecker
+import io.github.chsbuffer.revancedxposed.googlephotos.GooglePhotosHook
 import io.github.chsbuffer.revancedxposed.music.MusicHook
 import io.github.chsbuffer.revancedxposed.reddit.RedditHook
 import io.github.chsbuffer.revancedxposed.spotify.SpotifyHook
@@ -26,6 +27,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
         "com.google.android.youtube" to { YoutubeHook(app, lpparam) },
         "com.spotify.music" to { SpotifyHook(app, lpparam) },
         "com.reddit.frontpage" to { RedditHook(app, lpparam) },
+        "com.google.android.apps.photos" to {GooglePhotosHook(lpparam)}
     )
 
     fun shouldHook(packageName: String): Boolean {
@@ -44,7 +46,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
                 this.app = app
                 hooksByPackage[lpparam.packageName]?.invoke()?.Hook()
             }
-            Logger.printDebug { "$targetPackageName handleLoadPackage: ${t}ms" }
+//            Logger.printDebug { "$targetPackageName handleLoadPackage: ${t}ms" }
         }
     }
 
