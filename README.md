@@ -21,6 +21,10 @@
 
 ### Spotify
 - Unlock Spotify Premium
+- Sanitize sharing links
+
+### Google Photos
+- Spoof Pixel XL
 
 ### Youtube Music
 - Remove music video ads
