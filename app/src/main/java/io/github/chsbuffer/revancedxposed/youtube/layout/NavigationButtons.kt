@@ -1,7 +1,7 @@
 package io.github.chsbuffer.revancedxposed.youtube.layout
 
 import app.revanced.extension.youtube.patches.NavigationButtonsPatch
-import io.github.chsbuffer.revancedxposed.ScopedHookSafe
+import io.github.chsbuffer.revancedxposed.ScopedHook
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference.Sorting
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.SwitchPreference
@@ -41,7 +41,7 @@ fun YoutubeHook.NavigationButtons() {
             }
         }
     }.hookMethod(
-        ScopedHookSafe(getDexMethod("AutoMotiveFeatureMethod").toMethod()) {
+        ScopedHook(getDexMethod("AutoMotiveFeatureMethod").toMethod()) {
             before { param, _ ->
                 param.result = NavigationButtonsPatch.switchCreateWithNotificationButton()
             }

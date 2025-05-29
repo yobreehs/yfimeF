@@ -11,7 +11,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import io.github.chsbuffer.revancedxposed.R
-import io.github.chsbuffer.revancedxposed.ScopedHookSafe
+import io.github.chsbuffer.revancedxposed.ScopedHook
 import io.github.chsbuffer.revancedxposed.addModuleAssets
 import io.github.chsbuffer.revancedxposed.invokeOriginalMethod
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.BasePreference
@@ -60,7 +60,7 @@ fun YoutubeHook.SettingsHook() {
             }
         }
     }.hookMethod(
-        ScopedHookSafe(getDexMethod("PreferenceInflater#inflate").toMethod()) {
+        ScopedHook(getDexMethod("PreferenceInflater#inflate").toMethod()) {
             after { param, outerParam ->
                 val preferencesName = app.resources.getResourceName(outerParam.args[0] as Int)
                 Logger.printDebug { "addPreferencesFromResource $preferencesName" }

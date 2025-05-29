@@ -10,7 +10,7 @@ import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.BaseHook
 import io.github.chsbuffer.revancedxposed.Opcode
-import io.github.chsbuffer.revancedxposed.ScopedHookSafe
+import io.github.chsbuffer.revancedxposed.ScopedHook
 import io.github.chsbuffer.revancedxposed.callMethod
 import io.github.chsbuffer.revancedxposed.findField
 import io.github.chsbuffer.revancedxposed.findFirstFieldByExactType
@@ -145,7 +145,7 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
             }
         }
         val checkExperimentsMethod = getDexMethod("checkExperiments").toMethod()
-        contextMenuExperiments.hookMethod(ScopedHookSafe(checkExperimentsMethod) {
+        contextMenuExperiments.hookMethod(ScopedHook(checkExperimentsMethod) {
             returnConstant(false)
         })
 

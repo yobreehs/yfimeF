@@ -9,13 +9,6 @@ import io.github.chsbuffer.revancedxposed.strings
 import java.lang.reflect.Modifier
 
 fun SpotifyHook.SanitizeSharingLinks() {
-    val sanitizeArg1 = object : XC_MethodHook() {
-        override fun beforeHookedMethod(param: MethodHookParam) {
-            val url = param.args[1] as String
-            param.args[1] = SanitizeSharingLinksPatch.sanitizeUrl(url)
-        }
-    }
-
     getDexMethod("shareCopyUrlFingerprint") {
         findMethod {
             matcher {
@@ -40,8 +33,13 @@ fun SpotifyHook.SanitizeSharingLinks() {
                 "newPlainText",
                 CharSequence::class.java,
                 CharSequence::class.java
-            ), sanitizeArg1
-        )
+            )
+        ) {
+            before { param, _ ->
+                val url = param.args[1] as String
+                param.args[1] = SanitizeSharingLinksPatch.sanitizeUrl(url)
+            }
+        }
     )
 
     getDexMethod("formatAndroidShareSheetUrlFingerprint") {

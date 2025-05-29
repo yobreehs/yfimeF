@@ -12,21 +12,6 @@ import de.robv.android.xposed.XposedBridge
 import java.io.File
 import java.lang.reflect.Member
 
-/**
- * There's a thread-safe version of this hook.
- * this one will not be removed,
- * ignore warning if thread-safe doesn't matter.*/
-class ScopedHook(val hookMethod: Member, val callback: XC_MethodHook) : XC_MethodHook() {
-    lateinit var Unhook: XC_MethodHook.Unhook
-    override fun beforeHookedMethod(param: MethodHookParam) {
-        Unhook = XposedBridge.hookMethod(hookMethod, callback)
-    }
-
-    override fun afterHookedMethod(param: MethodHookParam) {
-        Unhook.unhook()
-    }
-}
-
 typealias XFunc = (param: MethodHookParam, outerParam: MethodHookParam) -> Unit
 
 class XFuncBuilder {
@@ -61,24 +46,27 @@ class XFuncBuilder {
     fun build() = XFuncHolder(before, after)
 }
 
-class ScopedHookSafe(hookMethod: Member, f: XFuncBuilder.() -> Unit) : XC_MethodHook() {
-    val lock = ThreadLocal<Boolean>()
-    val outerParam = ThreadLocal<MethodHookParam>()
+class ScopedHook : XC_MethodHook {
+    constructor(hookMethod: Member, f: XFuncBuilder.() -> Unit) : this(
+        hookMethod, XFuncBuilder().apply(f).build()
+    )
 
-    init {
-        val callback = XFuncBuilder().apply(f).build()
+    constructor(hookMethod: Member, hook: XFuncBuilder.XFuncHolder) {
         XposedBridge.hookMethod(hookMethod, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 if (lock.get() != true) return
-                callback.before?.invoke(param, outerParam.get()!!)
+                hook.before?.invoke(param, outerParam.get()!!)
             }
 
             override fun afterHookedMethod(param: MethodHookParam) {
                 if (lock.get() != true) return
-                callback.after?.invoke(param, outerParam.get()!!)
+                hook.after?.invoke(param, outerParam.get()!!)
             }
         })
     }
+
+    val lock: ThreadLocal<Boolean> = ThreadLocal<Boolean>()
+    val outerParam: ThreadLocal<XC_MethodHook.MethodHookParam> = ThreadLocal<MethodHookParam>()
 
     override fun beforeHookedMethod(param: MethodHookParam) {
         outerParam.set(param)
@@ -94,8 +82,7 @@ lateinit var XposedInit: IXposedHookZygoteInit.StartupParam
 
 private val resourceLoader by lazy @RequiresApi(Build.VERSION_CODES.R) {
     val fileDescriptor = ParcelFileDescriptor.open(
-        File(XposedInit.modulePath),
-        ParcelFileDescriptor.MODE_READ_ONLY
+        File(XposedInit.modulePath), ParcelFileDescriptor.MODE_READ_ONLY
     )
     val provider = ResourcesProvider.loadFromApk(fileDescriptor)
     val loader = ResourcesLoader()

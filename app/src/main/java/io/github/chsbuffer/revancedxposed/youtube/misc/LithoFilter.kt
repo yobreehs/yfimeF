@@ -6,7 +6,6 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import io.github.chsbuffer.revancedxposed.Opcode
 import io.github.chsbuffer.revancedxposed.ScopedHook
-import io.github.chsbuffer.revancedxposed.ScopedHookSafe
 import io.github.chsbuffer.revancedxposed.new
 import io.github.chsbuffer.revancedxposed.opcodes
 import io.github.chsbuffer.revancedxposed.strings
@@ -90,7 +89,7 @@ fun YoutubeHook.LithoFilter() {
     }
 
     // check if the ComponentContext should be filtered, and save the result to a thread local.
-    componentContextParserMethod.hookMethod(ScopedHookSafe(componentContextSubParser.toMethod()) {
+    componentContextParserMethod.hookMethod(ScopedHook(componentContextSubParser.toMethod()) {
         val identifierField = getDexField("identifierFieldData").toField()
         val pathBuilderField = getDexField("pathBuilderFieldData").toField()
         after { param, _ ->
@@ -147,10 +146,9 @@ fun YoutubeHook.LithoFilter() {
             getDexMethod("featureFlagCheck") { method.invokes.single() }
         }
     }.hookMethod(
-        ScopedHook(
-            getDexMethod("featureFlagCheck").toMethod(),
-            XC_MethodReplacement.returnConstant(false)
-        )
+        ScopedHook(getDexMethod("featureFlagCheck").toMethod()){
+            returnConstant(false)
+        }
     )
 
     // endregion
