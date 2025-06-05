@@ -94,7 +94,7 @@ class UpdateChecker(private val context: Context) : CoroutineScope {
                     headers = mapOf("Accept" to "application/vnd.github.html+json")
                 )
                 if (response.statusCode != 200) {
-                    Logger.printException { "get release not ok: ${response.statusCode}" }
+                    Logger.printException { "Failed to fetch latest release: HTTP ${response.statusCode}" }
                     return@launch
                 }
 
