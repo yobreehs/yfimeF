@@ -1,8 +1,10 @@
 package app.revanced.extension.spotify.misc
 
 import app.revanced.extension.shared.Logger
+import app.revanced.extension.shared.Utils
 import de.robv.android.xposed.XposedHelpers
 import kotlin.properties.Delegates
+
 
 @Suppress("unused")
 object UnlockPremiumPatch {
@@ -28,12 +30,13 @@ object UnlockPremiumPatch {
         val isExpected: Boolean = true
     )
 
-    private val OVERRIDES by lazy {
+    private val PREMIUM_OVERRIDES by lazy {
         listOf(
             // Disables player and app ads.
             OverrideAttribute("ads", false),
             // Works along on-demand, allows playing any song without restriction.
             OverrideAttribute("player-license", "premium"),
+            OverrideAttribute("player-license-v2", "premium", !IS_SPOTIFY_LEGACY_APP_TARGET),
             // Disables shuffle being initially enabled when first playing a playlist.
             OverrideAttribute("shuffle", false),
             // Allows playing any song on-demand, without a shuffled order.
@@ -60,6 +63,10 @@ object UnlockPremiumPatch {
         )
     }
 
+    /**
+     * A list of home sections feature types ids which should be removed. These ids match the ones from the protobuf
+     * response which delivers home sections.
+     */
     private val REMOVED_HOME_SECTIONS by lazy {
         val clazz = classLoader.loadClass("com.spotify.home.evopage.homeapi.proto.Section")
         listOf(
@@ -69,11 +76,35 @@ object UnlockPremiumPatch {
     }
 
     /**
+     * A list of lists which contain strings that match whether a context menu item should be filtered out.
+     * The main approach used is matching context menu items by the id of their text resource.
+     */
+    private val FILTERED_CONTEXT_MENU_ITEMS_BY_STRINGS: List<List<String>> =
+        listOf( // "Listen to music ad-free" upsell on playlists.
+            listOf(getResourceIdentifier("context_menu_remove_ads")),
+            // "Listen to music ad-free" upsell on albums.
+            listOf(getResourceIdentifier("playlist_entity_reinventfree_adsfree_context_menu_item")),
+            // "Start a Jam" context menu item, but only filtered if the user does not have premium and the item is
+            // being used as a Premium upsell (ad).
+            listOf(
+                getResourceIdentifier("group_session_context_menu_start"),
+                "isPremiumUpsell=true"
+            )
+        )
+
+    /**
+     * Utility method for returning resources ids as strings.
+     */
+    private fun getResourceIdentifier(resourceIdentifierName: String): String {
+        return Utils.getResourceIdentifier(resourceIdentifierName, "id").toString()
+    }
+
+    /**
      * Injection point. Override account attributes.
      */
-    fun overrideAttribute(attributes: Map<String, *>) {
+    fun overrideAttributes(attributes: Map<String, *>) {
         try {
-            for (override in OVERRIDES) {
+            for (override in PREMIUM_OVERRIDES) {
                 val attribute = attributes[override.key]
                 if (attribute == null) {
                     if (override.isExpected) {
@@ -84,12 +115,12 @@ object UnlockPremiumPatch {
                 }
             }
         } catch (ex: Exception) {
-            Logger.printException( { "overrideAttribute failure" }, ex)
+            Logger.printException( { "overrideAttributes failure" }, ex)
         }
     }
 
     /**
-     * Injection point. Remove station data from Google assistant URI.
+     * Injection point. Remove station data from Google Assistant URI.
      */
     fun removeStationString(spotifyUriOrUrl: String): String {
         return spotifyUriOrUrl.replace("spotify:station:", "spotify:")
@@ -97,7 +128,7 @@ object UnlockPremiumPatch {
 
     /**
      * Injection point. Remove ads sections from home.
-     * Depends on patching protobuffer list remove method.
+     * Depends on patching abstract protobuf list ensureIsMutable method.
      */
     fun removeHomeSections(sections: MutableList<Any>) {
         try {
@@ -111,4 +142,17 @@ object UnlockPremiumPatch {
         }
     }
 
+    /**
+     * Injection point. Returns whether the context menu item is a Premium ad.
+     */
+    fun isFilteredContextMenuItem(contextMenuItem: Any?): Boolean {
+        if (contextMenuItem == null) {
+            return false
+        }
+
+        val stringifiedContextMenuItem = contextMenuItem.toString()
+        return FILTERED_CONTEXT_MENU_ITEMS_BY_STRINGS.any { filters ->
+            filters.all(stringifiedContextMenuItem::contains)
+        }
+    }
 }

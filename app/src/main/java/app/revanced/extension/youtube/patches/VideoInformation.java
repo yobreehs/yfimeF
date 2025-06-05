@@ -11,7 +11,6 @@ import app.revanced.extension.youtube.shared.VideoState;
 
 /**
  * Hooking class for the current playing video.
- *
  * @noinspection unused
  */
 public final class VideoInformation {
@@ -19,7 +18,6 @@ public final class VideoInformation {
     public interface PlaybackController {
         // Methods are added to YT classes during patching.
         boolean seekTo(long videoTime);
-
         void seekToRelative(long videoTimeOffset);
     }
 
@@ -58,7 +56,6 @@ public final class VideoInformation {
             videoTime = -1;
             videoLength = 0;
             playbackSpeed = DEFAULT_YOUTUBE_PLAYBACK_SPEED;
-            Logger.printDebug(() -> "Initialized PlaybackController:" + playerController + " " + playerControllerRef);
         } catch (Exception ex) {
             Logger.printException(() -> "Failed to initialize", ex);
         }
@@ -318,8 +315,8 @@ public final class VideoInformation {
      * Length of the current video playing.  Includes Shorts.
      *
      * @return The length of the video in milliseconds.
-     * If the video is not yet loaded, or if the video is playing in the background with no video visible,
-     * then this returns zero.
+     *         If the video is not yet loaded, or if the video is playing in the background with no video visible,
+     *         then this returns zero.
      */
     public static long getVideoLength() {
         return videoLength;
@@ -343,12 +340,13 @@ public final class VideoInformation {
 
     /**
      * @return If the playback is at the end of the video.
-     * <p>
+     *        <p>
      * If video is playing in the background with no video visible,
      * this always returns false (even if the video is actually at the end).
      * <p>
      * This is equivalent to checking for {@link VideoState#ENDED},
      * but can give a more up-to-date result for code calling from some hooks.
+     *
      * @see VideoState
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -356,4 +354,23 @@ public final class VideoInformation {
         return videoTime >= videoLength && videoLength > 0;
     }
 
+    /**
+     * Overrides the current playback speed.
+     * Rest of the implementation added by patch.
+     */
+    public static void overridePlaybackSpeed(float speedOverride) {
+        Logger.printDebug(() -> "Overriding playback speed to: " + speedOverride);
+    }
+
+    /**
+     * Injection point.
+     *
+     * @param newlyLoadedPlaybackSpeed The current playback speed.
+     */
+    public static void setPlaybackSpeed(float newlyLoadedPlaybackSpeed) {
+        if (playbackSpeed != newlyLoadedPlaybackSpeed) {
+            Logger.printDebug(() -> "Video speed changed: " + newlyLoadedPlaybackSpeed);
+            playbackSpeed = newlyLoadedPlaybackSpeed;
+        }
+    }
 }

@@ -8,7 +8,6 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -54,7 +53,7 @@ public class ReVancedAboutPreference extends Preference {
     }
 
     protected boolean isDarkModeEnabled() {
-        return Utils.isDarkModeEnabled(getContext());
+        return Utils.isDarkModeEnabled();
     }
 
     /**
@@ -76,7 +75,7 @@ public class ReVancedAboutPreference extends Preference {
      *
      * @return A localized string to display for the key.
      */
-    protected String getString(String key, Object... args) {
+    protected String getString(String key, Object ... args) {
         return str(key, args);
     }
 
@@ -193,15 +192,12 @@ public class ReVancedAboutPreference extends Preference {
     public ReVancedAboutPreference(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
     }
-
     public ReVancedAboutPreference(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
-
     public ReVancedAboutPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
-
     public ReVancedAboutPreference(Context context) {
         super(context);
     }

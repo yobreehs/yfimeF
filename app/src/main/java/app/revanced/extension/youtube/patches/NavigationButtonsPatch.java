@@ -5,10 +5,11 @@ import static app.revanced.extension.youtube.shared.NavigationBar.NavigationButt
 
 import android.os.Build;
 import android.view.View;
-import android.widget.TextView;
 
 import java.util.EnumMap;
 import java.util.Map;
+
+import android.widget.TextView;
 
 import app.revanced.extension.shared.Utils;
 import app.revanced.extension.youtube.settings.Settings;
@@ -94,7 +95,7 @@ public final class NavigationButtonsPatch {
             return false;
         }
 
-        return Utils.isDarkModeEnabled(Utils.getContext())
+        return Utils.isDarkModeEnabled()
                 ? !DISABLE_TRANSLUCENT_NAVIGATION_BAR_DARK
                 : !DISABLE_TRANSLUCENT_NAVIGATION_BAR_LIGHT;
     }

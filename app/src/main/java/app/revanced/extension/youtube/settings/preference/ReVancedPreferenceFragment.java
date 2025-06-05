@@ -1,3 +1,7 @@
+/*
+ * Custom changes:
+ * ReVancedPreferenceFragment.initialize() custom implement instead of calling super method.
+ * */
 package app.revanced.extension.youtube.settings.preference;
 
 import static app.revanced.extension.shared.StringRef.str;
@@ -20,7 +24,6 @@ import android.preference.SwitchPreference;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
-import android.util.TypedValue;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.TextView;
@@ -89,7 +92,7 @@ public class ReVancedPreferenceFragment extends AbstractPreferenceFragment {
      */
     @Override
     protected void initialize() {
-        // rewrite
+        //region rewrite
         Activity context = getActivity();
         PreferenceManager manager = getPreferenceManager();
         manager.setSharedPreferencesName(Setting.preferences.name);
@@ -103,6 +106,7 @@ public class ReVancedPreferenceFragment extends AbstractPreferenceFragment {
         screen.setKey("revanced_settings_root_screen_sort_by_key");
         Utils.sortPreferenceGroups(screen);
         Utils.setPreferenceTitlesToMultiLineIfNeeded(screen);
+        //endregion
 
         try {
             preferenceScreen = getPreferenceScreen();
@@ -263,9 +267,7 @@ public class ReVancedPreferenceFragment extends AbstractPreferenceFragment {
                             toolbar.setNavigationIcon(getBackButtonDrawable());
                             toolbar.setNavigationOnClickListener(view -> preferenceScreenDialog.dismiss());
 
-                            final int margin = (int) TypedValue.applyDimension(
-                                    TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics()
-                            );
+                            final int margin = Utils.dipToPixels(16);
                             toolbar.setTitleMargin(margin, 0, margin, 0);
 
                             TextView toolbarTextView = Utils.getChildView(toolbar,

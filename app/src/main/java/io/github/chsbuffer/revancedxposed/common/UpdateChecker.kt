@@ -140,7 +140,7 @@ class UpdateChecker(private val context: Context) : CoroutineScope {
         launch(Dispatchers.Main) {
             try {
                 val theme =
-                    if (Utils.isDarkModeEnabled(context)) android.R.style.Theme_DeviceDefault_Dialog_Alert
+                    if (Utils.isDarkModeEnabled()) android.R.style.Theme_DeviceDefault_Dialog_Alert
                     else android.R.style.Theme_DeviceDefault_Light_Dialog_Alert
                 val dialog = AlertDialog.Builder(
                     currentActivity.get(), theme

@@ -1,3 +1,6 @@
+/*
+ * Custom changes: setSponsorBarRect(Object) -> setSponsorBarRect(Rect)
+ * */
 package app.revanced.extension.youtube.sponsorblock;
 
 import static app.revanced.extension.shared.StringRef.str;
@@ -5,7 +8,6 @@ import static app.revanced.extension.shared.StringRef.str;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.text.TextUtils;
-import android.util.TypedValue;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -274,8 +276,8 @@ public class SegmentPlaybackController {
     public static void setVideoTime(long millis) {
         try {
             if (!Settings.SB_ENABLED.get()
-                || PlayerType.getCurrent().isNoneOrHidden() // Shorts playback.
-                || segments == null || segments.length == 0) {
+                    || PlayerType.getCurrent().isNoneOrHidden() // Shorts playback.
+                    || segments == null || segments.length == 0) {
                 return;
             }
             Logger.printDebug(() -> "setVideoTime: " + millis);
@@ -299,8 +301,8 @@ public class SegmentPlaybackController {
 
             for (final SponsorSegment segment : segments) {
                 if (segment.category.behaviour == CategoryBehaviour.SHOW_IN_SEEKBAR
-                    || segment.category.behaviour == CategoryBehaviour.IGNORE
-                    || segment.category == SegmentCategory.HIGHLIGHT) {
+                        || segment.category.behaviour == CategoryBehaviour.IGNORE
+                        || segment.category == SegmentCategory.HIGHLIGHT) {
                     continue;
                 }
                 if (segment.end <= millis) {
@@ -345,8 +347,8 @@ public class SegmentPlaybackController {
 
                 // do not schedule upcoming segment, if it is not fully contained inside the current segment
                 if ((foundSegmentCurrentlyPlaying == null || foundSegmentCurrentlyPlaying.containsSegment(segment))
-                     // use the most inner upcoming segment
-                     && (foundUpcomingSegment == null || foundUpcomingSegment.containsSegment(segment))) {
+                        // use the most inner upcoming segment
+                        && (foundUpcomingSegment == null || foundUpcomingSegment.containsSegment(segment))) {
 
                     // Only schedule, if the segment start time is not near the end time of the current segment.
                     // This check is needed to prevent scheduled hide and show from clashing with each other.
@@ -363,7 +365,7 @@ public class SegmentPlaybackController {
 
             if (highlightSegment != null) {
                 if (millis < DURATION_TO_SHOW_SKIP_BUTTON || (highlightSegmentInitialShowEndTime != 0
-                            && System.currentTimeMillis() < highlightSegmentInitialShowEndTime)) {
+                        && System.currentTimeMillis() < highlightSegmentInitialShowEndTime)) {
                     SponsorBlockViewController.showSkipHighlightButton(highlightSegment);
                 } else {
                     highlightSegmentInitialShowEndTime = 0;
@@ -384,8 +386,8 @@ public class SegmentPlaybackController {
             // schedule a hide, only if the segment end is near
             final SponsorSegment segmentToHide =
                     (foundSegmentCurrentlyPlaying != null && foundSegmentCurrentlyPlaying.endIsNear(millis, speedAdjustedTimeThreshold))
-                    ? foundSegmentCurrentlyPlaying
-                    : null;
+                            ? foundSegmentCurrentlyPlaying
+                            : null;
 
             if (scheduledHideSegment != segmentToHide) {
                 if (segmentToHide == null) {
@@ -727,15 +729,11 @@ public class SegmentPlaybackController {
         }
     }
 
-    private static int highlightSegmentTimeBarScreenWidth = -1; // actual pixel width to use
-    private static int getHighlightSegmentTimeBarScreenWidth() {
-        if (highlightSegmentTimeBarScreenWidth == -1) {
-            highlightSegmentTimeBarScreenWidth = (int) TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP, HIGHLIGHT_SEGMENT_DRAW_BAR_WIDTH,
-                    Objects.requireNonNull(Utils.getContext()).getResources().getDisplayMetrics());
-        }
-        return highlightSegmentTimeBarScreenWidth;
-    }
+    /**
+     * Actual screen pixel width to use for the highlight segment time bar.
+     */
+    private static final int highlightSegmentTimeBarScreenWidth
+            = Utils.dipToPixels(HIGHLIGHT_SEGMENT_DRAW_BAR_WIDTH);
 
     /**
      * Injection point.
@@ -757,9 +755,9 @@ public class SegmentPlaybackController {
                 final float left = leftPadding + segment.start * videoMillisecondsToPixels;
                 final float right;
                 if (segment.category == SegmentCategory.HIGHLIGHT) {
-                    right = left + getHighlightSegmentTimeBarScreenWidth();
+                    right = left + highlightSegmentTimeBarScreenWidth;
                 } else {
-                     right = leftPadding + segment.end * videoMillisecondsToPixels;
+                    right = leftPadding + segment.end * videoMillisecondsToPixels;
                 }
                 canvas.drawRect(left, top, right, bottom, segment.category.paint);
             }

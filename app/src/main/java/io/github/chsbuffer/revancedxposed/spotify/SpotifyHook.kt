@@ -63,7 +63,7 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
             val field = getDexField("attributesMapField").toField()
             override fun beforeHookedMethod(param: MethodHookParam) {
                 Logger.printDebug { field.get(param.thisObject)!!.toString() }
-                UnlockPremiumPatch.overrideAttribute(field.get(param.thisObject) as Map<String, *>)
+                UnlockPremiumPatch.overrideAttributes(field.get(param.thisObject) as Map<String, *>)
             }
         })
 
@@ -131,22 +131,22 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
                 }
             })
 
-        // Disable the "Spotify Premium" upsell experiment in context menus.
-        val contextMenuExperiments = getDexMethod("contextMenuExperimentsFingerprint") {
-            findMethod {
+        // Hook the method which adds context menu items and return before adding if the item is a Premium ad.
+        getDexMethod("contextMenuViewModelAddItemFingerprint") {
+            findClass {
+                matcher { usingStrings("ContextMenuViewModel(header=") }
+            }.findMethod {
                 matcher {
                     paramCount = 1
-                    strings("remove_ads_upsell_enabled")
+                    returnType("void")
+                    addInvoke { name = "add" }
                 }
-            }.single().also { method ->
-                getDexMethod("checkExperiments") {
-                    method.invokes.distinct().single { it.returnTypeName == "boolean" }
-                }
+            }.single()
+        }.hookMethod(object : XC_MethodHook() {
+            override fun beforeHookedMethod(param: MethodHookParam) {
+                if (UnlockPremiumPatch.isFilteredContextMenuItem(param.args[0].callMethod("getViewModel")))
+                    param.result = null
             }
-        }
-        val checkExperimentsMethod = getDexMethod("checkExperiments").toMethod()
-        contextMenuExperiments.hookMethod(ScopedHook(checkExperimentsMethod) {
-            returnConstant(false)
         })
 
         // Remove ads sections from home.

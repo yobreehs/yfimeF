@@ -1,7 +1,6 @@
 package io.github.chsbuffer.revancedxposed
 
 import android.app.Application
-import app.revanced.extension.shared.Logger
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.IXposedHookZygoteInit.StartupParam
@@ -15,7 +14,6 @@ import io.github.chsbuffer.revancedxposed.music.MusicHook
 import io.github.chsbuffer.revancedxposed.reddit.RedditHook
 import io.github.chsbuffer.revancedxposed.spotify.SpotifyHook
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
-import kotlin.system.measureTimeMillis
 
 class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
     lateinit var startupParam: StartupParam
@@ -42,11 +40,8 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
         this.lpparam = lpparam
 
         inContext(lpparam) { app ->
-            val t = measureTimeMillis {
                 this.app = app
                 hooksByPackage[lpparam.packageName]?.invoke()?.Hook()
-            }
-//            Logger.printDebug { "$targetPackageName handleLoadPackage: ${t}ms" }
         }
     }
 

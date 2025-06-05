@@ -1,3 +1,6 @@
+/*
+ * Custom changes: no force cairo patch, so no version check, avoid errors
+ * */
 package app.revanced.extension.youtube.settings;
 
 import static app.revanced.extension.shared.Utils.getResourceIdentifier;
@@ -6,7 +9,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.preference.PreferenceFragment;
-import android.util.TypedValue;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toolbar;
@@ -105,8 +107,7 @@ public class LicenseActivityHook {
         toolbar.setNavigationIcon(ReVancedPreferenceFragment.getBackButtonDrawable());
         toolbar.setTitle(getResourceIdentifier("revanced_settings_title", "string"));
 
-        final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16,
-                Utils.getContext().getResources().getDisplayMetrics());
+        final int margin = Utils.dipToPixels(16);
         toolbar.setTitleMarginStart(margin);
         toolbar.setTitleMarginEnd(margin);
         TextView toolbarTextView = Utils.getChildView(toolbar, false,

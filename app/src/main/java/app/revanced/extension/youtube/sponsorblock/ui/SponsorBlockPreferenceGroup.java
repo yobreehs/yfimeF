@@ -1,3 +1,6 @@
+/*
+ * Custom changes: Keep
+ * */
 package app.revanced.extension.youtube.sponsorblock.ui;
 
 import static app.revanced.extension.shared.StringRef.str;
@@ -163,7 +166,7 @@ public class SponsorBlockPreferenceGroup extends PreferenceGroup {
         try {
             super.onAttachedToActivity();
 
-             if (preferencesInitialized) {
+            if (preferencesInitialized) {
                 if (settingsImported) {
                     settingsImported = false;
                     updateUI();
@@ -200,7 +203,7 @@ public class SponsorBlockPreferenceGroup extends PreferenceGroup {
                 updateUI();
                 return true;
             });
-//            appearanceCategory.addPreference(votingEnabled);
+            appearanceCategory.addPreference(votingEnabled);
 
             autoHideSkipSegmentButton = new SwitchPreference(context);
             autoHideSkipSegmentButton.setTitle(str("revanced_sb_enable_auto_hide_skip_segment_button"));
@@ -273,7 +276,7 @@ public class SponsorBlockPreferenceGroup extends PreferenceGroup {
 
             PreferenceCategory createSegmentCategory = new PreferenceCategory(context);
             createSegmentCategory.setTitle(str("revanced_sb_create_segment_category"));
-//            addPreference(createSegmentCategory);
+            addPreference(createSegmentCategory);
 
             addNewSegment = new SwitchPreference(context);
             addNewSegment.setTitle(str("revanced_sb_enable_create_segment"));
@@ -295,7 +298,7 @@ public class SponsorBlockPreferenceGroup extends PreferenceGroup {
                 updateUI();
                 return true;
             });
-//            createSegmentCategory.addPreference(addNewSegment);
+            createSegmentCategory.addPreference(addNewSegment);
 
             newSegmentStep = new ResettableEditTextPreference(context);
             newSegmentStep.setSetting(Settings.SB_CREATE_NEW_SEGMENT_STEP);
@@ -317,7 +320,7 @@ public class SponsorBlockPreferenceGroup extends PreferenceGroup {
                 updateUI();
                 return false;
             });
-//            createSegmentCategory.addPreference(newSegmentStep);
+            createSegmentCategory.addPreference(newSegmentStep);
 
             Preference guidelinePreferences = new Preference(context);
             guidelinePreferences.setTitle(str("revanced_sb_guidelines_preference_title"));
@@ -326,7 +329,7 @@ public class SponsorBlockPreferenceGroup extends PreferenceGroup {
                 openGuidelines();
                 return true;
             });
-//            createSegmentCategory.addPreference(guidelinePreferences);
+            createSegmentCategory.addPreference(guidelinePreferences);
 
             PreferenceCategory generalCategory = new PreferenceCategory(context);
             generalCategory.setTitle(str("revanced_sb_general"));
@@ -379,7 +382,11 @@ public class SponsorBlockPreferenceGroup extends PreferenceGroup {
                     Utils.setEditTextDialogTheme(builder);
 
                     builder.setNeutralButton(str("revanced_sb_settings_copy"), (dialog, which) -> {
-                        Utils.setClipboard(getEditText().getText().toString());
+                        try {
+                            Utils.setClipboard(getEditText().getText());
+                        } catch (Exception ex) {
+                            Logger.printException(() -> "Copy settings failure", ex);
+                        }
                     });
                 }
             };
@@ -424,7 +431,7 @@ public class SponsorBlockPreferenceGroup extends PreferenceGroup {
                         .setTitle(apiUrl.getTitle())
                         .setView(editText)
                         .setNegativeButton(android.R.string.cancel, null)
-                        .setNeutralButton(str("revanced_sb_reset"), urlChangeListener)
+                        .setNeutralButton(str("revanced_settings_reset"), urlChangeListener)
                         .setPositiveButton(android.R.string.ok, urlChangeListener)
                         .show();
                 return true;
@@ -436,7 +443,11 @@ public class SponsorBlockPreferenceGroup extends PreferenceGroup {
                     Utils.setEditTextDialogTheme(builder);
 
                     builder.setNeutralButton(str("revanced_sb_settings_copy"), (dialog, which) -> {
-                        Utils.setClipboard(getEditText().getText().toString());
+                        try {
+                            Utils.setClipboard(getEditText().getText());
+                        } catch (Exception ex) {
+                            Logger.printException(() -> "Copy settings failure", ex);
+                        }
                     });
                 }
             };

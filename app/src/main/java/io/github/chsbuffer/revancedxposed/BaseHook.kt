@@ -18,6 +18,7 @@ import org.luckypray.dexkit.wrap.DexClass
 import org.luckypray.dexkit.wrap.DexField
 import org.luckypray.dexkit.wrap.DexMethod
 import kotlin.reflect.KFunction0
+import kotlin.system.measureTimeMillis
 
 private typealias HookFunction = KFunction0<Unit>
 
@@ -46,14 +47,18 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
     private var isCached: Boolean = false
 
     override fun Hook() {
-        tryLoadCache()
-        try {
-            applyHooks()
-            handleResult()
-            logDebugInfo()
-        } finally {
-            closeDexKit()
+        val t = measureTimeMillis {
+            Utils.setContext(app)
+            tryLoadCache()
+            try {
+                applyHooks()
+                handleResult()
+                logDebugInfo()
+            } finally {
+                closeDexKit()
+            }
         }
+        Logger.printDebug { "${lpparam.packageName} handleLoadPackage: ${t}ms" }
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -216,7 +221,11 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
     fun DexMethod.hookMethod(callback: XC_MethodHook) {
         when {
             isMethod -> XposedBridge.hookMethod(getMethodInstance(lpparam.classLoader), callback)
-            isConstructor -> XposedBridge.hookMethod(getConstructorInstance(lpparam.classLoader), callback)
+            isConstructor -> XposedBridge.hookMethod(
+                getConstructorInstance(lpparam.classLoader),
+                callback
+            )
+
             else -> throw NotImplementedError()
         }
     }

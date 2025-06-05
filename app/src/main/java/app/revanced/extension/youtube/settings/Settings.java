@@ -108,7 +108,8 @@ public class Settings extends BaseSettings {
     public static final FloatSetting  SB_CATEGORY_UNSUBMITTED_OPACITY = new FloatSetting("sb_unsubmitted_opacity", 1.0f);
 
     // Misc
-    public static final BooleanSetting DEBUG_PROTOBUFFER = new BooleanSetting("revanced_debug_protobuffer", FALSE, parent(DEBUG));
+    public static final BooleanSetting DEBUG_PROTOBUFFER = new BooleanSetting("revanced_debug_protobuffer", FALSE, false,
+            "revanced_debug_protobuffer_user_dialog_message", parent(BaseSettings.DEBUG));
     public static final BooleanSetting AUTO_REPEAT = new BooleanSetting("revanced_auto_repeat", FALSE);
     public static final BooleanSetting REMOVE_TRACKING_QUERY_PARAMETER = new BooleanSetting("revanced_remove_tracking_query_parameter", TRUE);
 }
