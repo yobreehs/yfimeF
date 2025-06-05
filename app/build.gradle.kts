@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "io.github.chsbuffer.revancedxposed"
-        versionCode = 14
+        versionCode = 15
         versionName = "1.0.$versionCode"
     }
     flavorDimensions += "abi"
