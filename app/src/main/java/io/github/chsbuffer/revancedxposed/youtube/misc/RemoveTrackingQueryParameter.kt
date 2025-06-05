@@ -6,8 +6,8 @@ import app.revanced.extension.youtube.settings.Settings
 import de.robv.android.xposed.XposedHelpers
 import io.github.chsbuffer.revancedxposed.Opcode
 import io.github.chsbuffer.revancedxposed.ScopedHook
-import io.github.chsbuffer.revancedxposed.XFuncBuilder
 import io.github.chsbuffer.revancedxposed.opcodes
+import io.github.chsbuffer.revancedxposed.xHook
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.SwitchPreference
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import java.lang.reflect.Modifier
@@ -17,13 +17,13 @@ fun YoutubeHook.RemoveTrackingQueryParameter() {
         SwitchPreference("revanced_remove_tracking_query_parameter"),
     )
 
-    val sanitizeArg1 = XFuncBuilder().apply {
-        before { param, _ ->
+    val sanitizeArg1 = xHook {
+        before {
             if (!Settings.REMOVE_TRACKING_QUERY_PARAMETER.get()) return@before
             val url = param.args[1] as String
             param.args[1] = url.replace(".si=.+".toRegex(), "").replace(".feature=.+".toRegex(), "")
         }
-    }.build()
+    }
 
     getDexMethod("CopyTextFingerprint") {
         findMethod {

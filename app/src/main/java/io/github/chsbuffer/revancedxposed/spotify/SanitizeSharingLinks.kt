@@ -35,7 +35,7 @@ fun SpotifyHook.SanitizeSharingLinks() {
                 CharSequence::class.java
             )
         ) {
-            before { param, _ ->
+            before {
                 val url = param.args[1] as String
                 param.args[1] = SanitizeSharingLinksPatch.sanitizeUrl(url)
             }
@@ -55,7 +55,11 @@ fun SpotifyHook.SanitizeSharingLinks() {
                     paramTypes(null, "java.lang.String")
                 }
             }
-        }.single()
+        }.single {
+            // exclude
+            // `(PlayerState, String) -> String` usingNumbers(1, 10); usingStrings("")
+            !it.usingStrings.contains("")
+        }
     }.hookMethod(object : XC_MethodHook() {
         override fun beforeHookedMethod(param: MethodHookParam) {
             val url = param.args[1] as String

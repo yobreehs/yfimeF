@@ -42,7 +42,7 @@ fun YoutubeHook.NavigationButtons() {
         }
     }.hookMethod(
         ScopedHook(getDexMethod("AutoMotiveFeatureMethod").toMethod()) {
-            before { param, _ ->
+            before {
                 param.result = NavigationButtonsPatch.switchCreateWithNotificationButton()
             }
         })

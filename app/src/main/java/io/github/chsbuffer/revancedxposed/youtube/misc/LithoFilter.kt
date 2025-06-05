@@ -92,7 +92,7 @@ fun YoutubeHook.LithoFilter() {
     componentContextParserMethod.hookMethod(ScopedHook(componentContextSubParser.toMethod()) {
         val identifierField = getDexField("identifierFieldData").toField()
         val pathBuilderField = getDexField("pathBuilderFieldData").toField()
-        after { param, _ ->
+        after {
             val conversion = param.result
             val identifier = identifierField.get(conversion) as String?
             val pathBuilder = pathBuilderField.get(conversion) as StringBuilder
@@ -138,15 +138,20 @@ fun YoutubeHook.LithoFilter() {
     getDexMethod("lithoConverterBufferUpbFeatureFlagFingerprint") {
         findMethod {
             matcher {
-                modifiers = Modifier.PUBLIC or Modifier.STATIC
-                paramTypes = listOf(null)
                 usingNumbers(45419603L)
             }
         }.single().also { method ->
-            getDexMethod("featureFlagCheck") { method.invokes.single() }
+            getDexMethod("featureFlagCheck") {
+                method.invokes.findMethod {
+                    matcher {
+                        returnType = "boolean"
+                        paramTypes("long", "boolean")
+                    }
+                }.single()
+            }
         }
     }.hookMethod(
-        ScopedHook(getDexMethod("featureFlagCheck").toMethod()){
+        ScopedHook(getDexMethod("featureFlagCheck").toMethod()) {
             returnConstant(false)
         }
     )

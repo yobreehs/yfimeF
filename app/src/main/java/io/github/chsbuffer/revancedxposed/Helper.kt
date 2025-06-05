@@ -12,26 +12,29 @@ import de.robv.android.xposed.XposedBridge
 import java.io.File
 import java.lang.reflect.Member
 
-typealias XFunc = (param: MethodHookParam, outerParam: MethodHookParam) -> Unit
+class XHookContext(val param: MethodHookParam, val outerParam: MethodHookParam)
 
-class XFuncBuilder {
-    data class XFuncHolder(val before: XFunc?, val after: XFunc?)
+data class XHook(
+    val before: (XHookContext.() -> Unit)?,
+    val after: (XHookContext.() -> Unit)?
+)
 
-    private var before: XFunc? = null
-    private var after: XFunc? = null
+class XHookBuilder {
+    private var before: (XHookContext.() -> Unit)? = null
+    private var after: (XHookContext.() -> Unit)? = null
 
-    fun before(f: XFunc) {
+    fun before(f: XHookContext.() -> Unit) {
         this.before = f
     }
 
-    fun after(f: XFunc) {
+    fun after(f: XHookContext.() -> Unit) {
         this.after = f
     }
 
-    fun replace(f: (param: MethodHookParam) -> Any) {
-        before = { param, _ ->
+    fun replace(f: XHookContext.() -> Any) {
+        before = {
             runCatching {
-                param.result = f(param)
+                param.result = f()
             }.onFailure { err ->
                 param.throwable = err
             }
@@ -43,38 +46,42 @@ class XFuncBuilder {
         replace { obj }
     }
 
-    fun build() = XFuncHolder(before, after)
+    fun build() = XHook(before, after)
+}
+
+fun xHook(f: XHookBuilder.() -> Unit): XHook {
+    return XHookBuilder().apply(f).build()
 }
 
 class ScopedHook : XC_MethodHook {
-    constructor(hookMethod: Member, f: XFuncBuilder.() -> Unit) : this(
-        hookMethod, XFuncBuilder().apply(f).build()
+    constructor(hookMethod: Member, f: XHookBuilder.() -> Unit) : this(
+        hookMethod, XHookBuilder().apply(f).build()
     )
 
-    constructor(hookMethod: Member, hook: XFuncBuilder.XFuncHolder) {
+    constructor(hookMethod: Member, hook: XHook) {
         XposedBridge.hookMethod(hookMethod, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
-                if (lock.get() != true) return
-                hook.before?.invoke(param, outerParam.get()!!)
+                val outerParam = outerParam.get()
+                if (outerParam == null) return
+                hook.before?.invoke(XHookContext(param, outerParam))
             }
 
             override fun afterHookedMethod(param: MethodHookParam) {
-                if (lock.get() != true) return
-                hook.after?.invoke(param, outerParam.get()!!)
+                val outerParam = outerParam.get()
+                if (outerParam == null) return
+                hook.after?.invoke(XHookContext(param, outerParam))
             }
         })
     }
 
-    val lock: ThreadLocal<Boolean> = ThreadLocal<Boolean>()
     val outerParam: ThreadLocal<XC_MethodHook.MethodHookParam> = ThreadLocal<MethodHookParam>()
 
     override fun beforeHookedMethod(param: MethodHookParam) {
         outerParam.set(param)
-        lock.set(true)
     }
 
     override fun afterHookedMethod(param: MethodHookParam) {
-        lock.set(false)
+        outerParam.remove()
     }
 }
 
