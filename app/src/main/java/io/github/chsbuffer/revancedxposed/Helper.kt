@@ -49,10 +49,6 @@ class XHookBuilder {
     fun build() = XHook(before, after)
 }
 
-fun xHook(f: XHookBuilder.() -> Unit): XHook {
-    return XHookBuilder().apply(f).build()
-}
-
 class ScopedHook : XC_MethodHook {
     constructor(hookMethod: Member, f: XHookBuilder.() -> Unit) : this(
         hookMethod, XHookBuilder().apply(f).build()
