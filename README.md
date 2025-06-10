@@ -33,7 +33,7 @@
 - Hide 'Get Music Premium' label
 - Enable exclusive audio playback
 
-### Reddit
+### Reddit (2024.17.0)
 - Hide ads
 - Sanitize sharing links
 
