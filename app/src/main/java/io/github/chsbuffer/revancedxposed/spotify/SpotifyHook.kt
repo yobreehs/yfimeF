@@ -10,7 +10,6 @@ import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.BaseHook
 import io.github.chsbuffer.revancedxposed.Opcode
-import io.github.chsbuffer.revancedxposed.ScopedHook
 import io.github.chsbuffer.revancedxposed.callMethod
 import io.github.chsbuffer.revancedxposed.findField
 import io.github.chsbuffer.revancedxposed.findFirstFieldByExactType
@@ -20,6 +19,8 @@ import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.wrap.DexField
 import org.luckypray.dexkit.wrap.DexMethod
 import java.lang.reflect.Field
+
+lateinit var spotifyClassLoader: ClassLoader
 
 @Suppress("UNCHECKED_CAST")
 class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpparam) {
@@ -36,8 +37,7 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
         // Logger
         Utils.setContext(app)
 
-        UnlockPremiumPatch.IS_SPOTIFY_LEGACY_APP_TARGET = IS_SPOTIFY_LEGACY_APP_TARGET
-        UnlockPremiumPatch.classLoader = classLoader
+        spotifyClassLoader = classLoader
     }
 
     fun UnlockPremium() {
