@@ -1,6 +1,7 @@
 package io.github.chsbuffer.revancedxposed
 
 import android.app.Application
+import app.revanced.extension.shared.Utils
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.IXposedHookZygoteInit.StartupParam
@@ -25,8 +26,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
         "com.google.android.youtube" to { YoutubeHook(app, lpparam) },
         "com.spotify.music" to { SpotifyHook(app, lpparam) },
         "com.reddit.frontpage" to { RedditHook(app, lpparam) },
-        "com.google.android.apps.photos" to {GooglePhotosHook(lpparam)}
-    )
+        "com.google.android.apps.photos" to { GooglePhotosHook(lpparam) })
 
     fun shouldHook(packageName: String): Boolean {
         if (!hooksByPackage.containsKey(packageName)) return false
@@ -40,8 +40,8 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
         this.lpparam = lpparam
 
         inContext(lpparam) { app ->
-                this.app = app
-                hooksByPackage[lpparam.packageName]?.invoke()?.Hook()
+            this.app = app
+            hooksByPackage[lpparam.packageName]?.invoke()?.Hook()
         }
     }
 
@@ -56,6 +56,7 @@ fun inContext(lpparam: LoadPackageParam, f: (Application) -> Unit) {
     XposedBridge.hookMethod(appClazz.getMethod("onCreate"), object : XC_MethodHook() {
         override fun afterHookedMethod(param: MethodHookParam) {
             val app = param.thisObject as Application
+            Utils.setContext(app)
             f(app)
             UpdateChecker(app).apply {
                 hookNewActivity()

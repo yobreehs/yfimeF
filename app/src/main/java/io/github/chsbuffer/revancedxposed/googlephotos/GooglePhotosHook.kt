@@ -2,14 +2,13 @@ package io.github.chsbuffer.revancedxposed.googlephotos
 
 import android.os.Build
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.IHook
 import org.luckypray.dexkit.wrap.DexMethod
 
 class GooglePhotosHook(val lpparam: LoadPackageParam) : IHook {
-    val classLoader = lpparam.classLoader
+    override val classLoader = lpparam.classLoader!!
     override fun Hook() {
         val buildInfo = mapOf(
             "BRAND" to "google",
@@ -21,7 +20,7 @@ class GooglePhotosHook(val lpparam: LoadPackageParam) : IHook {
         )
 
         val buildClazz = Build::class.java
-        for((k, v) in buildInfo) {
+        for ((k, v) in buildInfo) {
             XposedHelpers.setStaticObjectField(buildClazz, k, v)
         }
 
@@ -59,14 +58,9 @@ class GooglePhotosHook(val lpparam: LoadPackageParam) : IHook {
             }
         }
 
-        val method =
-            DexMethod("Landroid/app/ApplicationPackageManager;->hasSystemFeature(Ljava/lang/String;)Z")
-                .getMethodInstance(classLoader)
-        XposedBridge.hookMethod(method, hook)
-
-        val method2 =
-            DexMethod("Landroid/app/ApplicationPackageManager;->hasSystemFeature(Ljava/lang/String;I)Z")
-                .getMethodInstance(classLoader)
-        XposedBridge.hookMethod(method2, hook)
+        DexMethod("Landroid/app/ApplicationPackageManager;->hasSystemFeature(Ljava/lang/String;)Z")
+            .hookMethod(hook)
+        DexMethod("Landroid/app/ApplicationPackageManager;->hasSystemFeature(Ljava/lang/String;I)Z")
+            .hookMethod(hook)
     }
 }

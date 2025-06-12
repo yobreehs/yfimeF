@@ -79,9 +79,8 @@ fun YoutubeHook.SettingsHook() {
                 className(".LicenseActivity", StringMatchType.EndsWith)
             }
         }.single().also {
-            getString("licenseActivityNOTonCreate") {
+            getDexMethods("licenseActivityNOTonCreate") {
                 it.methods.filter { it.name != "onCreate" && it.isMethod }
-                    .joinToString("|") { it.descriptor }
             }
         }.findMethod { matcher { name = "onCreate" } }.single()
     }.hookMethod(object : XC_MethodReplacement() {
@@ -117,9 +116,8 @@ fun YoutubeHook.SettingsHook() {
             exitProcess(0)
         }
     })
-    getString("licenseActivityNOTonCreate").split('|').forEach {
-        val m = DexMethod(it)
-        if (m.returnTypeName == "void") m.hookMethod(XC_MethodReplacement.DO_NOTHING)
+    getDexMethods("licenseActivityNOTonCreate").forEach {
+        if (it.returnTypeName == "void") it.hookMethod(XC_MethodReplacement.DO_NOTHING)
     }
 
     getDexMethod("setThemeFingerprint") {

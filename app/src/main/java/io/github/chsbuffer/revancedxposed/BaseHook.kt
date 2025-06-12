@@ -23,7 +23,24 @@ import kotlin.system.measureTimeMillis
 private typealias HookFunction = KFunction0<Unit>
 
 interface IHook {
+    val classLoader: ClassLoader
     fun Hook()
+
+    fun DexMethod.hookMethod(callback: XC_MethodHook) {
+        when {
+            isMethod -> XposedBridge.hookMethod(getMethodInstance(classLoader), callback)
+            isConstructor -> XposedBridge.hookMethod(
+                getConstructorInstance(classLoader),
+                callback
+            )
+
+            else -> throw NotImplementedError()
+        }
+    }
+
+    fun DexClass.toClass() = getInstance(classLoader)
+    fun DexMethod.toMethod() = getMethodInstance(classLoader)
+    fun DexField.toField() = getFieldInstance(classLoader)
 }
 
 class DependedHookFailedException(
@@ -32,7 +49,7 @@ class DependedHookFailedException(
 
 @SuppressLint("CommitPrefEdits")
 abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : IHook {
-    val classLoader = lpparam.classLoader!!
+    override val classLoader = lpparam.classLoader!!
 
     // hooks
     abstract val hooks: Array<HookFunction>
@@ -48,7 +65,6 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
 
     override fun Hook() {
         val t = measureTimeMillis {
-            Utils.setContext(app)
             tryLoadCache()
             try {
                 applyHooks()
@@ -63,13 +79,15 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
 
     @Suppress("UNCHECKED_CAST")
     private fun tryLoadCache() {
+        // cache by host update time + module version
+        // also no cache if is DEBUG
         val packageInfo = app.packageManager.getPackageInfo(app.packageName, 0)
 
         val id = "${packageInfo.lastUpdateTime}-$moduleRel"
         val cachedId = pref.getString("id", null)
-        isCached = cachedId.equals(id)
+        isCached = cachedId.equals(id) && !DEBUG
 
-        Logger.printInfo { "cache ID: $id" }
+        Logger.printInfo { "cache ID : $id" }
         Logger.printInfo { "cached ID: ${cachedId ?: ""}" }
         Logger.printInfo { "Using cached keys: $isCached" }
 
@@ -104,6 +122,7 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
     }
 
     private fun handleResult() {
+        // save cache if no failure
         val success = failedHooks.isEmpty()
         if (!success) {
             XposedBridge.log("${lpparam.appInfo.packageName} version: ${getAppVersion()}")
@@ -167,71 +186,42 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
         }
     }
 
-    fun getDexClass(key: String, f: DexKitBridge.() -> ClassData): DexClass {
-        return map[key]?.let { DexClass(it) } ?: f(dexkit).apply {
-            map[key] = descriptor
-            Logger.printInfo { "$key Matches: ${toDexType()}" }
-        }.toDexType()
-    }
-
-    fun getDexMethod(key: String, f: DexKitBridge.() -> MethodData): DexMethod {
-        return map[key]?.let { DexMethod(it) } ?: f(dexkit).apply {
-            map[key] = descriptor
-            Logger.printInfo { "$key Matches: ${toDexMethod()}" }
-        }.toDexMethod()
-    }
-
-    fun getDexField(key: String, f: DexKitBridge.() -> FieldData): DexField {
-        return map[key]?.let { DexField(it) } ?: f(dexkit).apply {
-            map[key] = descriptor
-            Logger.printInfo { "$key Matches: ${toDexField()}" }
-        }.toDexField()
-    }
-
-    fun getString(key: String, f: DexKitBridge.() -> String): String {
-        return map[key] ?: f(dexkit).also {
-            map[key] = it
-            Logger.printInfo { "$key Matches: $it" }
+    private fun <T, R> getFromCacheOrFind(
+        key: String,
+        findFunc: (DexKitBridge.() -> T)?,
+        serialize: (T) -> String,
+        deserialize: (String) -> R
+    ): R {
+        return map[key]?.let { deserialize(it) } ?: findFunc!!(dexkit).let { result ->
+            val serializedValue = serialize(result)
+            map[key] = serializedValue
+            Logger.printInfo { "$key Matches: $serializedValue" }
+            deserialize(serializedValue)
         }
     }
 
-    fun getNumber(key: String, f: DexKitBridge.() -> Int): Int {
-        return map[key]?.let { return Integer.parseInt(it) } ?: f(dexkit).also {
-            map[key] = it.toString()
-            Logger.printInfo { "$key Matches: $it" }
-        }
-    }
+    fun getDexClass(key: String, findFunc: (DexKitBridge.() -> ClassData)? = null): DexClass =
+        getFromCacheOrFind(key, findFunc, { it.descriptor }, { DexClass(it) })
 
-    fun getDexMethod(key: String): DexMethod {
-        return DexMethod(map[key]!!)
-    }
+    fun getDexMethod(key: String, findFunc: (DexKitBridge.() -> MethodData)? = null): DexMethod =
+        getFromCacheOrFind(key, findFunc, { it.descriptor }, { DexMethod(it) })
 
-    fun getDexClass(key: String): DexClass {
-        return DexClass(map[key]!!)
-    }
+    fun getDexMethods(
+        key: String,
+        findFunc: (DexKitBridge.() -> Iterable<MethodData>)? = null
+    ): Iterable<DexMethod> =
+        getFromCacheOrFind(
+            key, findFunc,
+            { it.joinToString("|") { it.descriptor } },
+            { it.split("|").map { DexMethod(it) } })
 
-    fun getDexField(key: String): DexField {
-        return DexField(map[key]!!)
-    }
+    fun getDexField(key: String, findFunc: (DexKitBridge.() -> FieldData)? = null): DexField =
+        getFromCacheOrFind(key, findFunc, { it.descriptor }, { DexField(it) })
 
-    fun getString(key: String): String {
-        return map[key]!!
-    }
+    fun getString(key: String, findFunc: (DexKitBridge.() -> String)? = null): String =
+        getFromCacheOrFind(key, findFunc, { it }, { it })
 
-    fun DexMethod.hookMethod(callback: XC_MethodHook) {
-        when {
-            isMethod -> XposedBridge.hookMethod(getMethodInstance(lpparam.classLoader), callback)
-            isConstructor -> XposedBridge.hookMethod(
-                getConstructorInstance(lpparam.classLoader),
-                callback
-            )
-
-            else -> throw NotImplementedError()
-        }
-    }
-
-    fun DexClass.toClass() = getInstance(classLoader)
-    fun DexMethod.toMethod() = getMethodInstance(classLoader)
-    fun DexField.toField() = getFieldInstance(classLoader)
+    fun getNumber(key: String, findFunc: (DexKitBridge.() -> Int)? = null): Int =
+        getFromCacheOrFind(key, findFunc, { it.toString() }, { Integer.parseInt(it) })
 
 }
