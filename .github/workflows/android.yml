@@ -1,0 +1,40 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Build Debug
+      run: ./gradlew assembleUniversalDebug
+
+    - name: Build Release
+      run: ./gradlew assembleUniversalRelease
+
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: rvxp-ci-debug-apk
+        path: app/build/outputs/apk/universal/debug
+
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: rvxp-ci-release-apk
+        path: app/build/outputs/apk/universal/release
