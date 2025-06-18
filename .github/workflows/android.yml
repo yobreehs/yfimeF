@@ -27,14 +27,16 @@ jobs:
     - name: Build Release
       run: ./gradlew assembleUniversalRelease
 
-    - name: Upload a Build Artifact
+    - name: Upload a Debug Artifact
       uses: actions/upload-artifact@v4
       with:
         name: rvxp-ci-debug-apk
         path: app/build/outputs/apk/universal/debug
 
-    - name: Upload a Build Artifact
+    - name: Upload a Release Artifact
       uses: actions/upload-artifact@v4
       with:
         name: rvxp-ci-release-apk
-        path: app/build/outputs/apk/universal/release
+        path: |
+          app/build/outputs/apk/universal/release
+          app/build/outputs/mapping/universalRelease/mapping.txt
