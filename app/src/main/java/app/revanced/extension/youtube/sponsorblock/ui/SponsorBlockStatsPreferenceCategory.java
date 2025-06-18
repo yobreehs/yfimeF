@@ -12,7 +12,6 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.util.AttributeSet;
 
-import androidx.annotation.Keep;
 import androidx.annotation.Nullable;
 
 import app.revanced.extension.shared.Logger;
@@ -43,7 +42,6 @@ public class SponsorBlockStatsPreferenceCategory extends PreferenceCategory {
         super(context, attrs, defStyleAttr);
     }
 
-    @Keep
     public SponsorBlockStatsPreferenceCategory(Context context, AttributeSet attrs) {
         super(context, attrs);
     }

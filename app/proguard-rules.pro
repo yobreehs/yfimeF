@@ -14,7 +14,9 @@
 #}
 
 -keep class io.github.chsbuffer.revancedxposed.MainHook
-
+-keepclassmembers class **.* {
+    public <init>(android.content.Context, android.util.AttributeSet);
+}
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
 #-keepattributes SourceFile,LineNumberTable

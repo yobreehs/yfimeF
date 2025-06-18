@@ -1,6 +1,3 @@
-/*
- * Custom changes: Keep
- * */
 package app.revanced.extension.youtube.sponsorblock.ui;
 
 import static app.revanced.extension.shared.StringRef.str;
@@ -19,8 +16,6 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-
-import androidx.annotation.Keep;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +74,6 @@ public class SponsorBlockPreferenceGroup extends PreferenceGroup {
         super(context, attrs, defStyleAttr);
     }
 
-    @Keep
     public SponsorBlockPreferenceGroup(Context context, AttributeSet attrs) {
         super(context, attrs);
     }

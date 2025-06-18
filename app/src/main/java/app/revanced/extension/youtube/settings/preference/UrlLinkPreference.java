@@ -6,8 +6,6 @@ import android.net.Uri;
 import android.preference.Preference;
 import android.util.AttributeSet;
 
-import androidx.annotation.Keep;
-
 import app.revanced.extension.shared.Logger;
 
 /**
@@ -37,8 +35,6 @@ public class UrlLinkPreference extends Preference {
     public UrlLinkPreference(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
-
-    @Keep
     public UrlLinkPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
     }

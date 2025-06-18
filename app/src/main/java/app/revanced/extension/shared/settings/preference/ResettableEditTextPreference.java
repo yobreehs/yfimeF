@@ -1,6 +1,3 @@
-/*
-* custom chagnes: Keep
-* */
 package app.revanced.extension.shared.settings.preference;
 
 import static app.revanced.extension.shared.StringRef.str;
@@ -13,7 +10,6 @@ import android.util.AttributeSet;
 import android.widget.Button;
 import android.widget.EditText;
 
-import androidx.annotation.Keep;
 import androidx.annotation.Nullable;
 
 import java.util.Objects;
@@ -37,7 +33,6 @@ public class ResettableEditTextPreference extends EditTextPreference {
     public ResettableEditTextPreference(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
-    @Keep
     public ResettableEditTextPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
