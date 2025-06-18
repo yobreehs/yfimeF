@@ -8,4 +8,25 @@
         <item>com.instagram.android</item>
         <item>com.instagram.barcelona</item>
     </string-array>
+
+    <!-- interaction.swipecontrols.swipeControlsResourcePatch -->
+    <string-array name="revanced_swipe_overlay_style_entries">
+        <item>@string/revanced_swipe_overlay_style_entry_1</item>
+        <item>@string/revanced_swipe_overlay_style_entry_2</item>
+        <item>@string/revanced_swipe_overlay_style_entry_3</item>
+        <item>@string/revanced_swipe_overlay_style_entry_4</item>
+        <item>@string/revanced_swipe_overlay_style_entry_5</item>
+        <item>@string/revanced_swipe_overlay_style_entry_6</item>
+        <item>@string/revanced_swipe_overlay_style_entry_7</item>
+    </string-array>
+    <string-array name="revanced_swipe_overlay_style_entry_values">
+        <!-- Extension enum names. -->
+        <item>HORIZONTAL</item>
+        <item>HORIZONTAL_MINIMAL_TOP</item>
+        <item>HORIZONTAL_MINIMAL_CENTER</item>
+        <item>CIRCULAR</item>
+        <item>CIRCULAR_MINIMAL</item>
+        <item>VERTICAL</item>
+        <item>VERTICAL_MINIMAL</item>
+    </string-array>
 </resources>

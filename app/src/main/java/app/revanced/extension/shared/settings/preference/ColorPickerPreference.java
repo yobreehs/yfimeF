@@ -1,3 +1,6 @@
+/*
+* Custom changes: Keep, lazy load setting
+* */
 package app.revanced.extension.shared.settings.preference;
 
 import static app.revanced.extension.shared.StringRef.str;
@@ -159,11 +162,6 @@ public class ColorPickerPreference extends EditTextPreference {
      * Initializes the preference by setting up the EditText, loading the color, and set the widget layout.
      */
     private void init() {
-        colorSetting = (StringSetting) Setting.getSettingFromPath(getKey());
-        if (colorSetting == null) {
-            Logger.printException(() -> "Could not find color setting for: " + getKey());
-        }
-
         EditText editText = getEditText();
         editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
                 | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
@@ -175,6 +173,17 @@ public class ColorPickerPreference extends EditTextPreference {
         setWidgetLayoutResource(getResourceIdentifier("revanced_color_dot_widget", "layout"));
     }
 
+    private StringSetting getColorSettings() {
+        if (colorSetting != null)
+            return colorSetting;
+
+        colorSetting = (StringSetting) Setting.getSettingFromPath(getKey());
+        if (colorSetting == null) {
+            Logger.printException(() -> "Could not find color setting for: " + getKey());
+        }
+        return colorSetting;
+    }
+
     /**
      * Sets the selected color and updates the UI and settings.
      *
@@ -183,6 +192,7 @@ public class ColorPickerPreference extends EditTextPreference {
      */
     @Override
     public final void setText(String colorString)  {
+        getColorSettings();
         try {
             Logger.printDebug(() -> "setText: " + colorString);
             super.setText(colorString);
@@ -412,7 +422,7 @@ public class ColorPickerPreference extends EditTextPreference {
         Button button = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
         button.setOnClickListener(view -> {
             try {
-                final int defaultColor = Color.parseColor(colorSetting.defaultValue) & 0x00FFFFFF;
+                final int defaultColor = Color.parseColor(getColorSettings().defaultValue) & 0x00FFFFFF;
                 // Setting view color causes listener callback into this class.
                 dialogColorPickerView.setColor(defaultColor);
             } catch (Exception ex) {

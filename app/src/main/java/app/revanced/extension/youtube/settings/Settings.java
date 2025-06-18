@@ -3,6 +3,7 @@ package app.revanced.extension.youtube.settings;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static app.revanced.extension.shared.settings.Setting.parent;
+import static app.revanced.extension.shared.settings.Setting.parentsAny;
 import static app.revanced.extension.youtube.sponsorblock.objects.CategoryBehaviour.IGNORE;
 import static app.revanced.extension.youtube.sponsorblock.objects.CategoryBehaviour.MANUAL_SKIP;
 import static app.revanced.extension.youtube.sponsorblock.objects.CategoryBehaviour.SKIP_AUTOMATICALLY;
@@ -10,11 +11,13 @@ import static app.revanced.extension.youtube.sponsorblock.objects.CategoryBehavi
 
 import app.revanced.extension.shared.settings.BaseSettings;
 import app.revanced.extension.shared.settings.BooleanSetting;
+import app.revanced.extension.shared.settings.EnumSetting;
 import app.revanced.extension.shared.settings.FloatSetting;
 import app.revanced.extension.shared.settings.IntegerSetting;
 import app.revanced.extension.shared.settings.LongSetting;
 import app.revanced.extension.shared.settings.StringSetting;
 import app.revanced.extension.youtube.sponsorblock.SponsorBlockSettings;
+import app.revanced.extension.youtube.swipecontrols.SwipeControlsConfigurationProvider.SwipeOverlayStyle;
 
 @SuppressWarnings("deprecation")
 public class Settings extends BaseSettings {
@@ -53,6 +56,35 @@ public class Settings extends BaseSettings {
     // General layout
     public static final BooleanSetting SETTINGS_SEARCH_HISTORY = new BooleanSetting("revanced_settings_search_history", TRUE, true);
     public static final StringSetting SETTINGS_SEARCH_ENTRIES = new StringSetting("revanced_settings_search_entries", "", true);
+
+    // Swipe controls
+    public static final BooleanSetting SWIPE_CHANGE_VIDEO = new BooleanSetting("revanced_swipe_change_video", FALSE, true);
+    public static final BooleanSetting SWIPE_BRIGHTNESS = new BooleanSetting("revanced_swipe_brightness", FALSE, true);
+    public static final BooleanSetting SWIPE_VOLUME = new BooleanSetting("revanced_swipe_volume", FALSE, true);
+    public static final BooleanSetting SWIPE_PRESS_TO_ENGAGE = new BooleanSetting("revanced_swipe_press_to_engage", FALSE, true,
+            parentsAny(SWIPE_BRIGHTNESS, SWIPE_VOLUME));
+    public static final BooleanSetting SWIPE_HAPTIC_FEEDBACK = new BooleanSetting("revanced_swipe_haptic_feedback", TRUE, true,
+            parentsAny(SWIPE_BRIGHTNESS, SWIPE_VOLUME));
+    public static final IntegerSetting SWIPE_MAGNITUDE_THRESHOLD = new IntegerSetting("revanced_swipe_threshold", 30, true,
+            parentsAny(SWIPE_BRIGHTNESS, SWIPE_VOLUME));
+    public static final IntegerSetting SWIPE_VOLUME_SENSITIVITY = new IntegerSetting("revanced_swipe_volume_sensitivity", 1, true, parent(SWIPE_VOLUME));
+    public static final EnumSetting<SwipeOverlayStyle> SWIPE_OVERLAY_STYLE = new EnumSetting<>("revanced_swipe_overlay_style", SwipeOverlayStyle.HORIZONTAL,true,
+            parentsAny(SWIPE_BRIGHTNESS, SWIPE_VOLUME));
+    public static final IntegerSetting SWIPE_OVERLAY_TEXT_SIZE = new IntegerSetting("revanced_swipe_text_overlay_size", 14, true,
+            parentsAny(SWIPE_BRIGHTNESS, SWIPE_VOLUME));
+    public static final IntegerSetting SWIPE_OVERLAY_OPACITY = new IntegerSetting("revanced_swipe_overlay_background_opacity", 60, true,
+            parentsAny(SWIPE_BRIGHTNESS, SWIPE_VOLUME));
+    public static final StringSetting SWIPE_OVERLAY_BRIGHTNESS_COLOR = new StringSetting("revanced_swipe_overlay_progress_brightness_color", "#FFFFFF", true,
+            parent(SWIPE_BRIGHTNESS));
+    public static final StringSetting SWIPE_OVERLAY_VOLUME_COLOR = new StringSetting("revanced_swipe_overlay_progress_volume_color", "#FFFFFF", true,
+            parent(SWIPE_VOLUME));
+    public static final LongSetting SWIPE_OVERLAY_TIMEOUT = new LongSetting("revanced_swipe_overlay_timeout", 500L, true,
+            parentsAny(SWIPE_BRIGHTNESS, SWIPE_VOLUME));
+    public static final BooleanSetting SWIPE_SAVE_AND_RESTORE_BRIGHTNESS = new BooleanSetting("revanced_swipe_save_and_restore_brightness", TRUE, true,
+            parent(SWIPE_BRIGHTNESS));
+    public static final FloatSetting SWIPE_BRIGHTNESS_VALUE = new FloatSetting("revanced_swipe_brightness_value", -1f);
+    public static final BooleanSetting SWIPE_LOWEST_VALUE_ENABLE_AUTO_BRIGHTNESS = new BooleanSetting("revanced_swipe_lowest_value_enable_auto_brightness", FALSE, true,
+            parent(SWIPE_BRIGHTNESS));
 
     // SponsorBlock
     public static final BooleanSetting SB_ENABLED = new BooleanSetting("sb_enabled", TRUE);

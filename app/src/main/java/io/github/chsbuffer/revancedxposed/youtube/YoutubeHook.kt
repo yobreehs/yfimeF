@@ -9,6 +9,7 @@ import io.github.chsbuffer.revancedxposed.BuildConfig
 import io.github.chsbuffer.revancedxposed.addModuleAssets
 import io.github.chsbuffer.revancedxposed.youtube.ad.HideAds
 import io.github.chsbuffer.revancedxposed.youtube.ad.VideoAds
+import io.github.chsbuffer.revancedxposed.youtube.interaction.SwipeControls
 import io.github.chsbuffer.revancedxposed.youtube.layout.NavigationButtons
 import io.github.chsbuffer.revancedxposed.youtube.layout.SponsorBlock
 import io.github.chsbuffer.revancedxposed.youtube.misc.BackgroundPlayback
@@ -30,6 +31,7 @@ class YoutubeHook(
         ::LithoFilter,
         ::SponsorBlock,
         ::NavigationButtons,
+        ::SwipeControls,
         // make sure settingsHook at end to build preferences
         ::SettingsHook
     )
