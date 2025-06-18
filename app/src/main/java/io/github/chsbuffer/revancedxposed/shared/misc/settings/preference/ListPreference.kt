@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION", "DiscouragedApi")
+
 package io.github.chsbuffer.revancedxposed.shared.misc.settings.preference
 
 import android.content.Context
