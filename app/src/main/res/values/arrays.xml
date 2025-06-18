@@ -5,5 +5,7 @@
         <item>com.google.android.youtube</item>
         <item>com.spotify.music</item>
         <item>com.google.android.apps.photos</item>
+        <item>com.instagram.android</item>
+        <item>com.instagram.barcelona</item>
     </string-array>
 </resources>

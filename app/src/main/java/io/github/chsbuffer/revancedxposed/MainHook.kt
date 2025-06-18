@@ -11,6 +11,7 @@ import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.common.UpdateChecker
 import io.github.chsbuffer.revancedxposed.googlephotos.GooglePhotosHook
+import io.github.chsbuffer.revancedxposed.meta.MetaHook
 import io.github.chsbuffer.revancedxposed.music.MusicHook
 import io.github.chsbuffer.revancedxposed.reddit.RedditHook
 import io.github.chsbuffer.revancedxposed.spotify.SpotifyHook
@@ -26,7 +27,10 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
         "com.google.android.youtube" to { YoutubeHook(app, lpparam) },
         "com.spotify.music" to { SpotifyHook(app, lpparam) },
         "com.reddit.frontpage" to { RedditHook(app, lpparam) },
-        "com.google.android.apps.photos" to { GooglePhotosHook(lpparam) })
+        "com.google.android.apps.photos" to { GooglePhotosHook(lpparam) },
+        "com.instagram.android" to { MetaHook(app, lpparam) },
+        "com.instagram.barcelona" to { MetaHook(app, lpparam) }
+    )
 
     fun shouldHook(packageName: String): Boolean {
         if (!hooksByPackage.containsKey(packageName)) return false
