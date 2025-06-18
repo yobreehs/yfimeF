@@ -17,7 +17,8 @@
 - SponsorBlock
 - Remove background playback restrictions
 - Remove share links tracking query parameter
-- Switch navigation button "Create" with "Notifications"
+- Hide and change navigation buttons
+- Swipe controls
 
 ### Spotify
 - Unlock Spotify Premium
