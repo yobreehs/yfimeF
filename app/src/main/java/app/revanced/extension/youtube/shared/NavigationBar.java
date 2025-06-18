@@ -1,6 +1,10 @@
+/*
+ * Custom changes: navigationTabCreatedCallback
+ * */
 package app.revanced.extension.youtube.shared;
 
 import static app.revanced.extension.youtube.shared.NavigationBar.NavigationButton.CREATE;
+import static io.github.chsbuffer.revancedxposed.youtube.misc.NavigationBarHookKt.hookNavigationButtonCreated;
 
 import android.app.Activity;
 import android.graphics.drawable.Drawable;
@@ -273,7 +277,8 @@ public final class NavigationBar {
 
     /** @noinspection EmptyMethod*/
     private static void navigationTabCreatedCallback(NavigationButton button, View tabView) {
-        // Code is added during patching.
+        // custom change
+        hookNavigationButtonCreated.forEach(f -> f.invoke(button, tabView));
     }
 
     /**
