@@ -1,5 +1,7 @@
 /*
- * Custom changes: navigationTabCreatedCallback
+ * Custom changes:
+ *  navigationTabCreatedCallback call function list, there's no patch time
+ *  update navigationImageResourceTabLoaded to handle all button types
  * */
 package app.revanced.extension.youtube.shared;
 
@@ -228,7 +230,8 @@ public final class NavigationBar {
     public static void navigationImageResourceTabLoaded(View view) {
         // 'You' tab has no YT enum name and the enum hook is not called for it.
         // Compare the last enum to figure out which tab this actually is.
-        if (CREATE.ytEnumNames.contains(lastYTNavigationEnumName)) {
+        // custom change
+        if (Arrays.stream(NavigationButton.values()).anyMatch(buttonType -> buttonType.ytEnumNames.contains(lastYTNavigationEnumName))) {
             navigationTabLoaded(view);
         } else {
             lastYTNavigationEnumName = NavigationButton.LIBRARY.ytEnumNames.get(0);

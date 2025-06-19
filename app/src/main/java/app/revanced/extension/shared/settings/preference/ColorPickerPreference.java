@@ -1,5 +1,5 @@
 /*
-* Custom changes: Keep, lazy load setting
+* Custom changes: lazy load setting
 * */
 package app.revanced.extension.shared.settings.preference;
 
