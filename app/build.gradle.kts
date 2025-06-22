@@ -15,6 +15,8 @@ android {
         applicationId = "io.github.chsbuffer.revancedxposed"
         versionCode = 18
         versionName = "1.0.$versionCode"
+        val patchVersion = "5.27.0"
+        buildConfigField("String", "PATCH_VERSION", "\"$patchVersion\"")
     }
     flavorDimensions += "abi"
     productFlavors {

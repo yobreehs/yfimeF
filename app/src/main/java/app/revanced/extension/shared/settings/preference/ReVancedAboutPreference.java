@@ -1,3 +1,7 @@
+/*
+ * custom change:
+ *   Add ReVanced Xposed links
+ * */
 package app.revanced.extension.shared.settings.preference;
 
 import static app.revanced.extension.shared.StringRef.str;
@@ -35,6 +39,7 @@ import app.revanced.extension.shared.Logger;
 import app.revanced.extension.shared.Utils;
 import app.revanced.extension.shared.requests.Requester;
 import app.revanced.extension.shared.requests.Route;
+import io.github.chsbuffer.revancedxposed.BuildConfig;
 
 /**
  * Opens a dialog showing official links.
@@ -93,6 +98,37 @@ public class ReVancedAboutPreference extends Preference {
         builder.append(String.format(
                 "<style> body { background-color: %s; color: %s; } a { color: %s; } </style>",
                 backgroundColorHex, foregroundColorHex, foregroundColorHex));
+
+        //region Add ReVancedXposed
+        builder.append("<h1>")
+                .append("ReVanced Xposed")
+                .append("</h1>");
+
+        builder.append("<p>")
+                // Replace hyphens with non breaking dashes so the version number does not break lines.
+                .append(useNonBreakingHyphens("Version <i>" + BuildConfig.VERSION_NAME + "</i>"))
+                .append("</p>");
+
+        builder.append("<h2 style=\"margin-top: 30px;\">")
+                .append("Links")
+                .append("</h2>");
+
+        var myLinks = new WebLink[]{
+                new WebLink(true, "GitHub", "https://github.com/chsbuffer/ReVancedXposed"),
+                new WebLink(true, "Discord", "https://discord.gg/QWUrAA2mKq"),
+                new WebLink(true, "Telegram", "https://t.me/ReVancedXposed"),
+                new WebLink(true, "Donate", "https://afdian.com/a/ChsBuffer"),
+        };
+
+        builder.append("<div>");
+        for (WebLink link : myLinks) {
+            builder.append("<div style=\"margin-bottom: 20px;\">");
+            builder.append(String.format("<a href=\"%s\">%s</a>", link.url, link.name));
+            builder.append("</div>");
+        }
+        builder.append("</div>");
+
+        //endregion
 
         if (isNetworkConnected) {
             builder.append("<img style=\"width: 100px; height: 100px;\" "

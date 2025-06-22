@@ -76,7 +76,7 @@ public class Utils {
      */
     @SuppressWarnings("SameReturnValue")
     public static String getPatchesReleaseVersion() {
-        return BuildConfig.VERSION_NAME;
+        return BuildConfig.PATCH_VERSION;
     }
 
     private static PackageInfo getPackageInfo() throws PackageManager.NameNotFoundException {

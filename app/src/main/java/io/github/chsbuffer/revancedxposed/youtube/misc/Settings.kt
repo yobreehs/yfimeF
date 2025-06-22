@@ -3,10 +3,12 @@ package io.github.chsbuffer.revancedxposed.youtube.misc
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.res.Resources
+import android.webkit.WebView
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.youtube.ThemeHelper
 import app.revanced.extension.youtube.settings.LicenseActivityHook
+import app.revanced.extension.youtube.settings.preference.ReVancedYouTubeAboutPreference
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
@@ -17,11 +19,11 @@ import io.github.chsbuffer.revancedxposed.invokeOriginalMethod
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.BasePreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.BasePreferenceScreen
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.IntentPreference
+import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.NonInteractivePreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference.Sorting
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import org.luckypray.dexkit.query.enums.StringMatchType
-import org.luckypray.dexkit.wrap.DexMethod
 import java.lang.reflect.Modifier
 import kotlin.system.exitProcess
 
@@ -61,12 +63,20 @@ fun YoutubeHook.SettingsHook() {
         }
     }.hookMethod(
         ScopedHook(getDexMethod("PreferenceInflater#inflate").toMethod()) {
+            var handleWebView = false
             after {
                 val preferencesName = app.resources.getResourceName(outerParam.args[0] as Int)
                 Logger.printDebug { "addPreferencesFromResource $preferencesName" }
                 if (!preferencesName.contains("settings_fragment")) return@after
                 XposedBridge.invokeOriginalMethod(
                     param.method, param.thisObject, param.args.clone().apply {
+                        if (!handleWebView) {
+                            // workaround "AssetManager.addAssetPath gets Invalid When WebView is created":
+                            // let WebView replace the AssetManager first then addModuleAssets
+                            // https://issuetracker.google.com/issues/140652425
+                            WebView(app).destroy()
+                            handleWebView = true
+                        }
                         app.addModuleAssets()
                         this[0] = app.resources.getXml(R.xml.yt_revanced_settings)
                     })
@@ -134,7 +144,14 @@ fun YoutubeHook.SettingsHook() {
             ThemeHelper.setTheme(param.result as Enum<*>)
         }
     })
-
+    preferences += NonInteractivePreference(
+        key = "revanced_settings_screen_00_about",
+        icon = "@drawable/revanced_settings_screen_00_about",
+        layout = "@layout/preference_with_icon",
+        summaryKey = null,
+        tag = ReVancedYouTubeAboutPreference::class.java,
+        selectable = true,
+    )
     PreferenceScreen.close()
 }
 
