@@ -1,6 +1,7 @@
 package io.github.chsbuffer.revancedxposed
 
 import android.app.Application
+import android.widget.Toast
 import app.revanced.extension.shared.Utils
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.IXposedHookZygoteInit
@@ -29,8 +30,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
         "com.reddit.frontpage" to { RedditHook(app, lpparam) },
         "com.google.android.apps.photos" to { GooglePhotosHook(lpparam) },
         "com.instagram.android" to { MetaHook(app, lpparam) },
-        "com.instagram.barcelona" to { MetaHook(app, lpparam) }
-    )
+        "com.instagram.barcelona" to { MetaHook(app, lpparam) })
 
     fun shouldHook(packageName: String): Boolean {
         if (!hooksByPackage.containsKey(packageName)) return false
@@ -45,8 +45,24 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
 
         inContext(lpparam) { app ->
             this.app = app
+            if (isReVancedPatched(lpparam)) {
+                Utils.showToastLong("ReVanced Xposed module does not work with patched app")
+                return@inContext
+            }
             hooksByPackage[lpparam.packageName]?.invoke()?.Hook()
         }
+    }
+
+    private fun isReVancedPatched(lpparam: LoadPackageParam): Boolean {
+        return runCatching {
+            lpparam.classLoader.loadClass("app.revanced.extension.shared.Utils")
+        }.isSuccess || runCatching {
+            lpparam.classLoader.loadClass("app.revanced.extension.shared.utils.Utils")
+        }.isSuccess || runCatching {
+            lpparam.classLoader.loadClass("app.revanced.integrations.shared.Utils")
+        }.isSuccess || runCatching {
+            lpparam.classLoader.loadClass("app.revanced.integrations.shared.utils.Utils")
+        }.isSuccess
     }
 
     override fun initZygote(startupParam: StartupParam) {
