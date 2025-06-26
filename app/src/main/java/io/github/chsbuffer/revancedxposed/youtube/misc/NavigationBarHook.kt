@@ -5,6 +5,7 @@ import android.view.View
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.youtube.shared.NavigationBar
 import app.revanced.extension.youtube.shared.NavigationBar.NavigationButton
+import de.robv.android.xposed.XC_MethodHook
 import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.ScopedHook
 import io.github.chsbuffer.revancedxposed.accessFlags
@@ -15,6 +16,8 @@ import io.github.chsbuffer.revancedxposed.parameters
 import io.github.chsbuffer.revancedxposed.returns
 import io.github.chsbuffer.revancedxposed.strings
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
+import java.util.EnumMap
+
 
 @JvmField
 val hookNavigationButtonCreated: MutableList<(NavigationButton, View) -> Unit> = mutableListOf()
@@ -37,9 +40,10 @@ fun YoutubeHook.NavigationBarHook() {
             }
         }.single()
     }
+
     // Hook the current navigation bar enum value. Note, the 'You' tab does not have an enum value.
-    val getNavigationEnumMethod = getDexMethod("navigationEnumClass_INVOKE_STATIC") {
-        val navigationEnumFingerprint = fingerprint {
+    val navigationEnumClass = getDexClass("navigationEnumClass") {
+        fingerprint {
             accessFlags(AccessFlags.STATIC, AccessFlags.CONSTRUCTOR)
             strings(
                 "PIVOT_HOME",
@@ -50,10 +54,13 @@ fun YoutubeHook.NavigationBarHook() {
                 "VIDEO_LIBRARY_WHITE",
                 "INCOGNITO_CIRCLE",
             )
-        }
+        }.declaredClass!!
+    }
+
+    val getNavigationEnumMethod = getDexMethod("navigationEnumClass_INVOKE_STATIC") {
         this.getMethodData(initializeButtonsFingerprint.toString())!!.invokes.findMethod {
             matcher {
-                declaredClass(navigationEnumFingerprint.className)
+                declaredClass(navigationEnumClass.className)
                 accessFlags(AccessFlags.STATIC)
             }
         }.single()
@@ -96,4 +103,31 @@ fun YoutubeHook.NavigationBarHook() {
     initializeButtonsFingerprint.hookMethod(ScopedHook(pivotBarButtonsCreateResourceViewFingerprint.toMethod()) {
         after { NavigationBar.navigationImageResourceTabLoaded(param.result as View) }
     })
+
+    // Fix YT bug of notification tab missing the filled icon.
+    val tabActivityCairo =
+        navigationEnumClass.toClass().enumConstants?.firstOrNull { (it as? Enum<*>)?.name == "TAB_ACTIVITY_CAIRO" } as? Enum<*>
+    if (tabActivityCairo != null) {
+        getDexMethod("setEnumMapFingerprint") {
+            fingerprint {
+                accessFlags(AccessFlags.PUBLIC, AccessFlags.CONSTRUCTOR)
+                literal {
+                    Utils.getResourceIdentifier("yt_fill_bell_black_24", "drawable")
+                }
+            }
+        }.hookMethod(object : XC_MethodHook() {
+            override fun afterHookedMethod(param: MethodHookParam) {
+                val obj = param.thisObject
+                param.thisObject.javaClass.declaredFields.forEach {
+                    it.isAccessible = true
+                    val enumMap = it.get(obj) as? EnumMap<*, *>
+                    if (enumMap !is EnumMap<*, *>) return@forEach
+                    // check is valueType int (resource id)
+                    val valueType = enumMap.values.first()::class.java
+                    if (valueType != Int::class.java) return@forEach
+                    NavigationBar.setCairoNotificationFilledIcon(enumMap, tabActivityCairo)
+                }
+            }
+        })
+    }
 }
