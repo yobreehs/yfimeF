@@ -1,3 +1,6 @@
+/**
+ * custom changes: publicize fields
+ */
 package app.revanced.extension.shared;
 
 import android.content.Context;

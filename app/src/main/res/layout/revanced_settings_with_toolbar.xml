@@ -14,14 +14,17 @@
         android:id="@+id/revanced_toolbar_parent"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
-        android:background="@color/yt_white1"
+        android:background="@android:color/white"
         android:elevation="0dp">
 
         <!-- Toolbar -->
         <android.support.v7.widget.Toolbar
             android:id="@+id/revanced_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?android:attr/actionBarSize" />
+            android:layout_height="?android:attr/actionBarSize"
+            android:background="@android:color/white"
+            android:navigationIcon="@drawable/revanced_settings_toolbar_arrow_left"
+            android:title="@string/revanced_settings_title" />
 
         <!-- Container for SearchView -->
         <FrameLayout
@@ -35,16 +38,16 @@
                 android:id="@+id/revanced_search_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
                 android:layout_marginStart="56dp"
-                android:layout_marginTop="6dp"
                 android:layout_marginEnd="8dp"
+                android:layout_marginTop="6dp"
                 android:layout_marginBottom="6dp"
+                android:layout_gravity="center_vertical"
                 android:iconifiedByDefault="false"
-                android:padding="2dp"
-                android:queryBackground="@null"
                 android:searchIcon="@null"
-                android:theme="@style/revanced_searchbar_cursor" />
+                android:queryBackground="@null"
+                android:theme="@style/revanced_searchbar_cursor"
+                android:padding="2dp" />
 
         </FrameLayout>
 

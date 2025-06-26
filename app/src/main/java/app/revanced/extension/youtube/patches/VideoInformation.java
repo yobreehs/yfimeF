@@ -319,7 +319,7 @@ public final class VideoInformation {
      *         then this returns zero.
      */
     public static long getVideoLength() {
-        return videoLength;
+       return videoLength;
     }
 
     /**

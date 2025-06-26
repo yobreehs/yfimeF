@@ -22,23 +22,26 @@ import app.revanced.extension.youtube.swipecontrols.SwipeControlsConfigurationPr
 @SuppressWarnings("deprecation")
 public class Settings extends BaseSettings {
     // Ads
+    public static final BooleanSetting HIDE_END_SCREEN_STORE_BANNER = new BooleanSetting("revanced_hide_end_screen_store_banner", TRUE, true);
     public static final BooleanSetting HIDE_FULLSCREEN_ADS = new BooleanSetting("revanced_hide_fullscreen_ads", TRUE);
-    public static final BooleanSetting HIDE_BUTTONED_ADS = new BooleanSetting("revanced_hide_buttoned_ads", TRUE);
     public static final BooleanSetting HIDE_GENERAL_ADS = new BooleanSetting("revanced_hide_general_ads", TRUE);
     public static final BooleanSetting HIDE_GET_PREMIUM = new BooleanSetting("revanced_hide_get_premium", TRUE);
     public static final BooleanSetting HIDE_HIDE_LATEST_POSTS = new BooleanSetting("revanced_hide_latest_posts_ads", TRUE);
     public static final BooleanSetting HIDE_MERCHANDISE_BANNERS = new BooleanSetting("revanced_hide_merchandise_banners", TRUE);
     public static final BooleanSetting HIDE_PAID_PROMOTION_LABEL = new BooleanSetting("revanced_hide_paid_promotion_label", TRUE);
-    public static final BooleanSetting HIDE_PRODUCTS_BANNER = new BooleanSetting("revanced_hide_products_banner", TRUE);
     public static final BooleanSetting HIDE_PLAYER_STORE_SHELF = new BooleanSetting("revanced_hide_player_store_shelf", TRUE);
-    public static final BooleanSetting HIDE_SHOPPING_LINKS = new BooleanSetting("revanced_hide_shopping_links", TRUE);
+    public static final BooleanSetting HIDE_PRODUCTS_BANNER = new BooleanSetting("revanced_hide_products_banner", TRUE);
     public static final BooleanSetting HIDE_SELF_SPONSOR = new BooleanSetting("revanced_hide_self_sponsor_ads", TRUE);
+    public static final BooleanSetting HIDE_SHOPPING_LINKS = new BooleanSetting("revanced_hide_shopping_links", TRUE);
     public static final BooleanSetting HIDE_VIDEO_ADS = new BooleanSetting("revanced_hide_video_ads", TRUE, true);
     public static final BooleanSetting HIDE_VISIT_STORE_BUTTON = new BooleanSetting("revanced_hide_visit_store_button", TRUE);
     public static final BooleanSetting HIDE_WEB_SEARCH_RESULTS = new BooleanSetting("revanced_hide_web_search_results", TRUE);
-    // Uncategorized layout related settings.  Do not add to this section, and instead move these out and categorize them.
+
+    // Feed
     public static final BooleanSetting HIDE_MOVIES_SECTION = new BooleanSetting("revanced_hide_movies_section", TRUE);
-    public static final BooleanSetting HIDE_END_SCREEN_STORE_BANNER = new BooleanSetting("revanced_hide_end_screen_store_banner", TRUE);
+    // General layout
+    public static final BooleanSetting SETTINGS_SEARCH_HISTORY = new BooleanSetting("revanced_settings_search_history", TRUE, true);
+    public static final StringSetting SETTINGS_SEARCH_ENTRIES = new StringSetting("revanced_settings_search_entries", "", true);
     // Navigation buttons
     public static final BooleanSetting HIDE_HOME_BUTTON = new BooleanSetting("revanced_hide_home_button", FALSE, true);
     public static final BooleanSetting HIDE_CREATE_BUTTON = new BooleanSetting("revanced_hide_create_button", TRUE, true);
@@ -53,9 +56,12 @@ public class Settings extends BaseSettings {
     public static final BooleanSetting DISABLE_TRANSLUCENT_NAVIGATION_BAR_LIGHT = new BooleanSetting("revanced_disable_translucent_navigation_bar_light", FALSE, true);
     public static final BooleanSetting DISABLE_TRANSLUCENT_NAVIGATION_BAR_DARK = new BooleanSetting("revanced_disable_translucent_navigation_bar_dark", FALSE, true);
 
-    // General layout
-    public static final BooleanSetting SETTINGS_SEARCH_HISTORY = new BooleanSetting("revanced_settings_search_history", TRUE, true);
-    public static final StringSetting SETTINGS_SEARCH_ENTRIES = new StringSetting("revanced_settings_search_entries", "", true);
+
+    // Misc
+    public static final BooleanSetting AUTO_REPEAT = new BooleanSetting("revanced_auto_repeat", FALSE);
+    public static final BooleanSetting REMOVE_TRACKING_QUERY_PARAMETER = new BooleanSetting("revanced_remove_tracking_query_parameter", TRUE);
+    public static final BooleanSetting DEBUG_PROTOBUFFER = new BooleanSetting("revanced_debug_protobuffer", FALSE, false,
+            "revanced_debug_protobuffer_user_dialog_message", parent(BaseSettings.DEBUG));
 
     // Swipe controls
     public static final BooleanSetting SWIPE_CHANGE_VIDEO = new BooleanSetting("revanced_swipe_change_video", FALSE, true);
@@ -138,10 +144,4 @@ public class Settings extends BaseSettings {
     public static final StringSetting SB_CATEGORY_UNSUBMITTED = new StringSetting("sb_unsubmitted", SKIP_AUTOMATICALLY.reVancedKeyValue);
     public static final StringSetting SB_CATEGORY_UNSUBMITTED_COLOR = new StringSetting("sb_unsubmitted_color", "#FFFFFF");
     public static final FloatSetting  SB_CATEGORY_UNSUBMITTED_OPACITY = new FloatSetting("sb_unsubmitted_opacity", 1.0f);
-
-    // Misc
-    public static final BooleanSetting DEBUG_PROTOBUFFER = new BooleanSetting("revanced_debug_protobuffer", FALSE, false,
-            "revanced_debug_protobuffer_user_dialog_message", parent(BaseSettings.DEBUG));
-    public static final BooleanSetting AUTO_REPEAT = new BooleanSetting("revanced_auto_repeat", FALSE);
-    public static final BooleanSetting REMOVE_TRACKING_QUERY_PARAMETER = new BooleanSetting("revanced_remove_tracking_query_parameter", TRUE);
 }

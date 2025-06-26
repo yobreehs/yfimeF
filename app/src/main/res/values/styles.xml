@@ -17,10 +17,6 @@
         https://developer.android.com/about/versions/marshmallow/android-6.0-changes#behavior-text-selection
 -->
 <resources>
-    <style name="revanced_edit_text_dialog_style" parent="@android:style/ThemeOverlay.Material.Dialog">
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:background">@android:color/transparent</item>
-    </style>
     <style name="revanced_searchbar_cursor">
         <item name="android:textCursorDrawable">@drawable/revanced_settings_cursor</item>
         <item name="android:textSize">16sp</item>

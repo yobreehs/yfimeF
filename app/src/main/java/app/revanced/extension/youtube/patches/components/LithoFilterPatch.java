@@ -1,3 +1,6 @@
+/**
+ * custom changes: defaults to AdsFilter
+ */
 package app.revanced.extension.youtube.patches.components;
 
 import androidx.annotation.NonNull;
@@ -75,7 +78,7 @@ public final class LithoFilterPatch {
     }
 
     private static final Filter[] filters = new Filter[] {
-            new AdsFilter() // Replaced by patch.
+            new AdsFilter() // custom change
     };
 
     private static final StringTrieSearch pathSearchTree = new StringTrieSearch();

@@ -1,3 +1,6 @@
+/**
+ * custom changes: pass controller.activity, instead of controller
+ */
 package app.revanced.extension.youtube.swipecontrols.controller.gesture.core
 
 import android.view.GestureDetector

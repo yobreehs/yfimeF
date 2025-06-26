@@ -6,9 +6,8 @@ import android.content.res.Resources
 import android.webkit.WebView
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
-import app.revanced.extension.youtube.ThemeHelper
 import app.revanced.extension.youtube.settings.LicenseActivityHook
-import app.revanced.extension.youtube.settings.preference.ReVancedYouTubeAboutPreference
+import app.revanced.extension.shared.settings.preference.ReVancedAboutPreference
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
@@ -96,7 +95,8 @@ fun YoutubeHook.SettingsHook() {
     }.hookMethod(object : XC_MethodReplacement() {
         override fun replaceHookedMethod(param: MethodHookParam) {
             val activity = param.thisObject as Activity
-            ThemeHelper.setActivityTheme(activity)
+            // must set theme before onCreate call super
+            LicenseActivityHook.setActivityTheme(activity)
             try {
                 param.invokeOriginalMethod()
             } catch (e: Throwable) {
@@ -126,10 +126,15 @@ fun YoutubeHook.SettingsHook() {
             exitProcess(0)
         }
     })
+
+    // Remove other methods as they will break as the onCreate method is modified above.
     getDexMethods("licenseActivityNOTonCreate").forEach {
         if (it.returnTypeName == "void") it.hookMethod(XC_MethodReplacement.DO_NOTHING)
     }
 
+    // Update shared dark mode status based on YT theme.
+    // This is needed because YT allows forcing light/dark mode
+    // which then differs from the system dark mode status.
     getDexMethod("setThemeFingerprint") {
         val appearanceStringId = Utils.getResourceIdentifier("app_theme_appearance_dark", "string")
         findMethod {
@@ -141,7 +146,7 @@ fun YoutubeHook.SettingsHook() {
         }.single { it.returnTypeName != "void" }
     }.hookMethod(object : XC_MethodHook() {
         override fun afterHookedMethod(param: MethodHookParam) {
-            ThemeHelper.setTheme(param.result as Enum<*>)
+            LicenseActivityHook.updateLightDarkModeStatus(param.result as Enum<*>)
         }
     })
     preferences += NonInteractivePreference(
@@ -149,7 +154,7 @@ fun YoutubeHook.SettingsHook() {
         icon = "@drawable/revanced_settings_screen_00_about",
         layout = "@layout/preference_with_icon",
         summaryKey = null,
-        tag = ReVancedYouTubeAboutPreference::class.java,
+        tag = ReVancedAboutPreference::class.java,
         selectable = true,
     )
     PreferenceScreen.close()

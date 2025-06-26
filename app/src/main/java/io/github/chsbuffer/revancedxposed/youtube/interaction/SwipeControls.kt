@@ -24,10 +24,7 @@ fun YoutubeHook.SwipeControls() {
         SwitchPreference("revanced_swipe_haptic_feedback"),
         SwitchPreference("revanced_swipe_save_and_restore_brightness"),
         SwitchPreference("revanced_swipe_lowest_value_enable_auto_brightness"),
-        ListPreference(
-            "revanced_swipe_overlay_style",
-            summaryKey = null,
-        ),
+        ListPreference("revanced_swipe_overlay_style"),
         TextPreference("revanced_swipe_overlay_background_opacity", inputType = InputType.NUMBER),
         TextPreference("revanced_swipe_overlay_progress_brightness_color",
             tag = ColorPickerPreference::class.java,
@@ -50,7 +47,7 @@ fun YoutubeHook.SwipeControls() {
         fingerprint {
             accessFlags(AccessFlags.PUBLIC, AccessFlags.CONSTRUCTOR)
             parameters()
-            declaredClass("MainActivity", StringMatchType.EndsWith)
+            declaredClass(".MainActivity", StringMatchType.EndsWith)
         }.declaredClass!!
     }.toClass()
 

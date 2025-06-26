@@ -1,3 +1,6 @@
+/**
+ * custom changes: on-demand
+ */
 package app.revanced.extension.shared.settings;
 
 import static java.lang.Boolean.FALSE;

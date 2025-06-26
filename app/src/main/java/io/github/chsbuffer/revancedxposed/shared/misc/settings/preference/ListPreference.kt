@@ -7,14 +7,15 @@ import android.preference.ListPreference
 import android.preference.Preference
 import android.preference.PreferenceManager
 import app.revanced.extension.shared.Utils
+import app.revanced.extension.shared.settings.preference.CustomDialogListPreference
 
 class ListPreference(
     key: String? = null,
     titleKey: String = "${key}_title",
-    summaryKey: String? = "${key}_summary",
+    summaryKey: String? = null,
     icon: String? = null,
     layout: String? = null,
-    tag: Class<out ListPreference> = ListPreference::class.java,
+    tag: Class<out ListPreference> = CustomDialogListPreference::class.java,
     val entriesKey: String? = "${key}_entries",
     val entryValuesKey: String? = "${key}_entry_values"
 ) : BasePreference(key, titleKey, summaryKey, icon, layout, tag) {

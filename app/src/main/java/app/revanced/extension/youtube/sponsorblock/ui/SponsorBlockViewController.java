@@ -1,3 +1,6 @@
+/**
+ * custom changes: comment out NewSegmentLayout
+ */
 package app.revanced.extension.youtube.sponsorblock.ui;
 
 import static app.revanced.extension.shared.Utils.getResourceIdentifier;
