@@ -68,16 +68,16 @@ fun YoutubeHook.SettingsHook() {
                 val preferencesName = app.resources.getResourceName(outerParam.args[0] as Int)
                 Logger.printDebug { "addPreferencesFromResource $preferencesName" }
                 if (!preferencesName.contains("settings_fragment")) return@after
+                if (!handleWebView) {
+                    // workaround "AssetManager.addAssetPath gets Invalid When WebView is created":
+                    // let WebView replace the AssetManager first then addModuleAssets
+                    // https://issuetracker.google.com/issues/140652425
+                    WebView(app).destroy()
+                    handleWebView = true
+                }
+                app.addModuleAssets()
                 XposedBridge.invokeOriginalMethod(
                     param.method, param.thisObject, param.args.clone().apply {
-                        if (!handleWebView) {
-                            // workaround "AssetManager.addAssetPath gets Invalid When WebView is created":
-                            // let WebView replace the AssetManager first then addModuleAssets
-                            // https://issuetracker.google.com/issues/140652425
-                            WebView(app).destroy()
-                            handleWebView = true
-                        }
-                        app.addModuleAssets()
                         this[0] = app.resources.getXml(R.xml.yt_revanced_settings)
                     })
             }
