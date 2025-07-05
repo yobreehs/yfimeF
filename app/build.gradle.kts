@@ -15,7 +15,7 @@ android {
         applicationId = "io.github.chsbuffer.revancedxposed"
         versionCode = 19
         versionName = "1.0.$versionCode"
-        val patchVersion = "5.28.0"
+        val patchVersion = "5.30.0"
         buildConfigField("String", "PATCH_VERSION", "\"$patchVersion\"")
     }
     flavorDimensions += "abi"
@@ -91,32 +91,52 @@ abstract class GenerateStringsTask @Inject constructor(
     @get:OutputDirectory
     abstract val outputDirectory: DirectoryProperty
 
-    @TaskAction
-    fun action() {
-        val inputDir = inputDirectory.get().asFile
-
-        inputDir.listFiles()?.forEach {
-            val name = it.name
-            val inputFile = File(it, "strings.xml")
-            val genResDir = File(outputDirectory.get().asFile, name).apply { mkdirs() }
-            val outputFile = File(genResDir, "strings.xml")
-
-            val inputXml = XmlSlurper().parse(inputFile)
-
-            outputFile.writer().use { writer ->
-                MarkupBuilder(writer).run {
-                    doubleQuotes = true
+    private fun unwrapPatch(input: File, output: File) {
+        val inputXml = XmlSlurper().parse(input)
+        output.writer().use { writer ->
+            MarkupBuilder(writer).run {
+                fun writeNode(node: Any?) {
+                    if (node !is NodeChild) return
+                    val attributes = node.attributes()
                     withGroovyBuilder {
-                        "resources" {
-                            inputXml.children().children().children().forEach {
-                                val node = it as NodeChild
-                                "string"("name" to node.getProperty("@name")) { mkp.yield(it.text()) }
+                        if (node.children().any()) {
+                            node.name()(attributes) {
+                                node.children().forEach {
+                                    writeNode(it)
+                                }
                             }
+                        } else {
+                            node.name()(attributes) { mkp.yield(node.text()) }
+                        }
+                    }
+                }
+
+                doubleQuotes = true
+                withGroovyBuilder {
+                    "resources" {
+                        // resources.app.patch.*
+                        inputXml.children().children().children().forEach {
+                            writeNode(it)
                         }
                     }
                 }
             }
         }
+    }
+
+    @TaskAction
+    fun action() {
+        val inputDir = inputDirectory.get().asFile
+        val outputDir = outputDirectory.get().asFile
+
+        inputDir.listFiles()?.forEach { variant ->
+            val inputFile = File(variant, "strings.xml")
+            val genResDir = File(outputDir, variant.name).apply { mkdirs() }
+            val outputFile = File(genResDir, "strings.xml")
+            unwrapPatch(inputFile, outputFile)
+        }
+
+        unwrapPatch(File(inputDir, "values/arrays.xml"), File(outputDir, "values/arrays.xml"))
     }
 }
 

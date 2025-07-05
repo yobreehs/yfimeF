@@ -6,6 +6,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import io.github.chsbuffer.revancedxposed.Opcode
 import io.github.chsbuffer.revancedxposed.ScopedHook
+import io.github.chsbuffer.revancedxposed.fingerprint
 import io.github.chsbuffer.revancedxposed.new
 import io.github.chsbuffer.revancedxposed.opcodes
 import io.github.chsbuffer.revancedxposed.strings
@@ -88,23 +89,23 @@ fun YoutubeHook.LithoFilter() {
         }.single().declaredClass!!
     }
 
-    // check if the ComponentContext should be filtered, and save the result to a thread local.
-    componentContextParserMethod.hookMethod(ScopedHook(componentContextSubParser.toMethod()) {
+    getDexMethod("componentCreateFingerprint"){
+        fingerprint {
+            strings(
+                "Element missing correct type extension",
+                "Element missing type"
+            )
+        }
+    }.hookMethod(object : XC_MethodHook(){
         val identifierField = getDexField("identifierFieldData").toField()
         val pathBuilderField = getDexField("pathBuilderFieldData").toField()
-        after {
-            val conversion = param.result
-            val identifier = identifierField.get(conversion) as String?
-            val pathBuilder = pathBuilderField.get(conversion) as StringBuilder
-            LithoFilterPatch.filter(identifier, pathBuilder)
-        }
-    })
-
-    // return an empty component if filtering is needed.
-    componentContextParserMethod.hookMethod(object : XC_MethodHook(PRIORITY_DEFAULT - 1) {
         val emptyComponentClazz = emptyComponentClass.toClass()
         override fun afterHookedMethod(param: MethodHookParam) {
-            if (LithoFilterPatch.shouldFilter()) {
+            val conversion = param.args[1]
+            val identifier = identifierField.get(conversion) as String?
+            val pathBuilder = pathBuilderField.get(conversion) as StringBuilder
+
+            if (LithoFilterPatch.shouldFilter(identifier, pathBuilder)) {
                 param.result = emptyComponentClazz.new()
             }
         }

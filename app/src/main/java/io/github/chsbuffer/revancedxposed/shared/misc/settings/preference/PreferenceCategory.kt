@@ -7,7 +7,7 @@ import android.preference.Preference
 import android.preference.PreferenceCategory
 import android.preference.PreferenceGroup
 import android.preference.PreferenceManager
-import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference.*
+import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference.Sorting
 
 open class PreferenceCategory(
     key: String? = null,

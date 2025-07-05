@@ -47,6 +47,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
@@ -284,6 +285,7 @@ public class Utils {
      */
     @SuppressLint("DiscouragedApi")
     public static int getResourceIdentifier(Context context, String resourceIdentifierName, String type) {
+        // custom change
         var result = context.getResources().getIdentifier(resourceIdentifierName, type, context.getPackageName());
         if (result != 0) return result;
         return context.getResources().getIdentifier(resourceIdentifierName, type, BuildConfig.APPLICATION_ID);
@@ -316,6 +318,10 @@ public class Utils {
 
     public static float getResourceDimension(String resourceIdentifierName) throws Resources.NotFoundException {
         return getContext().getResources().getDimension(getResourceIdentifier(resourceIdentifierName, "dimen"));
+    }
+
+    public static String[] getResourceStringArray(String resourceIdentifierName) throws Resources.NotFoundException {
+        return getContext().getResources().getStringArray(getResourceIdentifier(resourceIdentifierName, "array"));
     }
 
     public interface MatchFilter<T> {
@@ -586,7 +592,7 @@ public class Utils {
             Context currentContext = context;
 
             if (currentContext == null) {
-                Logger.printException(() -> "Cannot show toast (context is null): " + messageToToast, null);
+                Logger.printException(() -> "Cannot show toast (context is null): " + messageToToast);
             } else {
                 Logger.printDebug(() -> "Showing toast: " + messageToToast);
                 Toast.makeText(currentContext, messageToToast, toastDuration).show();
@@ -781,16 +787,15 @@ public class Utils {
         Dialog dialog = new Dialog(context);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // Remove default title bar.
 
-        // Create main layout.
-        LinearLayout mainLayout = new LinearLayout(context);
-        mainLayout.setOrientation(LinearLayout.VERTICAL);
-
         // Preset size constants.
         final int dip4 = dipToPixels(4);
         final int dip8 = dipToPixels(8);
         final int dip16 = dipToPixels(16);
         final int dip24 = dipToPixels(24);
 
+        // Create main layout.
+        LinearLayout mainLayout = new LinearLayout(context);
+        mainLayout.setOrientation(LinearLayout.VERTICAL);
         mainLayout.setPadding(dip24, dip16, dip24, dip24);
         // Set rounded rectangle background.
         ShapeDrawable mainBackground = new ShapeDrawable(new RoundRectShape(
@@ -810,55 +815,71 @@ public class Utils {
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
             );
-            layoutParams.setMargins(0, 0, 0, dip8);
+            layoutParams.setMargins(0, 0, 0, dip16);
             titleView.setLayoutParams(layoutParams);
             mainLayout.addView(titleView);
         }
 
-        // Message (if not replaced by EditText).
-        if (editText == null && message != null) {
-            TextView messageView = new TextView(context);
-            messageView.setText(message); // Supports Spanned (HTML).
-            messageView.setTextSize(16);
-            messageView.setTextColor(getAppForegroundColor());
-            // Enable HTML link clicking if the message contains links.
-            if (message instanceof Spanned) {
-                messageView.setMovementMethod(LinkMovementMethod.getInstance());
+        // Create content container (message/EditText) inside a ScrollView only if message or editText is provided.
+        ScrollView contentScrollView = null;
+        LinearLayout contentContainer;
+        if (message != null || editText != null) {
+            contentScrollView = new ScrollView(context);
+            contentScrollView.setVerticalScrollBarEnabled(false); // Disable the vertical scrollbar.
+            contentScrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+            if (editText != null) {
+                ShapeDrawable scrollViewBackground = new ShapeDrawable(new RoundRectShape(
+                        createCornerRadii(10), null, null));
+                scrollViewBackground.getPaint().setColor(getEditTextBackground());
+                contentScrollView.setPadding(dip8, dip8, dip8, dip8);
+                contentScrollView.setBackground(scrollViewBackground);
+                contentScrollView.setClipToOutline(true);
             }
-            LinearLayout.LayoutParams messageParams = new LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams contentParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
+                    0,
+                    1.0f // Weight to take available space.
             );
-            messageParams.setMargins(0, dip8, 0, dip16);
-            messageView.setLayoutParams(messageParams);
-            mainLayout.addView(messageView);
-        }
+            contentScrollView.setLayoutParams(contentParams);
+            contentContainer = new LinearLayout(context);
+            contentContainer.setOrientation(LinearLayout.VERTICAL);
+            contentScrollView.addView(contentContainer);
 
-        // EditText (if provided).
-        if (editText != null) {
-            // Remove EditText from its current parent, if any.
-            ViewGroup parent = (ViewGroup) editText.getParent();
-            if (parent != null) {
-                parent.removeView(editText);
+            // Message (if not replaced by EditText).
+            if (editText == null) {
+                TextView messageView = new TextView(context);
+                messageView.setText(message); // Supports Spanned (HTML).
+                messageView.setTextSize(16);
+                messageView.setTextColor(getAppForegroundColor());
+                // Enable HTML link clicking if the message contains links.
+                if (message instanceof Spanned) {
+                    messageView.setMovementMethod(LinkMovementMethod.getInstance());
+                }
+                LinearLayout.LayoutParams messageParams = new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+                messageView.setLayoutParams(messageParams);
+                contentContainer.addView(messageView);
             }
-            // Style the EditText to match the dialog theme.
-            editText.setTextColor(getAppForegroundColor());
-            editText.setBackgroundColor(isDarkModeEnabled() ? Color.BLACK : Color.WHITE);
-            editText.setPadding(dip8, dip8, dip8, dip8);
-            ShapeDrawable editTextBackground = new ShapeDrawable(new RoundRectShape(
-                    createCornerRadii(10), null, null));
-            editTextBackground.getPaint().setColor(getEditTextBackground()); // Background color for EditText.
-            editText.setBackground(editTextBackground);
 
-            LinearLayout.LayoutParams editTextParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-            );
-            editTextParams.setMargins(0, dip8, 0, dip16);
-            // Prevent buttons from moving off the screen by fixing the height of the EditText.
-            final int maxHeight = (int) (context.getResources().getDisplayMetrics().heightPixels * 0.6);
-            editText.setMaxHeight(maxHeight);
-            mainLayout.addView(editText, 1, editTextParams);
+            // EditText (if provided).
+            if (editText != null) {
+                // Remove EditText from its current parent, if any.
+                ViewGroup parent = (ViewGroup) editText.getParent();
+                if (parent != null) {
+                    parent.removeView(editText);
+                }
+                // Style the EditText to match the dialog theme.
+                editText.setTextColor(getAppForegroundColor());
+                editText.setBackgroundColor(Color.TRANSPARENT);
+                editText.setPadding(0, 0, 0, 0);
+                LinearLayout.LayoutParams editTextParams = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+                contentContainer.addView(editText, editTextParams);
+            }
         }
 
         // Button container.
@@ -869,7 +890,7 @@ public class Utils {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
-        buttonContainerParams.setMargins(0, dip8, 0, 0);
+        buttonContainerParams.setMargins(0, dip16, 0, 0);
         buttonContainer.setLayoutParams(buttonContainerParams);
 
         // Lists to track buttons.
@@ -1044,25 +1065,29 @@ public class Utils {
             }
         }
 
+        // Add ScrollView to main layout only if content exist.
+        if (contentScrollView != null) {
+            mainLayout.addView(contentScrollView);
+        }
         mainLayout.addView(buttonContainer);
         dialog.setContentView(mainLayout);
 
         // Set dialog window attributes.
         Window window = dialog.getWindow();
         if (window != null) {
-            setDialogWindowParameters(context, window);
+            setDialogWindowParameters(window);
         }
 
         return new Pair<>(dialog, mainLayout);
     }
 
-    public static void setDialogWindowParameters(Context context, Window window) {
+    public static void setDialogWindowParameters(Window window) {
         WindowManager.LayoutParams params = window.getAttributes();
 
-        Resources resources = context.getResources();
-        DisplayMetrics displayMetrics = resources.getDisplayMetrics();
+        DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
         int portraitWidth = (int) (displayMetrics.widthPixels * 0.9);
-        if (resources.getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+
+        if (Resources.getSystem().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             portraitWidth = (int) Math.min(portraitWidth, displayMetrics.heightPixels * 0.9);
         }
         params.width = portraitWidth;
@@ -1207,7 +1232,7 @@ public class Utils {
             return darkColor == Color.BLACK
                     // Lighten the background a little if using AMOLED dark theme
                     // as the dialogs are almost invisible.
-                    ? 0xFF0D0D0D
+                    ? 0xFF080808 // 3%
                     : darkColor;
         }
         return getThemeLightColor();

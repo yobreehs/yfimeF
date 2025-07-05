@@ -3,9 +3,7 @@ package io.github.chsbuffer.revancedxposed.youtube.interaction
 import app.revanced.extension.shared.settings.preference.ColorPickerPreference
 import app.revanced.extension.youtube.swipecontrols.SwipeControlsHostActivity
 import io.github.chsbuffer.revancedxposed.AccessFlags
-import io.github.chsbuffer.revancedxposed.accessFlags
 import io.github.chsbuffer.revancedxposed.fingerprint
-import io.github.chsbuffer.revancedxposed.parameters
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.InputType
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.ListPreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.SwitchPreference
@@ -38,7 +36,6 @@ fun YoutubeHook.SwipeControls() {
         TextPreference("revanced_swipe_volume_sensitivity", inputType = InputType.NUMBER),
     )
 
-
     dependsOn(
         ::PlayerTypeHook,
     )
@@ -47,7 +44,9 @@ fun YoutubeHook.SwipeControls() {
         fingerprint {
             accessFlags(AccessFlags.PUBLIC, AccessFlags.CONSTRUCTOR)
             parameters()
-            declaredClass(".MainActivity", StringMatchType.EndsWith)
+            classMatcher {
+                className(".MainActivity", StringMatchType.EndsWith)
+            }
         }.declaredClass!!
     }.toClass()
 

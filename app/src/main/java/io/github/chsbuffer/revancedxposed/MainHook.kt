@@ -1,7 +1,6 @@
 package io.github.chsbuffer.revancedxposed
 
 import android.app.Application
-import android.widget.Toast
 import app.revanced.extension.shared.Utils
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.IXposedHookZygoteInit

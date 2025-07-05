@@ -6,8 +6,8 @@ import android.content.res.Resources
 import android.webkit.WebView
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
-import app.revanced.extension.youtube.settings.LicenseActivityHook
 import app.revanced.extension.shared.settings.preference.ReVancedAboutPreference
+import app.revanced.extension.youtube.settings.LicenseActivityHook
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge

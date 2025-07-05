@@ -26,7 +26,6 @@ import io.github.chsbuffer.revancedxposed.youtube.video.playerInitHooks
 import io.github.chsbuffer.revancedxposed.youtube.video.videoIdHooks
 import io.github.chsbuffer.revancedxposed.youtube.video.videoTimeHooks
 import org.luckypray.dexkit.wrap.DexMethod
-import kotlin.jvm.java
 
 fun YoutubeHook.SponsorBlock() {
     dependsOn(

@@ -9,12 +9,9 @@ import de.robv.android.xposed.XC_MethodHook
 import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.ScopedHook
 import io.github.chsbuffer.revancedxposed.accessFlags
-import io.github.chsbuffer.revancedxposed.definingClass
 import io.github.chsbuffer.revancedxposed.fingerprint
 import io.github.chsbuffer.revancedxposed.literal
-import io.github.chsbuffer.revancedxposed.parameters
 import io.github.chsbuffer.revancedxposed.returns
-import io.github.chsbuffer.revancedxposed.strings
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import java.util.EnumMap
 
@@ -96,7 +93,10 @@ fun YoutubeHook.NavigationBarHook() {
                 accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
                 returns("Landroid/view/View;")
                 parameters("L", "Z", "I", "L")
-                definingClass("Lcom/google/android/libraries/youtube/rendering/ui/pivotbar/PivotBar;")
+                classMatcher {
+                    descriptor =
+                        "Lcom/google/android/libraries/youtube/rendering/ui/pivotbar/PivotBar;"
+                }
             }
         }
 

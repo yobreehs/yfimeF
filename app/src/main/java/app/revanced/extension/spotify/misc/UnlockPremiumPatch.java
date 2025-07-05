@@ -1,21 +1,26 @@
 /*
-* Custom changes:
-* Wipe stubbed types: REMOVED_HOME_SECTIONS, overrideAttributes, removeHomeSections
-* replace Class.forName with ClassLoader.loadClass: IS_SPOTIFY_LEGACY_APP_TARGET
-* */
+ * Custom changes:
+ * Wipe stubbed types: REMOVED_HOME_SECTIONS, overrideAttributes, removeHomeSections
+ * replace Class.forName with ClassLoader.loadClass: IS_SPOTIFY_LEGACY_APP_TARGET
+ * */
 package app.revanced.extension.spotify.misc;
+
+import app.revanced.extension.shared.Logger;
+import app.revanced.extension.spotify.shared.ComponentFilters.ComponentFilter;
+import app.revanced.extension.spotify.shared.ComponentFilters.ResourceIdComponentFilter;
+import app.revanced.extension.spotify.shared.ComponentFilters.StringComponentFilter;
+
+import java.util.*;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
 import static io.github.chsbuffer.revancedxposed.spotify.SpotifyHookKt.spotifyClassLoader;
-import app.revanced.extension.spotify.shared.ComponentFilters.*;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import app.revanced.extension.shared.Logger;
 import de.robv.android.xposed.XposedHelpers;
 
 @SuppressWarnings("unused")
@@ -105,18 +110,27 @@ public final class UnlockPremiumPatch {
      */
     private static final List<Integer> REMOVED_HOME_SECTIONS;
 
+    /**
+     * A list of browse sections feature types ids which should be removed. These ids match the ones from the protobuf
+     * response which delivers browse sections.
+     */
+    private static final List<Integer> REMOVED_BROWSE_SECTIONS;
+
     static {
-        Class<?> clazz;
         try {
-            clazz = spotifyClassLoader.loadClass("com.spotify.home.evopage.homeapi.proto.Section");
+            var homeSection = spotifyClassLoader.loadClass("com.spotify.home.evopage.homeapi.proto.Section");
+            REMOVED_HOME_SECTIONS = List.of(
+                    XposedHelpers.getStaticIntField(homeSection, "VIDEO_BRAND_AD_FIELD_NUMBER"),
+                    XposedHelpers.getStaticIntField(homeSection, "IMAGE_BRAND_AD_FIELD_NUMBER")
+            );
+
+            var browseSection = spotifyClassLoader.loadClass("com.spotify.browsita.v1.resolved.Section");
+            REMOVED_BROWSE_SECTIONS = List.of(
+                    XposedHelpers.getStaticIntField(browseSection, "BRAND_ADS_FIELD_NUMBER")
+            );
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-
-        REMOVED_HOME_SECTIONS = List.of(
-                XposedHelpers.getStaticIntField(clazz, "VIDEO_BRAND_AD_FIELD_NUMBER"),
-                XposedHelpers.getStaticIntField(clazz, "IMAGE_BRAND_AD_FIELD_NUMBER")
-        );
     }
 
     /**
@@ -153,7 +167,7 @@ public final class UnlockPremiumPatch {
 
                 Object overrideValue = override.overrideValue;
                 Object originalValue;
-                originalValue = XposedHelpers.getObjectField(attribute,"value_");
+                originalValue = XposedHelpers.getObjectField(attribute, "value_");
 
                 if (overrideValue.equals(originalValue)) {
                     continue;
@@ -182,29 +196,60 @@ public final class UnlockPremiumPatch {
         }
     }
 
+    private interface FeatureTypeIdProvider<T> {
+        int getFeatureTypeId(T section);
+    }
+
+    private static <T> void removeSections(
+            List<T> sections,
+            FeatureTypeIdProvider<T> featureTypeExtractor,
+            List<Integer> idsToRemove
+    ) {
+        try {
+            Iterator<T> iterator = sections.iterator();
+
+            while (iterator.hasNext()) {
+                T section = iterator.next();
+                int featureTypeId = featureTypeExtractor.getFeatureTypeId(section);
+                if (idsToRemove.contains(featureTypeId)) {
+                    Logger.printInfo(() -> "Removing section with feature type id " + featureTypeId);
+                    iterator.remove();
+                }
+            }
+        } catch (Exception ex) {
+            Logger.printException(() -> "removeSections failure", ex);
+        }
+    }
+
     /**
      * Injection point. Remove ads sections from home.
      * Depends on patching abstract protobuf list ensureIsMutable method.
      */
     public static void removeHomeSections(List<?> sections) {
-        try {
-            var iterator = sections.iterator();
-
-            while (iterator.hasNext()) {
-                var section = iterator.next();
-                var featureTypeCase_ = XposedHelpers.getIntField(section,"featureTypeCase_");
-                if (REMOVED_HOME_SECTIONS.contains(featureTypeCase_)) {
-                    Logger.printInfo(() -> "Removing home section with feature type id " + featureTypeCase_);
-                    iterator.remove();
-                }
-            }
-        } catch (Exception ex) {
-            Logger.printException(() -> "removeHomeSections failure", ex);
-        }
+        Logger.printInfo(() -> "Removing ads section from home");
+        removeSections(
+                sections,
+                section -> XposedHelpers.getIntField(section, "featureTypeCase_"),
+                REMOVED_HOME_SECTIONS
+        );
     }
 
     /**
-     * Injection point. Returns whether the context menu item is a Premium ad.
+     * Injection point. Remove ads sections from browse.
+     * Depends on patching abstract protobuf list ensureIsMutable method.
+     */
+    public static void removeBrowseSections(List<?> sections) {
+        Logger.printInfo(() -> "Removing ads section from browse");
+        removeSections(
+                sections,
+                section -> XposedHelpers.getIntField(section, "sectionTypeCase_"),
+                REMOVED_BROWSE_SECTIONS
+        );
+    }
+
+    /**
+     * Injection point. Returns whether the context menu item is a Premium ad. Used for versions older than
+     * "9.0.60.128".
      */
     public static boolean isFilteredContextMenuItem(Object contextMenuItem) {
         if (contextMenuItem == null) {
@@ -249,5 +294,32 @@ public final class UnlockPremiumPatch {
         }
 
         return false;
+    }
+
+    /**
+     * Injection point. Returns a new list with the context menu items which are a Premium ad filtered.
+     * The original list is immutable and cannot be modified without an extra patch.
+     * The method fingerprint used to patch ensures we can return a "List" here.
+     * ContextMenuItemPlaceholder interface name and getViewModel return value are replaced by a patch to match
+     * the minified names used at runtime. Used in newer versions of the app.
+     */
+    public static List<Object> filterContextMenuItems(List<Object> originalContextMenuItems) {
+        try {
+            ArrayList<Object> filteredContextMenuItems = new ArrayList<>(originalContextMenuItems.size());
+
+            for (Object contextMenuItem : originalContextMenuItems) {
+                if (isFilteredContextMenuItem((XposedHelpers.callMethod(contextMenuItem, "getViewModel")))) {
+                    continue;
+                }
+
+                filteredContextMenuItems.add(contextMenuItem);
+            }
+
+            return filteredContextMenuItems;
+        } catch (Exception ex) {
+            Logger.printException(() -> "filterContextMenuItems failure", ex);
+        }
+
+        return originalContextMenuItems;
     }
 }
