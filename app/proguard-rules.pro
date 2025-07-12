@@ -24,3 +24,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-assumenosideeffects class app.revanced.extension.shared.settings.* {
+    public <init>(...);
+}
