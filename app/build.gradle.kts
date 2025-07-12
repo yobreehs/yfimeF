@@ -71,6 +71,17 @@ android {
             jvmTarget = JvmTarget.JVM_17
         }
     }
+    sourceSets {
+        getByName("main") {
+            java {
+                srcDirs(
+                "../revanced-patches/extensions/shared/library/src/main/java",
+                "../revanced-patches/extensions/youtube/src/main/java",
+                "../revanced-patches/extensions/spotify/src/main/java"
+                )
+            }
+        }
+    }
 }
 
 dependencies {
@@ -80,6 +91,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.fuel)
     compileOnly(libs.xposed)
+    compileOnly(project(":stub"))
 }
 
 abstract class GenerateStringsTask @Inject constructor(
@@ -143,8 +155,7 @@ abstract class GenerateStringsTask @Inject constructor(
 androidComponents {
     onVariants { variant ->
         val task = project.tasks.register<GenerateStringsTask>("generate${variant.name}Strings") {
-            val stringResourceDir = project.file("src/main/addresources")
-            inputDirectory.set(stringResourceDir)
+            inputDirectory.set(project.file("../revanced-patches/patches/src/main/resources/addresources"))
         }
         variant.sources.res?.addGeneratedSourceDirectory(
             task, GenerateStringsTask::outputDirectory

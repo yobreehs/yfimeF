@@ -1,6 +1,8 @@
 package io.github.chsbuffer.revancedxposed.spotify
 
+import android.annotation.SuppressLint
 import android.app.Application
+import android.content.Context
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.spotify.misc.UnlockPremiumPatch
@@ -14,6 +16,7 @@ import io.github.chsbuffer.revancedxposed.callMethod
 import io.github.chsbuffer.revancedxposed.findField
 import io.github.chsbuffer.revancedxposed.findFirstFieldByExactType
 import io.github.chsbuffer.revancedxposed.fingerprint
+import io.github.chsbuffer.revancedxposed.setObjectField
 import io.github.chsbuffer.revancedxposed.strings
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.enums.StringMatchType
@@ -22,8 +25,6 @@ import org.luckypray.dexkit.result.MethodData
 import org.luckypray.dexkit.wrap.DexField
 import org.luckypray.dexkit.wrap.DexMethod
 import java.lang.reflect.Field
-
-lateinit var spotifyClassLoader: ClassLoader
 
 @Suppress("UNCHECKED_CAST")
 class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpparam) {
@@ -40,10 +41,39 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
         // Logger
         Utils.setContext(app)
 
-        spotifyClassLoader = classLoader
+        // load stubbed spotify classes
+        injectClassLoader(this::class.java.classLoader!!, classLoader)
+    }
+
+    @SuppressLint("DiscouragedPrivateApi")
+    fun injectClassLoader(self: ClassLoader, classLoader: ClassLoader) {
+        val loader = self.parent
+        val host = classLoader
+        val bootClassLoader = Context::class.java.classLoader!!
+
+        self.setObjectField("parent", object : ClassLoader(bootClassLoader) {
+            override fun findClass(name: String?): Class<*> {
+                try {
+                    return bootClassLoader.loadClass(name)
+                } catch (_: ClassNotFoundException) {
+                }
+
+                try {
+                    return loader.loadClass(name)
+                } catch (_: ClassNotFoundException) {
+                }
+                try {
+                    return host.loadClass(name)
+                } catch (_: ClassNotFoundException) {
+                }
+
+                throw ClassNotFoundException(name);
+            }
+        })
     }
 }
 
+@Suppress("UNCHECKED_CAST")
 fun SpotifyHook.UnlockPremium() {
     // Override the attributes map in the getter method.
     getDexMethod("productStateProtoFingerprint") {
@@ -197,7 +227,7 @@ fun SpotifyHook.UnlockPremium() {
             val sections = param.result
             // Set sections mutable
             sections.javaClass.findFirstFieldByExactType(Boolean::class.java).set(sections, true)
-            UnlockPremiumPatch.removeHomeSections(param.result as MutableList<*>)
+            UnlockPremiumPatch.removeHomeSections(param.result as MutableList<com.spotify.home.evopage.homeapi.proto.Section>)
         }
     })
     // Remove ads sections from browser.
@@ -208,7 +238,7 @@ fun SpotifyHook.UnlockPremium() {
             val sections = param.result
             // Set sections mutable
             sections.javaClass.findFirstFieldByExactType(Boolean::class.java).set(sections, true)
-            UnlockPremiumPatch.removeBrowseSections(param.result as MutableList<*>)
+            UnlockPremiumPatch.removeBrowseSections(param.result as MutableList<com.spotify.browsita.v1.resolved.Section>)
         }
     })
 

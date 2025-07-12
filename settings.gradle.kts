@@ -34,3 +34,4 @@ android {
 
 rootProject.name = "Revanced Xposed"
 include(":app")
+include(":stub")
