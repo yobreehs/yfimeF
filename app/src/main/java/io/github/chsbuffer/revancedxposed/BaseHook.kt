@@ -27,19 +27,15 @@ interface IHook {
     fun Hook()
 
     fun DexMethod.hookMethod(callback: XC_MethodHook) {
-        when {
-            isMethod -> XposedBridge.hookMethod(getMethodInstance(classLoader), callback)
-            isConstructor -> XposedBridge.hookMethod(
-                getConstructorInstance(classLoader),
-                callback
-            )
-
-            else -> throw NotImplementedError()
-        }
-    }
+        XposedBridge.hookMethod(toMember(), callback)    }
 
     fun DexClass.toClass() = getInstance(classLoader)
     fun DexMethod.toMethod() = getMethodInstance(classLoader)
+    fun DexMethod.toMember() = when {
+        isMethod -> getMethodInstance(classLoader)
+        isConstructor -> getConstructorInstance(classLoader)
+        else -> throw NotImplementedError()
+    }
     fun DexField.toField() = getFieldInstance(classLoader)
 }
 

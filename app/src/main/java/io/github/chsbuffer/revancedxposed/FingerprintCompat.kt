@@ -8,6 +8,11 @@ import org.luckypray.dexkit.result.MethodData
 import org.luckypray.dexkit.util.DexSignUtil.getTypeName
 import java.lang.reflect.Modifier
 
+private fun getTypeNameCompat(it: String): String? {
+    return if (it.trimStart('[').startsWith('L') && !it.endsWith(';')) null
+    else getTypeName(it)
+}
+
 class Fingerprint(val dexkit: DexKitBridge, init: Fingerprint.() -> Unit) {
     var classMatcher: ClassMatcher? = null
     val methodMatcher = MethodMatcher()
@@ -35,14 +40,11 @@ class Fingerprint(val dexkit: DexKitBridge, init: Fingerprint.() -> Unit) {
     }
 
     fun parameters(vararg parameters: String) {
-        methodMatcher.paramTypes(parameters.map {
-            if (it.trimStart('[').startsWith('L') && !it.endsWith(';')) null
-            else getTypeName(it)
-        })
+        methodMatcher.paramTypes(parameters.map(::getTypeNameCompat))
     }
 
     fun returns(returnType: String) {
-        methodMatcher.returnType = getTypeName(returnType)
+        getTypeNameCompat(returnType)?.let { methodMatcher.returnType = it }
     }
 
     fun literal(literalSupplier: () -> Number) {
@@ -110,18 +112,11 @@ fun MethodMatcher.accessFlags(vararg accessFlags: AccessFlags) {
 }
 
 fun MethodMatcher.parameters(vararg parameters: String) {
-    this.paramTypes(parameters.map {
-        if (it.trimStart('[').startsWith('L') && !it.endsWith(';')) null
-        else getTypeName(it)
-    })
+    this.paramTypes(parameters.map(::getTypeNameCompat))
 }
 
 fun MethodMatcher.returns(returnType: String) {
-    this.returnType = getTypeName(returnType)
-}
-
-fun MethodMatcher.definingClass(definingClass: String) {
-    this.declaredClass = getTypeName(definingClass)
+    getTypeNameCompat(returnType)?.let { this.returnType = it }
 }
 
 fun MethodMatcher.literal(literalSupplier: () -> Number) {

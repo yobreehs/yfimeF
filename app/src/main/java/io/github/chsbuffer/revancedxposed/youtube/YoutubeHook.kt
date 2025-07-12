@@ -16,6 +16,7 @@ import io.github.chsbuffer.revancedxposed.youtube.misc.BackgroundPlayback
 import io.github.chsbuffer.revancedxposed.youtube.misc.LithoFilter
 import io.github.chsbuffer.revancedxposed.youtube.misc.RemoveTrackingQueryParameter
 import io.github.chsbuffer.revancedxposed.youtube.misc.SettingsHook
+import io.github.chsbuffer.revancedxposed.youtube.video.RememberVideoQuality
 
 class YoutubeHook(
     app: Application,
@@ -32,6 +33,7 @@ class YoutubeHook(
         ::SponsorBlock,
         ::NavigationButtons,
         ::SwipeControls,
+        ::RememberVideoQuality,
         // make sure settingsHook at end to build preferences
         ::SettingsHook
     )
