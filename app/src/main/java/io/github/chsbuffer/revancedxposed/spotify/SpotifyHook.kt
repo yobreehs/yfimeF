@@ -6,6 +6,7 @@ import android.content.Context
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.spotify.misc.UnlockPremiumPatch
+import com.spotify.remoteconfig.internal.AccountAttribute
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
@@ -33,9 +34,6 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
         ::SanitizeSharingLinks,
         ::UnlockPremium,
     )
-
-    val IS_SPOTIFY_LEGACY_APP_TARGET =
-        runCatching { classLoader.loadClass("com.spotify.music.MainActivity") }.isSuccess
 
     fun Extension() {
         // Logger
@@ -77,16 +75,10 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
 fun SpotifyHook.UnlockPremium() {
     // Override the attributes map in the getter method.
     getDexMethod("productStateProtoFingerprint") {
-        findClass {
-            matcher {
-                if (IS_SPOTIFY_LEGACY_APP_TARGET) className("com.spotify.ucs.proto.v0.UcsResponseWrapper\$AccountAttributesResponse")
-                else className("com.spotify.remoteconfig.internal.ProductStateProto")
-            }
-        }.findMethod {
-            matcher {
-                returnType = "java.util.Map"
-            }
-        }.single().also { method ->
+        fingerprint {
+            returns("Ljava/util/Map;")
+            classMatcher { descriptor = "Lcom/spotify/remoteconfig/internal/ProductStateProto;" }
+        }.also { method ->
             getDexField("attributesMapField") {
                 method.usingFields.single().field
             }
@@ -95,7 +87,7 @@ fun SpotifyHook.UnlockPremium() {
         val field = getDexField("attributesMapField").toField()
         override fun beforeHookedMethod(param: MethodHookParam) {
             Logger.printDebug { field.get(param.thisObject)!!.toString() }
-            UnlockPremiumPatch.overrideAttributes(field.get(param.thisObject) as Map<String, *>)
+            UnlockPremiumPatch.overrideAttributes(field.get(param.thisObject) as Map<String, AccountAttribute>)
         }
     })
 
@@ -117,12 +109,6 @@ fun SpotifyHook.UnlockPremium() {
             }
         }
     })
-
-    // following patches may not support legacy Spotify version.
-    if (IS_SPOTIFY_LEGACY_APP_TARGET) {
-        Utils.showToastShort("Patching a legacy Spotify version. Patch functionality may be limited.")
-        return
-    }
 
     // Enable choosing a specific song/artist via Google Assistant.
     getDexMethod("contextFromJsonFingerprint") {

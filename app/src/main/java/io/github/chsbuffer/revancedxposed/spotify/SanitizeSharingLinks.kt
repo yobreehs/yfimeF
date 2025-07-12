@@ -5,26 +5,26 @@ import app.revanced.extension.spotify.misc.privacy.SanitizeSharingLinksPatch
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers
 import io.github.chsbuffer.revancedxposed.ScopedHook
-import io.github.chsbuffer.revancedxposed.strings
+import io.github.chsbuffer.revancedxposed.fingerprint
 import java.lang.reflect.Modifier
 
 fun SpotifyHook.SanitizeSharingLinks() {
     getDexMethod("shareCopyUrlFingerprint") {
-        findMethod {
-            matcher {
-                if (IS_SPOTIFY_LEGACY_APP_TARGET) {
-                    returnType("java.lang.Object")
-                    paramTypes("java.lang.Object")
-                    strings("clipboard", "createNewSession failed")
-                    name("apply")
-                } else {
-                    returnType("java.lang.Object")
-                    paramTypes("java.lang.Object")
-                    strings("clipboard", "Spotify Link")
-                    name("invokeSuspend")
-                }
+        runCatching {
+            fingerprint {
+                returns("Ljava/lang/Object;")
+                parameters("Ljava/lang/Object;")
+                strings("clipboard", "Spotify Link")
+                methodMatcher { name = "invokeSuspend" }
             }
-        }.single()
+        }.getOrElse {
+            fingerprint {
+                returns("Ljava/lang/Object;")
+                parameters("Ljava/lang/Object;")
+                strings("clipboard", "createNewSession failed")
+                methodMatcher { name = "apply" }
+            }
+        }
     }.hookMethod(
         ScopedHook(
             XposedHelpers.findMethodExact(
@@ -43,22 +43,32 @@ fun SpotifyHook.SanitizeSharingLinks() {
     )
 
     getDexMethod("formatAndroidShareSheetUrlFingerprint") {
-        findMethod {
-            matcher {
-                returnType("java.lang.String")
-                addUsingNumber('\n'.code)
-                if (IS_SPOTIFY_LEGACY_APP_TARGET) {
-                    modifiers = Modifier.PUBLIC
-                    paramTypes("com.spotify.share.social.sharedata.ShareData", "java.lang.String")
-                } else {
+        runCatching {
+            findMethod {
+                matcher {
+                    returnType("java.lang.String")
+                    addUsingNumber('\n'.code)
                     modifiers = Modifier.PUBLIC or Modifier.STATIC
                     paramTypes(null, "java.lang.String")
                 }
+            }.single {
+                // exclude
+                // `(PlayerState, String) -> String` usingNumbers(1, 10); usingStrings("")
+                !it.usingStrings.contains("")
             }
-        }.single {
-            // exclude
-            // `(PlayerState, String) -> String` usingNumbers(1, 10); usingStrings("")
-            !it.usingStrings.contains("")
+        }.getOrElse {
+            findMethod {
+                matcher {
+                    returnType("java.lang.String")
+                    addUsingNumber('\n'.code)
+                    modifiers = Modifier.PUBLIC
+                    paramTypes("com.spotify.share.social.sharedata.ShareData", "java.lang.String")
+                }
+            }.single {
+                // exclude
+                // `(PlayerState, String) -> String` usingNumbers(1, 10); usingStrings("")
+                !it.usingStrings.contains("")
+            }
         }
     }.hookMethod(object : XC_MethodHook() {
         override fun beforeHookedMethod(param: MethodHookParam) {
