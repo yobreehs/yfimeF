@@ -33,6 +33,7 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
         ::Extension,
         ::SanitizeSharingLinks,
         ::UnlockPremium,
+        ::HideCreateButton
     )
 
     fun Extension() {

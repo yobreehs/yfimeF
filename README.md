@@ -24,6 +24,7 @@
 ### Spotify
 - Unlock Spotify Premium
 - Sanitize sharing links
+- Hide Create button
 
 ### Google Photos
 - Spoof Pixel XL
