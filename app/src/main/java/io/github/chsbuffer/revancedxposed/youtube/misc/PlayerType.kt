@@ -11,6 +11,7 @@ import io.github.chsbuffer.revancedxposed.opcodes
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.result.FieldUsingType
+import java.lang.reflect.Modifier
 
 @SuppressLint("NonUniqueDexKitData")
 fun YoutubeHook.PlayerTypeHook() {
@@ -22,16 +23,12 @@ fun YoutubeHook.PlayerTypeHook() {
             }
         }.findMethod {
             matcher {
+                modifiers = Modifier.PUBLIC
                 returnType = "void"
                 paramCount = 1
-                opcodes(
-                    Opcode.IF_NE,
-                    Opcode.RETURN_VOID,
-                )
             }
         }.single {
-            // enum class
-            it.paramTypes[0].descriptor.length > 1
+            it.paramTypes[0].superClass?.descriptor == "Ljava/lang/Enum;"
         }
     }.hookMethod(object : XC_MethodHook() {
         override fun beforeHookedMethod(param: MethodHookParam) {

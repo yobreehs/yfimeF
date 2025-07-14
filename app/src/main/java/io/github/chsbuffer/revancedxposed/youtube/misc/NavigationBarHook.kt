@@ -103,31 +103,4 @@ fun YoutubeHook.NavigationBarHook() {
     initializeButtonsFingerprint.hookMethod(ScopedHook(pivotBarButtonsCreateResourceViewFingerprint.toMethod()) {
         after { NavigationBar.navigationImageResourceTabLoaded(param.result as View) }
     })
-
-    // Fix YT bug of notification tab missing the filled icon.
-    val tabActivityCairo =
-        navigationEnumClass.toClass().enumConstants?.firstOrNull { (it as? Enum<*>)?.name == "TAB_ACTIVITY_CAIRO" } as? Enum<*>
-    if (tabActivityCairo != null) {
-        getDexMethod("setEnumMapFingerprint") {
-            fingerprint {
-                accessFlags(AccessFlags.PUBLIC, AccessFlags.CONSTRUCTOR)
-                literal {
-                    Utils.getResourceIdentifier("yt_fill_bell_black_24", "drawable")
-                }
-            }
-        }.hookMethod(object : XC_MethodHook() {
-            override fun afterHookedMethod(param: MethodHookParam) {
-                val obj = param.thisObject
-                param.thisObject.javaClass.declaredFields.forEach {
-                    it.isAccessible = true
-                    val enumMap = it.get(obj) as? EnumMap<*, *>
-                    if (enumMap !is EnumMap<*, *>) return@forEach
-                    // check is valueType int (resource id)
-                    val valueType = enumMap.values.first()::class.java
-                    if (valueType != Int::class.java) return@forEach
-                    NavigationBar.setCairoNotificationFilledIcon(enumMap, tabActivityCairo)
-                }
-            }
-        })
-    }
 }
