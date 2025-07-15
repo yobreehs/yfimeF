@@ -2,6 +2,8 @@ import groovy.xml.MarkupBuilder
 import groovy.xml.XmlSlurper
 import groovy.xml.slurpersupport.NodeChild
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
+import kotlin.apply
 
 plugins {
     alias(libs.plugins.android.application)
@@ -46,6 +48,21 @@ android {
             )
         )
     }
+    val ksFile = rootProject.file("signing.properties")
+    signingConfigs {
+        if (ksFile.exists()) {
+            create("release") {
+                val properties = Properties().apply {
+                    ksFile.inputStream().use { load(it) }
+                }
+
+                storePassword = properties["KEYSTORE_PASSWORD"] as String
+                keyAlias = properties["KEYSTORE_ALIAS"] as String
+                keyPassword = properties["KEYSTORE_ALIAS_PASSWORD"] as String
+                storeFile = file(properties["KEYSTORE_FILE"] as String)
+            }
+        }
+    }
     buildFeatures.buildConfig = true
     buildTypes {
         release {
@@ -54,7 +71,8 @@ android {
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            if (ksFile.exists())
+                signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
@@ -75,9 +93,9 @@ android {
         getByName("main") {
             java {
                 srcDirs(
-                "../revanced-patches/extensions/shared/library/src/main/java",
-                "../revanced-patches/extensions/youtube/src/main/java",
-                "../revanced-patches/extensions/spotify/src/main/java"
+                    "../revanced-patches/extensions/shared/library/src/main/java",
+                    "../revanced-patches/extensions/youtube/src/main/java",
+                    "../revanced-patches/extensions/spotify/src/main/java"
                 )
             }
         }

@@ -15,3 +15,7 @@
 .cxx
 local.properties
 .kotlin
+
+*.jks
+*.keystore
+signing.properties
