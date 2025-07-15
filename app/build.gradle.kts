@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "io.github.chsbuffer.revancedxposed"
-        versionCode = 21
+        versionCode = 22
         versionName = "1.0.$versionCode"
         val patchVersion = "5.31.2"
         buildConfigField("String", "PATCH_VERSION", "\"$patchVersion\"")
