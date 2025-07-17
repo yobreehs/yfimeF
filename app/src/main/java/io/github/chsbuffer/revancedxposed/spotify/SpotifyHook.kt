@@ -8,6 +8,7 @@ import app.revanced.extension.shared.Utils
 import app.revanced.extension.spotify.misc.UnlockPremiumPatch
 import com.spotify.remoteconfig.internal.AccountAttribute
 import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
@@ -33,7 +34,8 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
         ::Extension,
         ::SanitizeSharingLinks,
         ::UnlockPremium,
-        ::HideCreateButton
+        ::HideCreateButton,
+        ::FixThirdPartyLaunchersWidgets
     )
 
     fun Extension() {
@@ -267,4 +269,13 @@ fun SpotifyHook.UnlockPremium() {
             }
         }.single()
     }.hookMethod(replaceFetchRequestSingleWithError)
+}
+
+fun SpotifyHook.FixThirdPartyLaunchersWidgets() {
+    getDexMethod("canBindAppWidgetPermissionFingerprint"){
+        fingerprint {
+            strings("android.permission.BIND_APPWIDGET")
+            opcodes(Opcode.AND_INT_LIT8)
+        }
+    }.hookMethod(XC_MethodReplacement.returnConstant(true))
 }
