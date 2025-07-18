@@ -14,6 +14,7 @@ import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.Prefer
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.SwitchPreference
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import io.github.chsbuffer.revancedxposed.youtube.misc.PreferenceScreen
+import java.lang.reflect.Modifier
 
 fun YoutubeHook.RememberVideoQuality() {
     val settingsMenuVideoQualityGroup = setOf(
@@ -148,24 +149,18 @@ fun YoutubeHook.RememberVideoQuality() {
     getDexMethod("newVideoQualityChangedFingerprint") {
         fingerprint {
             accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
-            returns("L")
-            parameters("L")
             methodMatcher {
-                opNames(
-                    listOf(
-                        "iget",
-                        "const/4",
-                        "if-ne",
-                        "new-instance",
-                        "iget-object",
-                        "check-cast",
-                        "iget"
-                    )
-                )
                 addInvoke {
                     declaredClass =
                         "com.google.android.libraries.youtube.innertube.model.media.VideoQuality"
                     name = "<init>"
+                }
+                addUsingField {
+                    field {
+                        // VideoQualitySettings Enum
+                        declaredClass { usingStrings("VIDEO_QUALITY_SETTING_UNKNOWN") }
+                        modifiers = Modifier.STATIC
+                    }
                 }
             }
         }.also { method ->
