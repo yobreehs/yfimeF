@@ -39,6 +39,23 @@ fun newIntent(settingsName: String) = IntentPreference.Intent(
 
 @Suppress("UNREACHABLE_CODE")
 fun YoutubeHook.SettingsHook() {
+    val inflate = getDexMethod("PreferenceInflater#inflate") {
+        findMethod {
+            matcher {
+                returnType = "androidx.preference.Preference"
+                paramTypes(
+                    "org.xmlpull.v1.XmlPullParser",
+                    "androidx.preference.PreferenceGroup",
+                    "android.content.Context",
+                    "java.lang.Object[]",
+                    null,
+                    "java.lang.String[]"
+                )
+                usingEqStrings(": No start tag found!", ": ")
+            }
+        }.single()
+    }
+
     getDexMethod("PreferenceFragmentCompat#addPreferencesFromResource") {
         findClass {
             matcher {
@@ -48,20 +65,20 @@ fun YoutubeHook.SettingsHook() {
                     "androidx.preference.PreferenceFragmentCompat.PREFERENCE_ROOT"
                 )
             }
-        }.findMethod {
-            matcher {
-                returnType = "void"
-                paramTypes("int")
-            }
-        }.single().also { method ->
-            getDexMethod("PreferenceInflater#inflate") {
-                method.invokes.single {
-                    it.paramTypes.getOrNull(0)?.name == "org.xmlpull.v1.XmlPullParser"
+        }.single().let { preferenceFragmentCompat ->
+            preferenceFragmentCompat.findMethod {
+                matcher {
+                    returnType = "void"
+                    paramTypes("int")
                 }
-            }
+            }.singleOrNull() ?: preferenceFragmentCompat.findMethod {
+                matcher {
+                    name = "addPreferencesFromResource"
+                }
+            }.single()
         }
     }.hookMethod(
-        ScopedHook(getDexMethod("PreferenceInflater#inflate").toMethod()) {
+        ScopedHook(inflate.toMethod()) {
             var handleWebView = false
             after {
                 val preferencesName = app.resources.getResourceName(outerParam.args[0] as Int)
@@ -108,8 +125,7 @@ fun YoutubeHook.SettingsHook() {
             try {
                 LicenseActivityHook.initialize(activity)
             } catch (_: Resources.NotFoundException) {
-                AlertDialog.Builder(activity)
-                    .setTitle("Restart needed")
+                AlertDialog.Builder(activity).setTitle("Restart needed")
                     .setMessage("ReVanced Xposed has been updated")
                     .setPositiveButton("Restart now") { _, _ ->
                         restartApplication(activity)
