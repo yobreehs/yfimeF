@@ -157,9 +157,10 @@ fun YoutubeHook.RememberVideoQuality() {
                 }
                 addUsingField {
                     field {
-                        // VideoQualitySettings Enum
+                        // VIDEO_QUALITY_SETTING_UNKNOWN Enum
                         declaredClass { usingStrings("VIDEO_QUALITY_SETTING_UNKNOWN") }
                         modifiers = Modifier.STATIC
+                        name = "a"
                     }
                 }
             }
