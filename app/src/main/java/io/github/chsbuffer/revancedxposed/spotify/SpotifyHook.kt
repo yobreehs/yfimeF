@@ -6,7 +6,6 @@ import android.content.Context
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.spotify.misc.UnlockPremiumPatch
-import com.spotify.remoteconfig.internal.AccountAttribute
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
@@ -90,7 +89,7 @@ fun SpotifyHook.UnlockPremium() {
         val field = getDexField("attributesMapField").toField()
         override fun beforeHookedMethod(param: MethodHookParam) {
             Logger.printDebug { field.get(param.thisObject)!!.toString() }
-            UnlockPremiumPatch.overrideAttributes(field.get(param.thisObject) as Map<String, AccountAttribute>)
+            UnlockPremiumPatch.overrideAttributes(field.get(param.thisObject) as Map<String, *>)
         }
     })
 
@@ -216,7 +215,7 @@ fun SpotifyHook.UnlockPremium() {
             val sections = param.result
             // Set sections mutable
             sections.javaClass.findFirstFieldByExactType(Boolean::class.java).set(sections, true)
-            UnlockPremiumPatch.removeHomeSections(param.result as MutableList<com.spotify.home.evopage.homeapi.proto.Section>)
+            UnlockPremiumPatch.removeHomeSections(param.result as MutableList<*>)
         }
     })
     // Remove ads sections from browser.
@@ -227,7 +226,7 @@ fun SpotifyHook.UnlockPremium() {
             val sections = param.result
             // Set sections mutable
             sections.javaClass.findFirstFieldByExactType(Boolean::class.java).set(sections, true)
-            UnlockPremiumPatch.removeBrowseSections(param.result as MutableList<com.spotify.browsita.v1.resolved.Section>)
+            UnlockPremiumPatch.removeBrowseSections(param.result as MutableList<*>)
         }
     })
 
