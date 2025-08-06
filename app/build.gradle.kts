@@ -1,6 +1,7 @@
 import groovy.xml.MarkupBuilder
 import groovy.xml.XmlSlurper
 import groovy.xml.slurpersupport.NodeChild
+import org.gradle.kotlin.dsl.support.uppercaseFirstChar
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 import kotlin.apply
@@ -17,7 +18,9 @@ android {
         applicationId = "io.github.chsbuffer.revancedxposed"
         versionCode = 23
         versionName = "1.0.$versionCode"
-        val patchVersion = "5.31.2"
+        val patchVersion = Properties().apply {
+            File("revanced-patches/gradle.properties").inputStream().use { load(it) }
+        }["version"]
         buildConfigField("String", "PATCH_VERSION", "\"$patchVersion\"")
     }
     flavorDimensions += "abi"
@@ -170,13 +173,46 @@ abstract class GenerateStringsTask @Inject constructor(
     }
 }
 
+abstract class CopyResourcesTask @Inject constructor() : DefaultTask() {
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val inputDirectory: DirectoryProperty
+
+    @get:OutputDirectory
+    abstract val outputDirectory: DirectoryProperty
+
+    @TaskAction
+    fun action() {
+        val baseDir = inputDirectory.get().asFile
+        val outputDir = outputDirectory.get().asFile
+
+        val drawables = listOf(
+            "settings/drawable",
+            "sponsorblock/drawable",
+            "swipecontrols/drawable"
+        )
+
+        for (drawable in drawables) {
+            File(baseDir, drawable).copyRecursively(File(outputDir, "drawable"), overwrite = true)
+        }
+    }
+}
+
 androidComponents {
     onVariants { variant ->
-        val task = project.tasks.register<GenerateStringsTask>("generate${variant.name}Strings") {
+        val variantName = variant.name.uppercaseFirstChar()
+        val strTask = project.tasks.register<GenerateStringsTask>("generateStrings$variantName") {
             inputDirectory.set(project.file("../revanced-patches/patches/src/main/resources/addresources"))
         }
         variant.sources.res?.addGeneratedSourceDirectory(
-            task, GenerateStringsTask::outputDirectory
+            strTask, GenerateStringsTask::outputDirectory
+        )
+
+        val resTask = project.tasks.register<CopyResourcesTask>("copyResources$variantName") {
+            inputDirectory.set(project.file("../revanced-patches/patches/src/main/resources"))
+        }
+        variant.sources.res?.addGeneratedSourceDirectory(
+            resTask, CopyResourcesTask::outputDirectory
         )
     }
 }
