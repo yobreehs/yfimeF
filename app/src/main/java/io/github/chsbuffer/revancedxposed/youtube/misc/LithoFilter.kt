@@ -105,7 +105,7 @@ fun YoutubeHook.LithoFilter() {
             val identifier = identifierField.get(conversion) as String?
             val pathBuilder = pathBuilderField.get(conversion) as StringBuilder
 
-            if (LithoFilterPatch.shouldFilter(identifier, pathBuilder)) {
+            if (LithoFilterPatch.isFiltered(identifier, pathBuilder)) {
                 param.result = emptyComponentClazz.new()
             }
         }

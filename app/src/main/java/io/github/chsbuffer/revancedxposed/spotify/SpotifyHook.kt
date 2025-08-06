@@ -1,8 +1,6 @@
 package io.github.chsbuffer.revancedxposed.spotify
 
-import android.annotation.SuppressLint
 import android.app.Application
-import android.content.Context
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.spotify.misc.UnlockPremiumPatch
@@ -17,7 +15,7 @@ import io.github.chsbuffer.revancedxposed.callMethod
 import io.github.chsbuffer.revancedxposed.findField
 import io.github.chsbuffer.revancedxposed.findFirstFieldByExactType
 import io.github.chsbuffer.revancedxposed.fingerprint
-import io.github.chsbuffer.revancedxposed.setObjectField
+import io.github.chsbuffer.revancedxposed.injectHostClassLoaderToSelf
 import io.github.chsbuffer.revancedxposed.strings
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.enums.StringMatchType
@@ -42,34 +40,7 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
         Utils.setContext(app)
 
         // load stubbed spotify classes
-        injectClassLoader(this::class.java.classLoader!!, classLoader)
-    }
-
-    @SuppressLint("DiscouragedPrivateApi")
-    fun injectClassLoader(self: ClassLoader, classLoader: ClassLoader) {
-        val loader = self.parent
-        val host = classLoader
-        val bootClassLoader = Context::class.java.classLoader!!
-
-        self.setObjectField("parent", object : ClassLoader(bootClassLoader) {
-            override fun findClass(name: String?): Class<*> {
-                try {
-                    return bootClassLoader.loadClass(name)
-                } catch (_: ClassNotFoundException) {
-                }
-
-                try {
-                    return loader.loadClass(name)
-                } catch (_: ClassNotFoundException) {
-                }
-                try {
-                    return host.loadClass(name)
-                } catch (_: ClassNotFoundException) {
-                }
-
-                throw ClassNotFoundException(name);
-            }
-        })
+        injectHostClassLoaderToSelf(this::class.java.classLoader!!, classLoader)
     }
 }
 

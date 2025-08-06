@@ -1,5 +1,6 @@
 package io.github.chsbuffer.revancedxposed
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.loader.ResourcesLoader
 import android.content.res.loader.ResourcesProvider
@@ -100,4 +101,32 @@ fun Context.addModuleAssets() {
 //    }
 
     resources.assets.callMethod("addAssetPath", XposedInit.modulePath)
+}
+
+
+@SuppressLint("DiscouragedPrivateApi")
+fun injectHostClassLoaderToSelf(self: ClassLoader, classLoader: ClassLoader) {
+    val loader = self.parent
+    val host = classLoader
+    val bootClassLoader = Context::class.java.classLoader!!
+
+    self.setObjectField("parent", object : ClassLoader(bootClassLoader) {
+        override fun findClass(name: String?): Class<*> {
+            try {
+                return bootClassLoader.loadClass(name)
+            } catch (_: ClassNotFoundException) {
+            }
+
+            try {
+                return loader.loadClass(name)
+            } catch (_: ClassNotFoundException) {
+            }
+            try {
+                return host.loadClass(name)
+            } catch (_: ClassNotFoundException) {
+            }
+
+            throw ClassNotFoundException(name);
+        }
+    })
 }

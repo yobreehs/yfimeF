@@ -187,6 +187,7 @@ abstract class CopyResourcesTask @Inject constructor() : DefaultTask() {
         val outputDir = outputDirectory.get().asFile
 
         val drawables = listOf(
+            "qualitybutton/drawable",
             "settings/drawable",
             "sponsorblock/drawable",
             "swipecontrols/drawable"
