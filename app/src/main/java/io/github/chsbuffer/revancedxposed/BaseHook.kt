@@ -2,7 +2,7 @@ package io.github.chsbuffer.revancedxposed
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.os.Build
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
@@ -12,6 +12,8 @@ import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.BuildConfig.DEBUG
 import org.luckypray.dexkit.DexKitBridge
+import org.luckypray.dexkit.DexKitCacheBridge
+import org.luckypray.dexkit.annotations.DexKitExperimentalApi
 import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.FieldData
 import org.luckypray.dexkit.result.MethodData
@@ -68,10 +70,51 @@ interface IHook {
     fun DexField.toField() = getFieldInstance(classLoader)
 }
 
+@OptIn(DexKitExperimentalApi::class)
+class PrefCache(app: Application) : DexKitCacheBridge.Cache {
+    val pref = app.getSharedPreferences("xprevanced", MODE_PRIVATE)!!
+    private val map = mutableMapOf<String, String>().apply {
+        putAll(pref.all as Map<String, String>)
+    }
+
+    override fun clearAll() {
+        map.clear()
+    }
+
+    override fun get(key: String, default: String?): String? = map.getOrDefault(key, default)
+
+    override fun getAllKeys(): Collection<String> = map.keys
+
+    override fun getList(
+        key: String, default: List<String>?
+    ): List<String>? = map.getOrDefault(key, null)?.split('|') ?: default
+
+    override fun put(key: String, value: String) {
+        map.put(key, value)
+    }
+
+    override fun putList(key: String, value: List<String>) {
+        map.put(key, value.joinToString("|"))
+    }
+
+    override fun remove(key: String) {
+        map.remove(key)
+    }
+
+    fun saveCache() {
+        val edit = pref.edit()
+        map.forEach { k, v ->
+            edit.putString(k, v)
+        }
+        edit.commit()
+    }
+}
+
 class DependedHookFailedException(
     subHookName: String, exception: Throwable
 ) : Exception("Depended hook $subHookName failed.", exception)
 
+@OptIn(DexKitExperimentalApi::class)
 @SuppressLint("CommitPrefEdits")
 abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : IHook {
     override val classLoader = lpparam.classLoader!!
@@ -83,10 +126,12 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
 
     // cache
     private val moduleRel = BuildConfig.VERSION_CODE
-    private var pref = app.getSharedPreferences("xprevanced", Context.MODE_PRIVATE)!!
-    private val map = mutableMapOf<String, String>()
-    private lateinit var dexkit: DexKitBridge
-    private var isCached: Boolean = false
+    private var cache = PrefCache(app)
+    private var dexkit = run {
+        System.loadLibrary("dexkit")
+        DexKitCacheBridge.init(cache)
+        DexKitCacheBridge.create("", lpparam.appInfo.sourceDir)
+    }
 
     override fun Hook() {
         val t = measureTimeMillis {
@@ -96,7 +141,7 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
                 handleResult()
                 logDebugInfo()
             } finally {
-                closeDexKit()
+                dexkit.close()
             }
         }
         Logger.printDebug { "${lpparam.packageName} handleLoadPackage: ${t}ms" }
@@ -109,29 +154,16 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
         val packageInfo = app.packageManager.getPackageInfo(app.packageName, 0)
 
         val id = "${packageInfo.lastUpdateTime}-$moduleRel"
-        val cachedId = pref.getString("id", null)
-        isCached = cachedId.equals(id) && !DEBUG
+        val cachedId = cache.get("id", null)
+        val isCached = cachedId.equals(id) && !DEBUG
 
         Logger.printInfo { "cache ID : $id" }
         Logger.printInfo { "cached ID: ${cachedId ?: ""}" }
         Logger.printInfo { "Using cached keys: $isCached" }
 
-        if (isCached) {
-            map.putAll(pref.all as Map<String, String>)
-        } else {
-            map["id"] = id
-            createDexKit()
-        }
-    }
-
-    private fun createDexKit() {
-        System.loadLibrary("dexkit")
-        dexkit = DexKitBridge.create(lpparam.appInfo.sourceDir)
-    }
-
-    private fun closeDexKit() {
-        if (::dexkit.isInitialized) {
-            dexkit.close()
+        if (!isCached) {
+            cache.clearAll()
+            cache.put("id", id)
         }
     }
 
@@ -147,15 +179,11 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
     }
 
     private fun handleResult() {
-        // save cache if no failure
+        cache.saveCache()
         val success = failedHooks.isEmpty()
         if (!success) {
             XposedBridge.log("${lpparam.appInfo.packageName} version: ${getAppVersion()}")
             Utils.showToastLong("Error while apply following Hooks:\n${failedHooks.joinToString { it.name }}")
-
-            clearCache()
-        } else {
-            saveCache()
         }
     }
 
@@ -165,9 +193,6 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
             XposedBridge.log("${lpparam.appInfo.packageName} version: ${getAppVersion()}")
             if (success) {
                 Utils.showToastLong("apply hooks success")
-            }
-            if (success && isCached) {
-                map.forEach { key, value -> Logger.printDebug { "$key Matches: $value" } }
             }
         }
     }
@@ -181,23 +206,6 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
             @Suppress("DEPRECATION") packageInfo.versionCode
         }
         return "$versionName ($versionCode)"
-    }
-
-    private fun saveCache() {
-        if (isCached) return
-
-        val edit = pref.edit()
-        map.forEach { k, v ->
-            edit.putString(k, v)
-        }
-        edit.commit()
-    }
-
-    private fun clearCache() {
-        Logger.printInfo { "clear cache" }
-        pref.edit().clear().commit()
-        isCached = false
-        map.clear()
     }
 
     fun dependsOn(vararg hooks: HookFunction) {
@@ -217,31 +225,23 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
         serialize: (T) -> String,
         deserialize: (String) -> R
     ): R {
-        return map[key]?.let { deserialize(it) } ?: findFunc!!(dexkit).let { result ->
-            val serializedValue = serialize(result)
-            map[key] = serializedValue
-            Logger.printInfo { "$key Matches: $serializedValue" }
-            deserialize(serializedValue)
-        }
+        return cache.get(key, null)?.let { deserialize(it) }
+            ?: findFunc!!(dexkit.bridge).let { result ->
+                val serializedValue = serialize(result)
+                cache.put(key, serializedValue)
+                Logger.printInfo { "$key Matches: $serializedValue" }
+                deserialize(serializedValue)
+            }
     }
 
     fun getDexClass(key: String, findFunc: (DexKitBridge.() -> ClassData)? = null): DexClass =
-        getFromCacheOrFind(key, findFunc, { it.descriptor }, { DexClass(it) })
+        if (findFunc == null) dexkit.getClassDirect(key) else dexkit.getClassDirect(key, findFunc)
 
     fun getDexMethod(key: String, findFunc: (DexKitBridge.() -> MethodData)? = null): DexMethod =
-        getFromCacheOrFind(key, findFunc, { it.descriptor }, { DexMethod(it) })
-
-    fun getDexMethods(
-        key: String,
-        findFunc: (DexKitBridge.() -> Iterable<MethodData>)? = null
-    ): Iterable<DexMethod> =
-        getFromCacheOrFind(
-            key, findFunc,
-            { it.joinToString("|") { it.descriptor } },
-            { it.split("|").map { DexMethod(it) } })
+        if (findFunc == null) dexkit.getMethodDirect(key) else dexkit.getMethodDirect(key, findFunc)
 
     fun getDexField(key: String, findFunc: (DexKitBridge.() -> FieldData)? = null): DexField =
-        getFromCacheOrFind(key, findFunc, { it.descriptor }, { DexField(it) })
+        if (findFunc == null) dexkit.getFieldDirect(key) else dexkit.getFieldDirect(key, findFunc)
 
     fun getString(key: String, findFunc: (DexKitBridge.() -> String)? = null): String =
         getFromCacheOrFind(key, findFunc, { it }, { it })
@@ -249,4 +249,11 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
     fun getNumber(key: String, findFunc: (DexKitBridge.() -> Int)? = null): Int =
         getFromCacheOrFind(key, findFunc, { it.toString() }, { Integer.parseInt(it) })
 
+    fun getDexMethods(
+        key: String, findFunc: (DexKitBridge.() -> List<MethodData>)? = null
+    ): List<DexMethod> = if (findFunc == null) {
+        dexkit.getMethodsDirect(key)
+    } else {
+        dexkit.getMethodsDirect(key, findFunc)
+    }
 }
