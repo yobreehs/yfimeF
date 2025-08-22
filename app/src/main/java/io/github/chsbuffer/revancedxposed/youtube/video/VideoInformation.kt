@@ -1,14 +1,20 @@
 package io.github.chsbuffer.revancedxposed.youtube.video
 
 import app.revanced.extension.youtube.patches.VideoInformation
+import com.google.android.libraries.youtube.innertube.model.media.VideoQuality
 import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XposedBridge
+import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.Opcode
+import io.github.chsbuffer.revancedxposed.findFirstFieldByExactType
+import io.github.chsbuffer.revancedxposed.fingerprint
 import io.github.chsbuffer.revancedxposed.getStaticObjectField
 import io.github.chsbuffer.revancedxposed.opcodes
 import io.github.chsbuffer.revancedxposed.strings
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import org.luckypray.dexkit.query.enums.OpCodeMatchType
 import org.luckypray.dexkit.result.FieldUsingType
+import org.luckypray.dexkit.wrap.DexClass
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
@@ -30,14 +36,20 @@ class PlaybackController(
     private val seekToRelative: Method,
     val seekSourceNone: Any
 ) : VideoInformation.PlaybackController {
-    override fun seekTo(videoTime: Long): Boolean {
+    override fun patch_seekTo(videoTime: Long): Boolean {
         return seekTo.invoke(obj, videoTime, seekSourceNone) as Boolean
     }
 
-    override fun seekToRelative(videoTimeOffset: Long) {
+    override fun patch_seekToRelative(videoTimeOffset: Long) {
         seekToRelative.invoke(obj)
     }
 }
+
+private lateinit var getQualityName: (VideoQuality) -> String
+private lateinit var getResolution: (VideoQuality) -> Int
+
+fun VideoQuality.getResolution() = getResolution(this)
+fun VideoQuality.getQualityName() = getQualityName(this)
 
 fun YoutubeHook.VideoInformationHook() {
     dependsOn(
@@ -245,4 +257,92 @@ fun YoutubeHook.VideoInformationHook() {
     // TODO Hook the user playback speed selection.
 
     // TODO Handle new playback speed menu.
+
+    // videoQuality
+    val YOUTUBE_VIDEO_QUALITY_CLASS_TYPE =
+        "Lcom/google/android/libraries/youtube/innertube/model/media/VideoQuality;"
+
+    val videoQualityClass = DexClass(YOUTUBE_VIDEO_QUALITY_CLASS_TYPE).toClass()
+    val qualityNameField = videoQualityClass.findFirstFieldByExactType(String::class.java)
+    val resolutionField = videoQualityClass.findFirstFieldByExactType(Int::class.java)
+
+    getQualityName = { quality -> qualityNameField.get(quality) as String }
+    getResolution = { quality -> resolutionField.get(quality) as Int }
+
+    // Fix bad data used by YouTube.
+    XposedBridge.hookAllConstructors(
+        videoQualityClass, object : XC_MethodHook() {
+            override fun afterHookedMethod(param: MethodHookParam) {
+                val quality = param.thisObject as VideoQuality
+                val newResolution = VideoInformation.fixVideoQualityResolution(
+                    quality.getQualityName(), quality.getResolution()
+                )
+                resolutionField.set(quality, newResolution)
+            }
+        })
+
+    val videoQualitySetterFingerprint = getDexMethod("videoQualitySetterFingerprint") {
+        fingerprint {
+            accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
+            returns("V")
+            parameters("[L", "I", "Z")
+            opcodes(
+                Opcode.IF_EQZ,
+                Opcode.INVOKE_VIRTUAL,
+                Opcode.MOVE_RESULT_OBJECT,
+                Opcode.INVOKE_VIRTUAL,
+                Opcode.IPUT_BOOLEAN,
+            )
+            strings("menu_item_video_quality")
+        }
+    }
+
+    getDexMethod("setVideoQualityFingerprint") {
+        fingerprint {
+            returns("V")
+            parameters("L")
+            opcodes(
+                Opcode.IGET_OBJECT,
+                Opcode.IPUT_OBJECT,
+                Opcode.IGET_OBJECT,
+            )
+            classMatcher {
+                className = videoQualitySetterFingerprint.className
+            }
+        }.also { method ->
+            val usingFields = method.usingFields
+            getDexField("onItemClickListenerClassReference") {
+                usingFields[0].field
+            }
+            getDexField("setQualityFieldReference") {
+                usingFields[1].field
+            }
+            getDexMethod("setQualityMenuIndexMethod") {
+                usingFields[1].field.type.findMethod {
+                    matcher { addParamType { descriptor = YOUTUBE_VIDEO_QUALITY_CLASS_TYPE } }
+                }.single()
+            }
+        }
+    }
+
+    // Detect video quality changes and override the current quality.
+    videoQualitySetterFingerprint.hookMethod(object : XC_MethodHook() {
+        val onItemClickListenerClass = getDexField("onItemClickListenerClassReference").toField()
+        val setQualityField = getDexField("setQualityFieldReference").toField()
+        val setQualityMenuIndexMethod = getDexMethod("setQualityMenuIndexMethod").toMethod()
+
+        @Suppress("UNCHECKED_CAST")
+        override fun beforeHookedMethod(param: MethodHookParam) {
+            val qualities = param.args[0] as Array<out VideoQuality>
+            val originalQualityIndex = param.args[1] as Int
+            val menu = param.thisObject.let { onItemClickListenerClass.get(it) }
+                .let { setQualityField.get(it) }
+
+            param.args[1] = VideoInformation.setVideoQuality(
+                qualities,
+                { quality -> setQualityMenuIndexMethod(menu, quality) },
+                originalQualityIndex
+            )
+        }
+    })
 }
