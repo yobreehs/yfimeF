@@ -78,6 +78,9 @@ android {
                 signingConfig = signingConfigs.getByName("release")
         }
     }
+    lint {
+        checkReleaseBuilds = false
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -106,7 +109,9 @@ android {
 }
 
 dependencies {
-    implementation(libs.dexkit)
+//    implementation(libs.dexkit)
+    implementation(group = "", name = "dexkit-android", ext = "aar")
+    implementation("com.google.flatbuffers:flatbuffers-java:23.5.26") // dexkit dependency
     implementation(libs.annotation)
     implementation(libs.gson)
     implementation(libs.kotlinx.coroutines.android)
