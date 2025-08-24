@@ -125,7 +125,7 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
     private val failedHooks = mutableListOf<HookFunction>()
 
     // cache
-    private val moduleRel = BuildConfig.VERSION_CODE
+    private val moduleRel = BuildConfig.COMMIT_HASH
     private var cache = PrefCache(app)
     private var dexkit = run {
         System.loadLibrary("dexkit")

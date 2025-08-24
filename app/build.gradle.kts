@@ -11,6 +11,11 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
 }
 
+val gitCommitHashProvider = providers.exec {
+    commandLine("git", "rev-parse", "--short", "HEAD")
+    workingDir = rootProject.rootDir
+}.standardOutput.asText!!
+
 android {
     namespace = "io.github.chsbuffer.revancedxposed"
 
@@ -22,21 +27,10 @@ android {
             rootProject.file("revanced-patches/gradle.properties").inputStream().use { load(it) }
         }["version"]
         buildConfigField("String", "PATCH_VERSION", "\"$patchVersion\"")
+        buildConfigField("String", "COMMIT_HASH", "\"${gitCommitHashProvider.get().trim()}\"")
     }
     flavorDimensions += "abi"
     productFlavors {
-        create("x86_64") {
-            dimension = "abi"
-            ndk {
-                abiFilters.add("x86_64")
-            }
-        }
-        create("arm64_v8a") {
-            dimension = "abi"
-            ndk {
-                abiFilters.add("arm64-v8a")
-            }
-        }
         create("universal") {
             dimension = "abi"
         }

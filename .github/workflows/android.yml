@@ -24,6 +24,14 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
+    - name: Write key
+      run: |
+        echo KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} > signing.properties
+        echo KEYSTORE_ALIAS=${{ secrets.KEYSTORE_ALIAS }} >> signing.properties
+        echo KEYSTORE_ALIAS_PASSWORD='${{ secrets.KEYSTORE_ALIAS_PASSWORD }}' >> signing.properties
+        echo KEYSTORE_FILE=../key.jks >> signing.properties
+        echo ${{ secrets.KEYSTORE }} | base64 --decode > key.jks
+
     - name: Build Debug
       run: ./gradlew assembleUniversalDebug
 
