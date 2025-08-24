@@ -8,9 +8,8 @@ import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import java.lang.reflect.Modifier
 
 fun YoutubeHook.BackgroundPlayback() {
-    val prefBackgroundAndOfflineCategoryId = getNumber("prefBackgroundAndOfflineCategoryId") {
+    val prefBackgroundAndOfflineCategoryId =
         Utils.getResourceIdentifier("pref_background_and_offline_category", "string")
-    }
 
     // isBackgroundPlaybackAllowed
     getDexMethod("BackgroundPlaybackManagerFingerprint") {

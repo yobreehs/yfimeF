@@ -219,41 +219,18 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
         }
     }
 
-    private fun <T, R> getFromCacheOrFind(
-        key: String,
-        findFunc: (DexKitBridge.() -> T)?,
-        serialize: (T) -> String,
-        deserialize: (String) -> R
-    ): R {
-        return cache.get(key, null)?.let { deserialize(it) }
-            ?: findFunc!!(dexkit.bridge).let { result ->
-                val serializedValue = serialize(result)
-                cache.put(key, serializedValue)
-                Logger.printInfo { "$key Matches: $serializedValue" }
-                deserialize(serializedValue)
-            }
-    }
-
     fun getDexClass(key: String, findFunc: (DexKitBridge.() -> ClassData)? = null): DexClass =
-        if (findFunc == null) dexkit.getClassDirect(key) else dexkit.getClassDirect(key, findFunc)
+        dexkit.getClassDirect(key) { findFunc!!().also { Logger.printInfo { "$key Matches: ${it.descriptor}" } } }
 
     fun getDexMethod(key: String, findFunc: (DexKitBridge.() -> MethodData)? = null): DexMethod =
-        if (findFunc == null) dexkit.getMethodDirect(key) else dexkit.getMethodDirect(key, findFunc)
+        dexkit.getMethodDirect(key) { findFunc!!().also { Logger.printInfo { "$key Matches: ${it.descriptor}" } } }
 
     fun getDexField(key: String, findFunc: (DexKitBridge.() -> FieldData)? = null): DexField =
-        if (findFunc == null) dexkit.getFieldDirect(key) else dexkit.getFieldDirect(key, findFunc)
-
-    fun getString(key: String, findFunc: (DexKitBridge.() -> String)? = null): String =
-        getFromCacheOrFind(key, findFunc, { it }, { it })
-
-    fun getNumber(key: String, findFunc: (DexKitBridge.() -> Int)? = null): Int =
-        getFromCacheOrFind(key, findFunc, { it.toString() }, { Integer.parseInt(it) })
+        dexkit.getFieldDirect(key) { findFunc!!().also { Logger.printInfo { "$key Matches: ${it.descriptor}" } } }
 
     fun getDexMethods(
         key: String, findFunc: (DexKitBridge.() -> List<MethodData>)? = null
-    ): List<DexMethod> = if (findFunc == null) {
-        dexkit.getMethodsDirect(key)
-    } else {
-        dexkit.getMethodsDirect(key, findFunc)
-    }
+    ): List<DexMethod> =
+        dexkit.getMethodsDirect(key) { findFunc!!().also { Logger.printInfo { "$key Matches: ${it.joinToString { m -> m.descriptor }}" } } }
+
 }
