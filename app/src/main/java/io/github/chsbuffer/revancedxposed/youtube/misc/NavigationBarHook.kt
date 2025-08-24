@@ -10,6 +10,7 @@ import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.ScopedHook
 import io.github.chsbuffer.revancedxposed.accessFlags
 import io.github.chsbuffer.revancedxposed.fingerprint
+import io.github.chsbuffer.revancedxposed.isStatic
 import io.github.chsbuffer.revancedxposed.literal
 import io.github.chsbuffer.revancedxposed.returns
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
@@ -103,4 +104,41 @@ fun YoutubeHook.NavigationBarHook() {
     initializeButtonsFingerprint.hookMethod(ScopedHook(pivotBarButtonsCreateResourceViewFingerprint.toMethod()) {
         after { NavigationBar.navigationImageResourceTabLoaded(param.result as View) }
     })
+
+    // Fix YT bug of notification tab missing the filled icon.
+    val tabActivityCairo =
+        navigationEnumClass.toClass().enumConstants?.firstOrNull { (it as? Enum<*>)?.name == "TAB_ACTIVITY_CAIRO" } as? Enum<*>
+    if (tabActivityCairo != null) {
+        val setEnumMapFingerprint = getDexMethod("setEnumMapFingerprint") {
+            fingerprint {
+                returns("V")
+                literal {
+                    Utils.getResourceIdentifier("yt_fill_bell_black_24", "drawable")
+                }
+            }
+        }
+
+        val processFields: (Any?, Class<*>) -> Unit = { obj, clazz ->
+            clazz.declaredFields.forEach { field ->
+                field.isAccessible = true
+                if (obj == null && !field.isStatic) return@forEach
+                val enumMap = field.get(obj) as? EnumMap<*, *> ?: return@forEach
+                // check is valueType int (resource id)
+                val valueType = enumMap.values.firstOrNull()?.javaClass ?: return@forEach
+                if (valueType != Int::class.javaObjectType) return@forEach
+                if (!enumMap.containsKey(tabActivityCairo))
+                    NavigationBar.setCairoNotificationFilledIcon(enumMap, tabActivityCairo)
+            }
+        }
+
+        if (setEnumMapFingerprint.isStaticInitializer) {
+            processFields(null, classLoader.loadClass(setEnumMapFingerprint.declaredClassName))
+        } else {
+            setEnumMapFingerprint.hookMethod(object : XC_MethodHook() {
+                override fun afterHookedMethod(param: MethodHookParam) {
+                    processFields(param.thisObject, param.thisObject.javaClass)
+                }
+            })
+        }
+    }
 }
