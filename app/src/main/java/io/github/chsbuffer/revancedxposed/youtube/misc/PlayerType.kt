@@ -56,10 +56,12 @@ fun YoutubeHook.PlayerTypeHook() {
     })
 
     getDexMethod("videoStateFingerprint") {
+        val controlsState =
+            findClass { matcher { usingStrings("controls can be in the buffering state only if in PLAYING or PAUSED video state") } }.single()
         findMethod {
             matcher {
                 returnType = "void"
-                paramTypes("com.google.android.libraries.youtube.player.features.overlay.controls.ControlsState")
+                addParamType { descriptor = controlsState.descriptor }
                 opcodes(
                     Opcode.CONST_4,
                     Opcode.IF_EQZ,
