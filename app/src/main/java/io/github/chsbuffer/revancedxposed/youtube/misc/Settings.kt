@@ -2,6 +2,7 @@ package io.github.chsbuffer.revancedxposed.youtube.misc
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.res.Resources
 import android.webkit.WebView
 import app.revanced.extension.shared.Logger
@@ -80,10 +81,10 @@ fun YoutubeHook.SettingsHook() {
     }.hookMethod(
         ScopedHook(inflate.toMethod()) {
             var handleWebView = false
-            after {
+            before {
                 val preferencesName = app.resources.getResourceName(outerParam.args[0] as Int)
                 Logger.printDebug { "addPreferencesFromResource $preferencesName" }
-                if (!preferencesName.contains("settings_fragment")) return@after
+                if (!preferencesName.contains("settings_fragment")) return@before
                 if (!handleWebView) {
                     // workaround "AssetManager.addAssetPath gets Invalid When WebView is created":
                     // let WebView replace the AssetManager first then addModuleAssets
@@ -92,9 +93,12 @@ fun YoutubeHook.SettingsHook() {
                     handleWebView = true
                 }
                 app.addModuleAssets()
+                (param.args[2] as Context).addModuleAssets()
+                val xml =
+                    if (preferencesName.contains("settings_fragment_cairo")) R.xml.yt_revanced_settings_cairo else R.xml.yt_revanced_settings
                 XposedBridge.invokeOriginalMethod(
                     param.method, param.thisObject, param.args.clone().apply {
-                        this[0] = app.resources.getXml(R.xml.yt_revanced_settings)
+                        this[0] = app.resources.getXml(xml)
                     })
             }
         })
