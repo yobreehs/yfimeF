@@ -75,7 +75,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
 fun inContext(lpparam: LoadPackageParam, f: (Application) -> Unit) {
     val appClazz = XposedHelpers.findClass(lpparam.appInfo.className, lpparam.classLoader)
     XposedBridge.hookMethod(appClazz.getMethod("onCreate"), object : XC_MethodHook() {
-        override fun afterHookedMethod(param: MethodHookParam) {
+        override fun beforeHookedMethod(param: MethodHookParam) {
             val app = param.thisObject as Application
             Utils.setContext(app)
             f(app)
