@@ -2,10 +2,9 @@ package io.github.chsbuffer.revancedxposed.spotify
 
 import android.content.ClipData
 import app.revanced.extension.spotify.misc.privacy.SanitizeSharingLinksPatch
-import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers
-import io.github.chsbuffer.revancedxposed.ScopedHook
 import io.github.chsbuffer.revancedxposed.fingerprint
+import io.github.chsbuffer.revancedxposed.scopedHook
 import java.lang.reflect.Modifier
 
 fun SpotifyHook.SanitizeSharingLinks() {
@@ -26,7 +25,7 @@ fun SpotifyHook.SanitizeSharingLinks() {
             }
         }
     }.hookMethod(
-        ScopedHook(
+        scopedHook(
             XposedHelpers.findMethodExact(
                 ClipData::class.java.name,
                 lpparam.classLoader,
@@ -35,7 +34,7 @@ fun SpotifyHook.SanitizeSharingLinks() {
                 CharSequence::class.java
             )
         ) {
-            before {
+            before { param -> 
                 val url = param.args[1] as String
                 param.args[1] = SanitizeSharingLinksPatch.sanitizeUrl(url)
             }
@@ -70,10 +69,10 @@ fun SpotifyHook.SanitizeSharingLinks() {
                 !it.usingStrings.contains("")
             }
         }
-    }.hookMethod(object : XC_MethodHook() {
-        override fun beforeHookedMethod(param: MethodHookParam) {
+    }.hookMethod {
+        before { param ->
             val url = param.args[1] as String
             param.args[1] = SanitizeSharingLinksPatch.sanitizeUrl(url)
         }
-    })
+    }
 }

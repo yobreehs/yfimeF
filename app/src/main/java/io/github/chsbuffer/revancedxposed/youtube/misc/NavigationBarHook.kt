@@ -5,14 +5,13 @@ import android.view.View
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.youtube.shared.NavigationBar
 import app.revanced.extension.youtube.shared.NavigationBar.NavigationButton
-import de.robv.android.xposed.XC_MethodHook
 import io.github.chsbuffer.revancedxposed.AccessFlags
-import io.github.chsbuffer.revancedxposed.ScopedHook
 import io.github.chsbuffer.revancedxposed.accessFlags
 import io.github.chsbuffer.revancedxposed.fingerprint
 import io.github.chsbuffer.revancedxposed.isStatic
 import io.github.chsbuffer.revancedxposed.literal
 import io.github.chsbuffer.revancedxposed.returns
+import io.github.chsbuffer.revancedxposed.scopedHook
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import java.util.EnumMap
 
@@ -63,8 +62,8 @@ fun YoutubeHook.NavigationBarHook() {
             }
         }.single()
     }
-    initializeButtonsFingerprint.hookMethod(ScopedHook(getNavigationEnumMethod.toMethod()) {
-        after { NavigationBar.setLastAppNavigationEnum(param.result as Enum<*>) }
+    initializeButtonsFingerprint.hookMethod(scopedHook(getNavigationEnumMethod.toMethod()) {
+        after { param -> NavigationBar.setLastAppNavigationEnum(param.result as Enum<*>) }
     })
 
     // Hook the creation of navigation tab views.
@@ -84,8 +83,8 @@ fun YoutubeHook.NavigationBarHook() {
             }
         }
 
-    initializeButtonsFingerprint.hookMethod(ScopedHook(pivotBarButtonsCreateDrawableViewFingerprint.toMethod()) {
-        after { NavigationBar.navigationTabLoaded(param.result as View) }
+    initializeButtonsFingerprint.hookMethod(scopedHook(pivotBarButtonsCreateDrawableViewFingerprint.toMethod()) {
+        after { param -> NavigationBar.navigationTabLoaded(param.result as View) }
     })
 
     val pivotBarButtonsCreateResourceViewFingerprint =
@@ -101,8 +100,8 @@ fun YoutubeHook.NavigationBarHook() {
             }
         }
 
-    initializeButtonsFingerprint.hookMethod(ScopedHook(pivotBarButtonsCreateResourceViewFingerprint.toMethod()) {
-        after { NavigationBar.navigationImageResourceTabLoaded(param.result as View) }
+    initializeButtonsFingerprint.hookMethod(scopedHook(pivotBarButtonsCreateResourceViewFingerprint.toMethod()) {
+        after { param -> NavigationBar.navigationImageResourceTabLoaded(param.result as View) }
     })
 
     // Fix YT bug of notification tab missing the filled icon.
@@ -134,11 +133,11 @@ fun YoutubeHook.NavigationBarHook() {
         if (setEnumMapFingerprint.isStaticInitializer) {
             processFields(null, classLoader.loadClass(setEnumMapFingerprint.declaredClassName))
         } else {
-            setEnumMapFingerprint.hookMethod(object : XC_MethodHook() {
-                override fun afterHookedMethod(param: MethodHookParam) {
+            setEnumMapFingerprint.hookMethod {
+                after { param ->
                     processFields(param.thisObject, param.thisObject.javaClass)
                 }
-            })
+            }
         }
     }
 }

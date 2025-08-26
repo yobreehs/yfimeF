@@ -1,7 +1,6 @@
 package io.github.chsbuffer.revancedxposed.strava
 
 import android.app.Application
-import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.chsbuffer.revancedxposed.BaseHook
 import io.github.chsbuffer.revancedxposed.Opcode
@@ -28,11 +27,11 @@ class StravaHook(app: Application, lpparam: XC_LoadPackage.LoadPackageParam) :
                     )
                 }
             }.single()
-        }.hookMethod(object : XC_MethodHook() {
-            override fun beforeHookedMethod(param: MethodHookParam) {
+        }.hookMethod {
+            before { param ->
                 param.result = true
             }
-        })
+        }
     }
 
     fun DisableSubscriptionSuggestions() {
@@ -46,13 +45,13 @@ class StravaHook(app: Application, lpparam: XC_LoadPackage.LoadPackageParam) :
                     )
                 }
             }.single()
-        }.hookMethod(object : XC_MethodHook() {
-            override fun beforeHookedMethod(param: MethodHookParam) {
-                val pageValue = param.thisObject.getObjectFieldOrNullAs<String>("page") ?: return
+        }.hookMethod {
+            before { param ->
+                val pageValue = param.thisObject.getObjectFieldOrNullAs<String>("page") ?: return@before
                 if (pageValue.contains("_upsell") || pageValue.contains("promo")) {
                     param.result = Collections.EMPTY_LIST
                 }
             }
-        })
+        }
     }
 }

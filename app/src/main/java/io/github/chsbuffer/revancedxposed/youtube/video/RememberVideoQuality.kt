@@ -2,11 +2,10 @@ package io.github.chsbuffer.revancedxposed.youtube.video
 
 import app.revanced.extension.shared.settings.preference.NoTitlePreferenceCategory
 import app.revanced.extension.youtube.patches.playback.quality.RememberVideoQualityPatch
-import de.robv.android.xposed.XC_MethodHook
 import io.github.chsbuffer.revancedxposed.AccessFlags
-import io.github.chsbuffer.revancedxposed.ScopedHook
 import io.github.chsbuffer.revancedxposed.fingerprint
 import io.github.chsbuffer.revancedxposed.getIntField
+import io.github.chsbuffer.revancedxposed.scopedHook
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.ListPreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceCategory
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference.Sorting
@@ -68,11 +67,11 @@ fun YoutubeHook.RememberVideoQuality() {
                 name = "onItemClick"
             }
         }.single()
-    }.hookMethod(object : XC_MethodHook() {
-        override fun beforeHookedMethod(param: MethodHookParam) {
+    }.hookMethod {
+        before { param ->
             RememberVideoQualityPatch.userChangedQuality(param.args[2] as Int)
         }
-    })
+    }
 
     // Inject a call to remember the user selected quality for regular videos.
     getDexMethod("videoQualityChangedFingerprint") {
@@ -98,8 +97,8 @@ fun YoutubeHook.RememberVideoQuality() {
                 method.invokes.single { it.paramCount == 1 && it.paramTypeNames[0] == "com.google.android.libraries.youtube.innertube.model.media.VideoQuality" }
             }
         }
-    }.hookMethod(ScopedHook(getDexMethod("VideoQualityReceiver").toMember()) {
-        before {
+    }.hookMethod(scopedHook(getDexMethod("VideoQualityReceiver").toMember()) {
+        before { param -> 
             val selectedQualityIndex = param.args[0].getIntField("a")
             RememberVideoQualityPatch.userChangedQuality(selectedQualityIndex)
         }

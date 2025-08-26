@@ -13,60 +13,79 @@ import de.robv.android.xposed.XposedBridge
 import java.io.File
 import java.lang.reflect.Member
 
-class XHookContext(val param: MethodHookParam, val outerParam: MethodHookParam)
+typealias IScopedHookCallback = ScopedHookParam.(MethodHookParam) -> Unit
+typealias IHookCallback = (MethodHookParam) -> Unit
 
-data class XHook(
-    val before: (XHookContext.() -> Unit)?,
-    val after: (XHookContext.() -> Unit)?
-)
+class HookDsl<TCallback>(emptyCallback: TCallback) {
+    var before: TCallback = emptyCallback
+    var after: TCallback = emptyCallback
 
-class XHookBuilder {
-    private var before: (XHookContext.() -> Unit)? = null
-    private var after: (XHookContext.() -> Unit)? = null
-
-    fun before(f: XHookContext.() -> Unit) {
+    fun before(f: TCallback) {
         this.before = f
     }
 
-    fun after(f: XHookContext.() -> Unit) {
+    fun after(f: TCallback) {
         this.after = f
     }
-
-    fun replace(f: XHookContext.() -> Any) {
-        before = {
-            runCatching {
-                param.result = f()
-            }.onFailure { err ->
-                param.throwable = err
-            }
-        }
-        after = null
-    }
-
-    fun returnConstant(obj: Any) {
-        replace { obj }
-    }
-
-    fun build() = XHook(before, after)
 }
 
-class ScopedHook : XC_MethodHook {
-    constructor(hookMethod: Member, f: XHookBuilder.() -> Unit) : this(
-        hookMethod, XHookBuilder().apply(f).build()
-    )
+inline fun Member.hookMethod(crossinline block: HookDsl<IHookCallback>.() -> Unit) {
+    val builder = HookDsl<IHookCallback> {}.apply(block)
+    hookMethodInternal(builder.before, builder.after)
+}
 
-    constructor(hookMethod: Member, hook: XHook) {
+inline fun Member.hookMethodInternal(
+    crossinline before: IHookCallback, crossinline after: IHookCallback
+) {
+    XposedBridge.hookMethod(this, object : XC_MethodHook() {
+        override fun beforeHookedMethod(param: XC_MethodHook.MethodHookParam) {
+            before(param)
+        }
+
+        override fun afterHookedMethod(param: XC_MethodHook.MethodHookParam) {
+            after(param)
+        }
+    })
+}
+
+@JvmInline
+value class ScopedHookParam(val outerParam: MethodHookParam)
+
+fun scopedHook(vararg pairs: Pair<Member, HookDsl<IScopedHookCallback>.() -> Unit>): XC_MethodHook {
+    val hook = ScopedHook()
+    pairs.forEach { (member, block) ->
+        val builder = HookDsl<IScopedHookCallback> {}.apply(block)
+        hook.hookInnerMethod(member, builder.before, builder.after)
+    }
+    return hook
+}
+
+inline fun scopedHook(
+    hookMethod: Member, crossinline f: HookDsl<IScopedHookCallback>.() -> Unit
+): XC_MethodHook {
+    val hook = ScopedHook()
+    val builder = HookDsl<IScopedHookCallback> {}.apply(f)
+    hook.hookInnerMethod(hookMethod, builder.before, builder.after)
+    return hook
+}
+
+class ScopedHook : XC_MethodHook() {
+    inline fun hookInnerMethod(
+        hookMethod: Member,
+        crossinline before: IScopedHookCallback,
+        crossinline after: IScopedHookCallback
+    ) {
         XposedBridge.hookMethod(hookMethod, object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
                 val outerParam = outerParam.get()
                 if (outerParam == null) return
-                hook.before?.invoke(XHookContext(param, outerParam))
+                before(ScopedHookParam(outerParam), param)
             }
 
             override fun afterHookedMethod(param: MethodHookParam) {
                 val outerParam = outerParam.get()
                 if (outerParam == null) return
-                hook.after?.invoke(XHookContext(param, outerParam))
+                after(ScopedHookParam(outerParam), param)
             }
         })
     }
@@ -126,7 +145,7 @@ fun injectHostClassLoaderToSelf(self: ClassLoader, classLoader: ClassLoader) {
             } catch (_: ClassNotFoundException) {
             }
 
-            throw ClassNotFoundException(name);
+            throw ClassNotFoundException(name)
         }
     })
 }

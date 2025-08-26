@@ -5,7 +5,6 @@ import android.view.View
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.youtube.patches.PlayerTypeHookPatch
-import de.robv.android.xposed.XC_MethodHook
 import io.github.chsbuffer.revancedxposed.Opcode
 import io.github.chsbuffer.revancedxposed.opcodes
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
@@ -30,11 +29,11 @@ fun YoutubeHook.PlayerTypeHook() {
         }.single {
             it.paramTypes[0].superClass?.descriptor == "Ljava/lang/Enum;"
         }
-    }.hookMethod(object : XC_MethodHook() {
-        override fun beforeHookedMethod(param: MethodHookParam) {
+    }.hookMethod {
+        before { param ->
             PlayerTypeHookPatch.setPlayerType(param.args[0] as Enum<*>)
         }
-    })
+    }
 
     getDexMethod("reelWatchPagerFingerprint") {
         findMethod {
@@ -46,14 +45,14 @@ fun YoutubeHook.PlayerTypeHook() {
                 method.declaredClass!!.fields.single { it.typeName.endsWith("ReelPlayerView") }
             }
         }
-    }.hookMethod(object : XC_MethodHook() {
+    }.hookMethod {
         val field = getDexField("ReelPlayerViewField").toField()
-        override fun afterHookedMethod(param: MethodHookParam) {
+        after { param ->
             val thiz = param.thisObject
             val view = field.get(thiz) as View
             PlayerTypeHookPatch.onShortsCreate(view)
         }
-    })
+    }
 
     getDexMethod("videoStateFingerprint") {
         val controlsState =
@@ -79,10 +78,10 @@ fun YoutubeHook.PlayerTypeHook() {
                 }.field
             }
         }
-    }.hookMethod(object : XC_MethodHook() {
+    }.hookMethod {
         val field = getDexField("videoStateParameterField").toField()
-        override fun beforeHookedMethod(param: MethodHookParam) {
+        before { param ->
             PlayerTypeHookPatch.setVideoState(field.get(param.args[0]) as Enum<*>)
         }
-    })
+    }
 }

@@ -90,20 +90,20 @@ fun YoutubeHook.VideoInformationHook() {
     playerInitMethod.apply {
         val seekSourceType = getDexClass("seekSourceType").toClass()
         val seekSourceNone = seekSourceType.getStaticObjectField("a")!!
-        hookMethod(object : XC_MethodHook() {
+        hookMethod {
             val seekFingerprint = getDexMethod("seekFingerprint").toMethod()
             val seekRelativeFingerprint =
                 getDexMethod("seekRelativeFingerprint").toMethod()
 
             var playerController: PlaybackController? = null
 
-            override fun afterHookedMethod(param: MethodHookParam) {
+            after { param ->
                 playerController = PlaybackController(
                     param.thisObject, seekFingerprint, seekRelativeFingerprint, seekSourceNone
                 )
                 playerInitHooks.forEach { it(playerController!!) }
             }
-        })
+        }
     }
 
     playerInitHooks.add { VideoInformation.initialize(it) }
@@ -157,20 +157,20 @@ fun YoutubeHook.VideoInformationHook() {
 
         val seekSourceType = getDexClass("mkxSeekSourceType").toClass()
         val seekSourceNone = seekSourceType.getStaticObjectField("a")!!
-        hookMethod(object : XC_MethodHook() {
+        hookMethod {
             val mdxSeekFingerprint =
                 getDexMethod("mdxSeekFingerprint").toMethod()
             val mdxSeekRelativeFingerprint =
                 getDexMethod("mdxSeekRelativeFingerprint").toMethod()
 
             var playerController: PlaybackController? = null
-            override fun afterHookedMethod(param: MethodHookParam) {
+            after { param ->
                 playerController = PlaybackController(
                     param.thisObject, mdxSeekFingerprint, mdxSeekRelativeFingerprint, seekSourceNone
                 )
-                VideoInformation.initializeMdx(playerController!!)
+                VideoInformation.initializeMdx(playerController!!) 
             }
-        })
+        }
     }
     //endregion
 
@@ -207,17 +207,17 @@ fun YoutubeHook.VideoInformationHook() {
             getDexField("videoLengthField") { videoLengthField }
             getDexField("videoLengthHolderField") { videoLengthHolderField }
         }
-    }.hookMethod(object : XC_MethodHook() {
+    }.hookMethod {
         val videoLengthField = getDexField("videoLengthField").toField()
         val videoLengthHolderField =
             getDexField("videoLengthHolderField").toField()
 
-        override fun afterHookedMethod(param: MethodHookParam) {
+        after { param ->
             val videoLengthHolder = videoLengthHolderField.get(param.thisObject)
             val videoLength = videoLengthField.getLong(videoLengthHolder)
             VideoInformation.setVideoLength(videoLength)
         }
-    })
+    }
 
     /*
      * Inject call for video ids
@@ -243,12 +243,12 @@ fun YoutubeHook.VideoInformationHook() {
                 strings("Media progress reported outside media playback: ")
             }
         }.single().invokes.single { it.name == "<init>" }
-    }.hookMethod(object : XC_MethodHook() {
-        override fun beforeHookedMethod(param: MethodHookParam) {
+    }.hookMethod {
+        before { param ->
             val videoTime = param.args[0] as Long
             videoTimeHooks.forEach { it(videoTime) }
         }
-    })
+    }
 
     videoTimeHooks.add { videoTime ->
         VideoInformation.setVideoTime(videoTime)
@@ -326,13 +326,13 @@ fun YoutubeHook.VideoInformationHook() {
     }
 
     // Detect video quality changes and override the current quality.
-    videoQualitySetterFingerprint.hookMethod(object : XC_MethodHook() {
+    videoQualitySetterFingerprint.hookMethod {
         val onItemClickListenerClass = getDexField("onItemClickListenerClassReference").toField()
         val setQualityField = getDexField("setQualityFieldReference").toField()
         val setQualityMenuIndexMethod = getDexMethod("setQualityMenuIndexMethod").toMethod()
 
         @Suppress("UNCHECKED_CAST")
-        override fun beforeHookedMethod(param: MethodHookParam) {
+        before { param ->
             val qualities = param.args[0] as Array<out VideoQuality>
             val originalQualityIndex = param.args[1] as Int
             val menu = param.thisObject.let { onItemClickListenerClass.get(it) }
@@ -344,5 +344,5 @@ fun YoutubeHook.VideoInformationHook() {
                 originalQualityIndex
             )
         }
-    })
+    }
 }

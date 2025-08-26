@@ -1,7 +1,6 @@
 package io.github.chsbuffer.revancedxposed.spotify
 
 import app.revanced.extension.spotify.layout.hide.createbutton.HideCreateButtonPatch
-import de.robv.android.xposed.XC_MethodHook
 import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.Opcode
 import io.github.chsbuffer.revancedxposed.fingerprint
@@ -43,29 +42,29 @@ fun SpotifyHook.HideCreateButton() {
                     addInvoke { name = "add" }
                 }
             }
-        }.hookMethod(object : XC_MethodHook() {
-            override fun beforeHookedMethod(param: MethodHookParam) {
+        }.hookMethod {
+            before { param ->
                 for ((i, arg) in param.args.withIndex()) {
                     param.args[i] = HideCreateButtonPatch.returnNullIfIsCreateButton(arg)
                 }
             }
-        })
+        }
     }
 
     @Suppress("IfThenToSafeAccess")
     if (oldNavigationBarAddItemMethod != null) {
         // In case an older version of the app is being patched, hook the old method which adds navigation bar items.
         // Return early if the navigation bar item title resource id is the old Create button title resource id.
-        oldNavigationBarAddItemMethod.hookMethod(object : XC_MethodHook() {
-            override fun beforeHookedMethod(param: MethodHookParam) {
+        oldNavigationBarAddItemMethod.hookMethod {
+            before { param ->
                 for (arg in param.args) {
                     if (arg !is Int) continue
                     if (HideCreateButtonPatch.isOldCreateButton(arg)) {
                         param.result = null
-                        return
+                        return@before
                     }
                 }
             }
-        })
+        }
     }
 }

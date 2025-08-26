@@ -4,7 +4,7 @@ import android.widget.TextView
 import app.revanced.extension.youtube.patches.NavigationButtonsPatch
 import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.Opcode
-import io.github.chsbuffer.revancedxposed.ScopedHook
+import io.github.chsbuffer.revancedxposed.scopedHook
 import io.github.chsbuffer.revancedxposed.fingerprint
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference.Sorting
@@ -52,8 +52,8 @@ fun YoutubeHook.NavigationButtons() {
                 Opcode.RETURN_VOID,
             )
         }
-    }.hookMethod(ScopedHook(DexMethod("Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V").toMethod()) {
-        before {
+    }.hookMethod(scopedHook(DexMethod("Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V").toMethod()) {
+        before { param -> 
             NavigationButtonsPatch.hideNavigationButtonLabels(param.thisObject as TextView)
         }
     })
@@ -71,8 +71,8 @@ fun YoutubeHook.NavigationButtons() {
                 }.single()
             }
         }
-    }.hookMethod(ScopedHook(getDexMethod("AutoMotiveFeatureMethod").toMethod()) {
-        before {
+    }.hookMethod(scopedHook(getDexMethod("AutoMotiveFeatureMethod").toMethod()) {
+        before { param -> 
             param.result = NavigationButtonsPatch.switchCreateWithNotificationButton()
         }
     })

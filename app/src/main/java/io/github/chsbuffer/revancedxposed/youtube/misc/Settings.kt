@@ -9,13 +9,12 @@ import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.shared.settings.preference.ReVancedAboutPreference
 import app.revanced.extension.youtube.settings.LicenseActivityHook
-import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import io.github.chsbuffer.revancedxposed.R
-import io.github.chsbuffer.revancedxposed.ScopedHook
 import io.github.chsbuffer.revancedxposed.addModuleAssets
 import io.github.chsbuffer.revancedxposed.invokeOriginalMethod
+import io.github.chsbuffer.revancedxposed.scopedHook
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.BasePreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.BasePreferenceScreen
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.IntentPreference
@@ -79,9 +78,9 @@ fun YoutubeHook.SettingsHook() {
             }.single()
         }
     }.hookMethod(
-        ScopedHook(inflate.toMethod()) {
+        scopedHook(inflate.toMethod()) {
             var handleWebView = false
-            before {
+            before { param -> 
                 val preferencesName = app.resources.getResourceName(outerParam.args[0] as Int)
                 Logger.printDebug { "addPreferencesFromResource $preferencesName" }
                 if (!preferencesName.contains("settings_fragment")) return@before
@@ -164,11 +163,11 @@ fun YoutubeHook.SettingsHook() {
                 addUsingNumber(appearanceStringId)
             }
         }.single { it.returnTypeName != "void" }
-    }.hookMethod(object : XC_MethodHook() {
-        override fun afterHookedMethod(param: MethodHookParam) {
+    }.hookMethod {
+        after { param ->
             LicenseActivityHook.updateLightDarkModeStatus(param.result as Enum<*>)
         }
-    })
+    }
     preferences += NonInteractivePreference(
         key = "revanced_settings_screen_00_about",
         icon = "@drawable/revanced_settings_screen_00_about",

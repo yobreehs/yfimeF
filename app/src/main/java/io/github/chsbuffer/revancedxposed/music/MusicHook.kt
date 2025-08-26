@@ -4,7 +4,6 @@ import android.app.Application
 import android.view.View
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
-import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.XposedHelpers.InvocationTargetError
@@ -51,9 +50,9 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
                     usingEqStrings("FEmusic_history", "FEmusic_offline")
                 }
             }.single()
-        }.hookMethod(object : XC_MethodHook() {
+        }.hookMethod {
             val id = Utils.getResourceIdentifier("unlimited_panel", "id")
-            override fun afterHookedMethod(param: MethodHookParam) {
+            after { param ->
                 val thiz = param.thisObject
                 for (field in thiz.javaClass.fields) {
                     val view = field.get(thiz)
@@ -64,7 +63,7 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
                     break
                 }
             }
-        })
+        }
     }
 
     fun RemoveUpgradeButton() {
@@ -89,11 +88,11 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
                     method.declaredClass!!.fields.single { f -> f.typeName == "java.util.List" }
                 }
             }
-        }.hookMethod(object : XC_MethodHook() {
+        }.hookMethod {
             val pivotBarElementField =
                 getDexField("pivotBarElementField").toField()
 
-            override fun afterHookedMethod(param: MethodHookParam) {
+            after { param ->
                 val list = pivotBarElementField.get(param.thisObject)
                 try {
                     XposedHelpers.callMethod(list, "remove", 4)
@@ -101,7 +100,7 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
                     if (e.cause !is IndexOutOfBoundsException) throw e
                 }
             }
-        })
+        }
     }
 
     fun MinimizedPlayback() {
@@ -168,10 +167,10 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
                     paramTypes("boolean")
                 }
             }.single()
-        }.hookMethod(object : XC_MethodHook() {
-            override fun beforeHookedMethod(param: MethodHookParam) {
+        }.hookMethod {
+            before { param ->
                 param.args[0] = false
             }
-        })
+        }
     }
 }

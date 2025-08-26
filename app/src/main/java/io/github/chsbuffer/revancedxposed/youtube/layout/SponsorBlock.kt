@@ -11,7 +11,6 @@ import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockAboutPreferenc
 import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockPreferenceGroup
 import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockStatsPreferenceCategory
 import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockViewController
-import de.robv.android.xposed.XC_MethodHook
 import io.github.chsbuffer.revancedxposed.addModuleAssets
 import io.github.chsbuffer.revancedxposed.setObjectField
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.NonInteractivePreference
@@ -100,33 +99,32 @@ fun YoutubeHook.SponsorBlock() {
     val seekbarOnDrawMethod = getDexMethod("seekbarOnDrawFingerprint")
     val seekbarDrawLock = ThreadLocal<Boolean?>()
 
-    seekbarOnDrawMethod.hookMethod(object : XC_MethodHook() {
+    seekbarOnDrawMethod.hookMethod {
         val SponsorBarRectField = getDexField("SponsorBarRect").toField()
-        override fun beforeHookedMethod(param: MethodHookParam) {
+        before { param ->
             // Get left and right of seekbar rectangle.
             SegmentPlaybackController.setSponsorBarRect(SponsorBarRectField.get(param.thisObject) as Rect)
             seekbarDrawLock.set(true)
         }
 
-        override fun afterHookedMethod(param: MethodHookParam?) {
+        after { param ->
             seekbarDrawLock.set(false)
         }
-    })
+    }
 
     // Find the drawCircle call and draw the segment before it.
-    DexMethod("Landroid/graphics/RecordingCanvas;->drawCircle(FFFLandroid/graphics/Paint;)V").hookMethod(
-        object : XC_MethodHook() {
-            override fun beforeHookedMethod(param: MethodHookParam) {
-                if (seekbarDrawLock.get() != true) return
-                val radius = (param.args[2] as Float).toInt()
-                // Set the thickness of the segment.
-                SegmentPlaybackController.setSponsorBarThickness(radius)
+    DexMethod("Landroid/graphics/RecordingCanvas;->drawCircle(FFFLandroid/graphics/Paint;)V").hookMethod {
+        before { param ->
+            if (seekbarDrawLock.get() != true) return@before
+            val radius = (param.args[2] as Float).toInt()
+            // Set the thickness of the segment.
+            SegmentPlaybackController.setSponsorBarThickness(radius)
 
-                SegmentPlaybackController.drawSponsorTimeBars(
-                    param.thisObject as Canvas, param.args[1] as Float
-                )
-            }
-        })
+            SegmentPlaybackController.drawSponsorTimeBars(
+                param.thisObject as Canvas, param.args[1] as Float
+            )
+        }
+    }
 
     // Initialize the SponsorBlock view.
     val inset_overlay_view_layout = Utils.getResourceIdentifier("inset_overlay_view_layout", "id")
@@ -140,17 +138,17 @@ fun YoutubeHook.SponsorBlock() {
         }.single().also {
             getDexField("controlsOverlayParentLayout") { it.usingFields.first().field }
         }
-    }.hookMethod(object : XC_MethodHook() {
+    }.hookMethod {
         val field = getDexField("controlsOverlayParentLayout").toField()
         val id = inset_overlay_view_layout
-        override fun afterHookedMethod(param: MethodHookParam) {
+        after { param ->
             val layout = field.get(param.thisObject) as FrameLayout
             layout.context.addModuleAssets()
             Utils.getContext().addModuleAssets()
             val overlay_view = layout.findViewById<ViewGroup>(id)
             SponsorBlockViewController.initialize(overlay_view)
         }
-    })
+    }
 
     fun injectClassLoader(self: ClassLoader, host: ClassLoader) {
         val bootClassLoader = Context::class.java.classLoader!!

@@ -36,8 +36,8 @@ interface IHook {
         XposedBridge.hookMethod(toMember(), callback)
     }
 
-    fun Member.hookMethod(callback: XC_MethodHook) {
-        XposedBridge.hookMethod(this, callback)
+    fun DexMethod.hookMethod(block: HookDsl<IHookCallback>.() -> Unit) {
+        toMember().hookMethod(block)
     }
 
     fun DexClass.toClass() = getInstance(classLoader)
@@ -70,8 +70,9 @@ interface IHook {
     fun DexField.toField() = getFieldInstance(classLoader)
 }
 
+@Suppress("UNCHECKED_CAST")
 @OptIn(DexKitExperimentalApi::class)
-class PrefCache(app: Application) : DexKitCacheBridge.Cache {
+class SharedPrefCache(app: Application) : DexKitCacheBridge.Cache {
     val pref = app.getSharedPreferences("xprevanced", MODE_PRIVATE)!!
     private val map = mutableMapOf<String, String>().apply {
         putAll(pref.all as Map<String, String>)
@@ -126,7 +127,7 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
 
     // cache
     private val moduleRel = BuildConfig.COMMIT_HASH
-    private var cache = PrefCache(app)
+    private var cache = SharedPrefCache(app)
     private var dexkit = run {
         System.loadLibrary("dexkit")
         DexKitCacheBridge.init(cache)

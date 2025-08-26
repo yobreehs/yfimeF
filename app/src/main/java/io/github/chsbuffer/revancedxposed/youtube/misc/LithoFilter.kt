@@ -2,13 +2,12 @@ package io.github.chsbuffer.revancedxposed.youtube.misc
 
 import android.annotation.SuppressLint
 import app.revanced.extension.youtube.patches.components.LithoFilterPatch
-import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import io.github.chsbuffer.revancedxposed.Opcode
-import io.github.chsbuffer.revancedxposed.ScopedHook
 import io.github.chsbuffer.revancedxposed.fingerprint
 import io.github.chsbuffer.revancedxposed.new
 import io.github.chsbuffer.revancedxposed.opcodes
+import io.github.chsbuffer.revancedxposed.scopedHook
 import io.github.chsbuffer.revancedxposed.strings
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import org.luckypray.dexkit.result.FieldUsingType
@@ -34,11 +33,11 @@ fun YoutubeHook.LithoFilter() {
                 )
             }
         }.single()
-    }.hookMethod(object : XC_MethodHook() {
-        override fun beforeHookedMethod(param: MethodHookParam) {
+    }.hookMethod {
+        before { param ->
             LithoFilterPatch.setProtoBuffer(param.args[1] as ByteBuffer)
         }
-    })
+    }
 
     //endregion
 
@@ -89,18 +88,18 @@ fun YoutubeHook.LithoFilter() {
         }.single().declaredClass!!
     }
 
-    getDexMethod("componentCreateFingerprint"){
+    getDexMethod("componentCreateFingerprint") {
         fingerprint {
             strings(
                 "Element missing correct type extension",
                 "Element missing type"
             )
         }
-    }.hookMethod(object : XC_MethodHook(){
+    }.hookMethod {
         val identifierField = getDexField("identifierFieldData").toField()
         val pathBuilderField = getDexField("pathBuilderFieldData").toField()
         val emptyComponentClazz = emptyComponentClass.toClass()
-        override fun afterHookedMethod(param: MethodHookParam) {
+        after { param ->
             val conversion = param.args[1]
             val identifier = identifierField.get(conversion) as String?
             val pathBuilder = pathBuilderField.get(conversion) as StringBuilder
@@ -109,7 +108,7 @@ fun YoutubeHook.LithoFilter() {
                 param.result = emptyComponentClazz.new()
             }
         }
-    })
+    }
 
     //endregion
 
@@ -152,8 +151,8 @@ fun YoutubeHook.LithoFilter() {
             }
         }
     }.hookMethod(
-        ScopedHook(getDexMethod("featureFlagCheck").toMethod()) {
-            returnConstant(false)
+        scopedHook(getDexMethod("featureFlagCheck").toMethod()) {
+            before { it.result = false }
         }
     )
 

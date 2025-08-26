@@ -1,6 +1,5 @@
 package io.github.chsbuffer.revancedxposed.youtube.video
 
-import de.robv.android.xposed.XC_MethodHook
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 
 val playerResponseBeforeVideoIdHooks: MutableList<(protobuf: String, videoId: String, isShortAndOpeningOrPlaying: Boolean) -> String> =
@@ -47,8 +46,8 @@ fun YoutubeHook.PlayerResponseMethodHook() {
         parameterIsShortAndOpeningOrPlaying =
             paramTypeNames.zip(paramTypeNames.indices)
                 .indexOfFirst { (type, i) -> i >= 10 && type == "boolean" }
-    }.hookMethod(object : XC_MethodHook() {
-        override fun beforeHookedMethod(param: MethodHookParam) {
+    }.hookMethod {
+        before { param ->
             var protobuf = param.args[PARAMETER_PROTO_BUFFER] as String
             val videoId = param.args[PARAMETER_VIDEO_ID] as String
             val isShortAndOpeningOrPlaying =
@@ -65,5 +64,5 @@ fun YoutubeHook.PlayerResponseMethodHook() {
             }
             param.args[PARAMETER_PROTO_BUFFER] = protobuf
         }
-    })
+    }
 }

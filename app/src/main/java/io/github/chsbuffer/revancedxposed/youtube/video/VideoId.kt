@@ -1,6 +1,5 @@
 package io.github.chsbuffer.revancedxposed.youtube.video
 
-import de.robv.android.xposed.XC_MethodHook
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 
 /**
@@ -24,15 +23,15 @@ fun YoutubeHook.VideoIdPatch() {
                 }
             }
         }
-    }.hookMethod(object : XC_MethodHook() {
+    }.hookMethod {
         val videoIdMethod =
             getDexMethod("PlayerResponseModel.videoId").toMethod()
 
-        override fun beforeHookedMethod(param: MethodHookParam) {
+        before { param ->
             val videoId = videoIdMethod(param.args[0]) as String
             videoIdHooks.forEach { it(videoId) }
         }
-    })
+    }
 }
 
 /*

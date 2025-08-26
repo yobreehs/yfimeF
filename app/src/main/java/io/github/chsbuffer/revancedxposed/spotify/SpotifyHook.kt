@@ -56,13 +56,13 @@ fun SpotifyHook.UnlockPremium() {
                 method.usingFields.single().field
             }
         }
-    }.hookMethod(object : XC_MethodHook() {
+    }.hookMethod {
         val field = getDexField("attributesMapField").toField()
-        override fun beforeHookedMethod(param: MethodHookParam) {
+        before { param ->
             Logger.printDebug { field.get(param.thisObject)!!.toString() }
             UnlockPremiumPatch.overrideAttributes(field.get(param.thisObject) as Map<String, *>)
         }
-    })
+    }
 
     // Add the query parameter trackRows to show popular tracks in the artist page.
     getDexMethod("buildQueryParametersFingerprint") {
@@ -71,8 +71,8 @@ fun SpotifyHook.UnlockPremium() {
                 strings("trackRows", "device_type:tablet")
             }
         }.single()
-    }.hookMethod(object : XC_MethodHook() {
-        override fun afterHookedMethod(param: MethodHookParam) {
+    }.hookMethod {
+        after { param ->
             val result = param.result
             val FIELD = "checkDeviceCapability"
             if (result.toString().contains("${FIELD}=")) {
@@ -81,7 +81,7 @@ fun SpotifyHook.UnlockPremium() {
                 )
             }
         }
-    })
+    }
 
     // Enable choosing a specific song/artist via Google Assistant.
     getDexMethod("contextFromJsonFingerprint") {
@@ -100,18 +100,18 @@ fun SpotifyHook.UnlockPremium() {
                 )
             }
         }
-    }.hookMethod(object : XC_MethodHook() {
+    }.hookMethod {
         fun removeStationString(field: Field, obj: Any) {
             field.set(obj, UnlockPremiumPatch.removeStationString(field.get(obj) as String))
         }
 
-        override fun afterHookedMethod(param: MethodHookParam) {
+        after { param ->
             val thiz = param.result
             val clazz = param.result.javaClass
             removeStationString(clazz.findField("uri"), thiz)
             removeStationString(clazz.findField("url"), thiz)
         }
-    })
+    }
 
     // Disable forced shuffle when asking for an album/playlist via Google Assistant.
     XposedHelpers.findAndHookMethod(
@@ -139,13 +139,13 @@ fun SpotifyHook.UnlockPremium() {
                 returns("V")
                 methodMatcher { addInvoke { name = "add" } }
             }
-        }.hookMethod(object : XC_MethodHook() {
-            override fun beforeHookedMethod(param: MethodHookParam) {
+        }.hookMethod {
+            before { param ->
                 if (UnlockPremiumPatch.isFilteredContextMenuItem(param.args[0].callMethod("getViewModel"))) {
                     param.result = null
                 }
             }
-        })
+        }
         Logger.printDebug { "Patch used in versions older than \"9.0.60.128\"." }
     }.onFailure {
         Logger.printDebug { "Patch for newest versions. $it" }
@@ -181,25 +181,25 @@ fun SpotifyHook.UnlockPremium() {
     // Remove ads sections from home.
     getDexMethod("homeStructureGetSectionsFingerprint") {
         structureGetSectionsFingerprint("homeapi.proto.HomeStructure")
-    }.hookMethod(object : XC_MethodHook() {
-        override fun afterHookedMethod(param: MethodHookParam) {
+    }.hookMethod {
+        after { param ->
             val sections = param.result
             // Set sections mutable
             sections.javaClass.findFirstFieldByExactType(Boolean::class.java).set(sections, true)
             UnlockPremiumPatch.removeHomeSections(param.result as MutableList<*>)
         }
-    })
+    }
     // Remove ads sections from browser.
     getDexMethod("browseStructureGetSectionsFingerprint") {
         structureGetSectionsFingerprint("browsita.v1.resolved.BrowseStructure")
-    }.hookMethod(object : XC_MethodHook() {
-        override fun afterHookedMethod(param: MethodHookParam) {
+    }.hookMethod {
+        after { param ->
             val sections = param.result
             // Set sections mutable
             sections.javaClass.findFirstFieldByExactType(Boolean::class.java).set(sections, true)
             UnlockPremiumPatch.removeBrowseSections(param.result as MutableList<*>)
         }
-    })
+    }
 
     // Remove pendragon (pop up ads) requests and return the errors instead.
     val replaceFetchRequestSingleWithError = object : XC_MethodHook() {

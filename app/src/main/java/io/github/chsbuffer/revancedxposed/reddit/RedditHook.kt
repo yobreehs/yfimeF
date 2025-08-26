@@ -4,7 +4,6 @@ import android.app.Application
 import android.view.View
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
-import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.chsbuffer.revancedxposed.BaseHook
 import io.github.chsbuffer.revancedxposed.findFieldByExactType
@@ -38,10 +37,10 @@ class RedditHook(app: Application, lpparam: XC_LoadPackage.LoadPackageParam) :
                     declaredClass(".Listing", StringMatchType.EndsWith)
                 }
             }.single()
-        }.hookMethod(object : XC_MethodHook() {
+        }.hookMethod {
             val ilink = classLoader.loadClass("com.reddit.domain.model.ILink")
             val getPromoted = ilink.methods.single { it.name == "getPromoted" }
-            override fun afterHookedMethod(param: MethodHookParam) {
+            after { param ->
                 val arrayList = param.thisObject.getObjectField("children") as Iterable<Any?>
                 val result = mutableListOf<Any?>()
                 var filtered = 0
@@ -63,7 +62,7 @@ class RedditHook(app: Application, lpparam: XC_LoadPackage.LoadPackageParam) :
                 Logger.printDebug { "Filtered $filtered ads in ${arrayList.count()} posts" }
                 param.thisObject.setObjectField("children", result)
             }
-        })
+        }
 
         // endregion
 
@@ -78,36 +77,35 @@ class RedditHook(app: Application, lpparam: XC_LoadPackage.LoadPackageParam) :
                     usingStrings("AdPostSection(linkId=")
                 }
             }.single().methods.single { it.isConstructor }
-        }.hookMethod(object : XC_MethodHook() {
-            override fun beforeHookedMethod(param: MethodHookParam) {
+        }.hookMethod {
+            before { param ->
                 val sections = param.args[3] as MutableList<*>
                 sections.javaClass.findFieldByExactType(Array<Any>::class.java)!!
                     .set(sections, emptyArray<Any>())
                 Logger.printDebug { "Removed ads from popular and latest feed" }
             }
-        })
+        }
     }
 
     fun HideBanner() {
         val merge_listheader_link_detail =
             Utils.getResourceIdentifier("merge_listheader_link_detail", "layout")
         val ad_view_stub = Utils.getResourceIdentifier("ad_view_stub", "id")
-        DexMethod("Landroid/view/View;->inflate(Landroid/content/Context;ILandroid/view/ViewGroup;)Landroid/view/View;").hookMethod(
-                object : XC_MethodHook() {
-                    override fun afterHookedMethod(param: MethodHookParam) {
-                        val id = param.args[1] as Int
-                        if (id == merge_listheader_link_detail) {
-                            val view = param.result as View
-                            val stub = view.findViewById<View>(ad_view_stub)
-                            stub.layoutParams.apply {
-                                width = 0
-                                height = 0
-                            }
-
-                            Logger.printDebug { "Hide banner" }
+        DexMethod("Landroid/view/View;->inflate(Landroid/content/Context;ILandroid/view/ViewGroup;)Landroid/view/View;").hookMethod {
+                after { param ->
+                    val id = param.args[1] as Int
+                    if (id == merge_listheader_link_detail) {
+                        val view = param.result as View
+                        val stub = view.findViewById<View>(ad_view_stub)
+                        stub.layoutParams.apply {
+                            width = 0
+                            height = 0
                         }
+
+                        Logger.printDebug { "Hide banner" }
                     }
-                })
+                }
+            }
     }
 
     fun HideComment() {
@@ -115,12 +113,12 @@ class RedditHook(app: Application, lpparam: XC_LoadPackage.LoadPackageParam) :
             findMethod {
                 matcher { usingStrings("link", "is not returning a link object") }
             }.single()
-        }.hookMethod(object : XC_MethodHook() {
-            override fun beforeHookedMethod(param: MethodHookParam) {
+        }.hookMethod {
+            before { param ->
                 Logger.printDebug { "Hide Comment" }
                 param.result = Object()
             }
-        })
+        }
     }
 
     fun SanitizeUrlQuery() {
@@ -137,10 +135,10 @@ class RedditHook(app: Application, lpparam: XC_LoadPackage.LoadPackageParam) :
                     )
                 }
             }.single()
-        }.hookMethod(object : XC_MethodHook() {
-            override fun beforeHookedMethod(param: MethodHookParam) {
+        }.hookMethod {
+            before { param ->
                 param.result = param.args[0]
             }
-        })
+        }
     }
 }
