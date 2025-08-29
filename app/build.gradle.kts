@@ -4,7 +4,6 @@ import groovy.xml.slurpersupport.NodeChild
 import org.gradle.kotlin.dsl.support.uppercaseFirstChar
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
-import kotlin.apply
 
 plugins {
     alias(libs.plugins.android.application)
@@ -21,7 +20,7 @@ android {
 
     defaultConfig {
         applicationId = "io.github.chsbuffer.revancedxposed"
-        versionCode = 24
+        versionCode = 25
         versionName = "1.0.$versionCode"
         val patchVersion = Properties().apply {
             rootProject.file("revanced-patches/gradle.properties").inputStream().use { load(it) }
