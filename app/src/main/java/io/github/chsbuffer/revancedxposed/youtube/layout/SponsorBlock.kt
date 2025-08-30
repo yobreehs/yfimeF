@@ -111,9 +111,9 @@ fun YoutubeHook.SponsorBlock() {
         scopedHook(
             // Set the thickness of the segment.
             DexMethod("Landroid/graphics/Rect;->set(IIII)V").toMethod() to {
-                before { param ->
+                after { param ->
                     // Only the first call to Rect.set from onDraw sets the segment thickness.
-                    if (rectSetOnce) return@before
+                    if (rectSetOnce) return@after
                     SegmentPlaybackController.setSponsorBarThickness((param.thisObject as Rect).height())
                     rectSetOnce = true
                 }
