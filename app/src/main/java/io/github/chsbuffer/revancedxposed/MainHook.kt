@@ -79,10 +79,7 @@ fun inContext(lpparam: LoadPackageParam, f: (Application) -> Unit) {
             val app = param.thisObject as Application
             Utils.setContext(app)
             f(app)
-            UpdateChecker(app).apply {
-                hookNewActivity()
-                autoCheckUpdate()
-            }
+            UpdateChecker(app).hookNewActivity()
         }
     })
 }

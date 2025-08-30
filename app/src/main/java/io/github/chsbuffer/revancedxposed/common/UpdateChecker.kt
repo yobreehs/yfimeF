@@ -66,8 +66,9 @@ class UpdateChecker(private val context: Context) : CoroutineScope {
     private lateinit var latestVersionInfo: VersionInfo
     private lateinit var latestRelease: ReleaseInfo
 
+    lateinit var unhook: XC_MethodHook.Unhook
     fun hookNewActivity() {
-        XposedHelpers.findAndHookMethod(
+        unhook = XposedHelpers.findAndHookMethod(
             Instrumentation::class.java,
             "newActivity",
             ClassLoader::class.java,
@@ -76,6 +77,8 @@ class UpdateChecker(private val context: Context) : CoroutineScope {
             object : XC_MethodHook() {
                 override fun afterHookedMethod(param: MethodHookParam) {
                     currentActivity = WeakReference(param.result as Activity)
+                    autoCheckUpdate()
+                    unhook.unhook()
                 }
             })
     }
