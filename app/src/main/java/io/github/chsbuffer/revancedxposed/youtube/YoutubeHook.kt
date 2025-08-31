@@ -14,10 +14,9 @@ import io.github.chsbuffer.revancedxposed.youtube.interaction.SwipeControls
 import io.github.chsbuffer.revancedxposed.youtube.layout.NavigationButtons
 import io.github.chsbuffer.revancedxposed.youtube.layout.SponsorBlock
 import io.github.chsbuffer.revancedxposed.youtube.misc.BackgroundPlayback
-import io.github.chsbuffer.revancedxposed.youtube.misc.LithoFilter
 import io.github.chsbuffer.revancedxposed.youtube.misc.RemoveTrackingQueryParameter
 import io.github.chsbuffer.revancedxposed.youtube.misc.SettingsHook
-import io.github.chsbuffer.revancedxposed.youtube.video.RememberVideoQuality
+import io.github.chsbuffer.revancedxposed.youtube.video.VideoQuality
 
 class YoutubeHook(
     app: Application,
@@ -30,11 +29,10 @@ class YoutubeHook(
         ::BackgroundPlayback,
         ::RemoveTrackingQueryParameter,
         ::HideAds,
-        ::LithoFilter,
         ::SponsorBlock,
         ::NavigationButtons,
         ::SwipeControls,
-        ::RememberVideoQuality,
+        ::VideoQuality,
         // make sure settingsHook at end to build preferences
         ::SettingsHook
     )

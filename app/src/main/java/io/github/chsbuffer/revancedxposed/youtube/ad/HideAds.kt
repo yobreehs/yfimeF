@@ -9,11 +9,14 @@ import de.robv.android.xposed.XposedHelpers
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.SwitchPreference
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import io.github.chsbuffer.revancedxposed.youtube.misc.FixVerticalScroll
+import io.github.chsbuffer.revancedxposed.youtube.misc.LithoFilter
 import io.github.chsbuffer.revancedxposed.youtube.misc.PreferenceScreen
+import io.github.chsbuffer.revancedxposed.youtube.misc.addLithoFilter
 
 fun YoutubeHook.HideAds() {
     dependsOn(
         ::FixVerticalScroll,
+        ::LithoFilter
     )
 
     PreferenceScreen.ADS.addPreferences(
@@ -28,6 +31,8 @@ fun YoutubeHook.HideAds() {
         SwitchPreference("revanced_hide_view_products_banner"),
         SwitchPreference("revanced_hide_web_search_results"),
     )
+
+    addLithoFilter(AdsFilter())
 
     // TODO: Hide end screen store banner
 

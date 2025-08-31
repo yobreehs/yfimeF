@@ -20,7 +20,8 @@
 - Remove share links tracking query parameter
 - Hide and change navigation buttons
 - Swipe controls
-- Remember Video Quality 
+- Remember video quality changes
+- Show advanced video quality menu
 
 ### Spotify
 - Unlock Spotify Premium

@@ -1,21 +1,17 @@
 package io.github.chsbuffer.revancedxposed.youtube.video
 
-import app.revanced.extension.shared.settings.preference.NoTitlePreferenceCategory
 import app.revanced.extension.youtube.patches.playback.quality.RememberVideoQualityPatch
 import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.fingerprint
 import io.github.chsbuffer.revancedxposed.getIntField
 import io.github.chsbuffer.revancedxposed.scopedHook
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.ListPreference
-import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceCategory
-import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference.Sorting
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.SwitchPreference
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
-import io.github.chsbuffer.revancedxposed.youtube.misc.PreferenceScreen
 import java.lang.reflect.Modifier
 
 fun YoutubeHook.RememberVideoQuality() {
-    val settingsMenuVideoQualityGroup = setOf(
+    settingsMenuVideoQualityGroup.addAll(listOf(
         ListPreference(
             key = "revanced_video_quality_default_mobile",
             entriesKey = "revanced_video_quality_default_entries",
@@ -40,18 +36,7 @@ fun YoutubeHook.RememberVideoQuality() {
         ),
         SwitchPreference("revanced_remember_shorts_quality_last_selected"),
         SwitchPreference("revanced_remember_video_quality_last_selected_toast")
-    )
-
-    PreferenceScreen.VIDEO.addPreferences(
-        // Keep the preferences organized together.
-        PreferenceCategory(
-            key = "revanced_01_video_key", // Dummy key to force the quality preferences first.
-            titleKey = null,
-            sorting = Sorting.UNSORTED,
-            tag = NoTitlePreferenceCategory::class.java,
-            preferences = settingsMenuVideoQualityGroup
-        )
-    )
+    ))
 
     playerInitHooks.add { controller ->
         RememberVideoQualityPatch.newVideoStarted(controller)
@@ -98,7 +83,7 @@ fun YoutubeHook.RememberVideoQuality() {
             }
         }
     }.hookMethod(scopedHook(getDexMethod("VideoQualityReceiver").toMember()) {
-        before { param -> 
+        before { param ->
             val selectedQualityIndex = param.args[0].getIntField("a")
             RememberVideoQualityPatch.userChangedQuality(selectedQualityIndex)
         }

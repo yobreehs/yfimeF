@@ -170,6 +170,7 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
 
     private fun applyHooks() {
         hooks.forEach { hook ->
+            if (appliedHooks.contains(hook)) return@forEach
             runCatching(hook).onFailure { err ->
                 XposedBridge.log(err)
                 failedHooks.add(hook)

@@ -1,6 +1,7 @@
 package io.github.chsbuffer.revancedxposed.youtube.misc
 
 import android.annotation.SuppressLint
+import app.revanced.extension.youtube.patches.components.Filter
 import app.revanced.extension.youtube.patches.components.LithoFilterPatch
 import de.robv.android.xposed.XC_MethodReplacement
 import io.github.chsbuffer.revancedxposed.Opcode
@@ -14,9 +15,14 @@ import org.luckypray.dexkit.result.FieldUsingType
 import java.lang.reflect.Modifier
 import java.nio.ByteBuffer
 
+lateinit var addLithoFilter: (Filter) -> Unit
+    private set
 
 @SuppressLint("NonUniqueDexKitData")
 fun YoutubeHook.LithoFilter() {
+    addLithoFilter = { filter ->
+        LithoFilterPatch.addFilter(filter)
+    }
 
     //region Pass the buffer into extension.
     getDexMethod("ProtobufBufferReferenceFingerprint") {
