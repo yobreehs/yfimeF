@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import app.revanced.extension.youtube.patches.components.Filter
 import app.revanced.extension.youtube.patches.components.LithoFilterPatch
 import de.robv.android.xposed.XC_MethodReplacement
+import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.Opcode
 import io.github.chsbuffer.revancedxposed.fingerprint
 import io.github.chsbuffer.revancedxposed.new
@@ -118,6 +119,28 @@ fun YoutubeHook.LithoFilter() {
 
     //endregion
 
+    // region Change Litho thread executor to 1 thread to fix layout issue in unpatched YouTube.
+
+    getDexMethod("lithoThreadExecutorFingerprint") {
+        fingerprint {
+            accessFlags(AccessFlags.PUBLIC, AccessFlags.CONSTRUCTOR)
+            parameters("I", "I", "I")
+            classMatcher {
+                superClass {
+                    descriptor = "Ljava/util/concurrent/ThreadPoolExecutor;"
+                }
+            }
+            literal { 1L }
+        }
+    }.hookMethod {
+        before {
+            it.args[0] = LithoFilterPatch.getExecutorCorePoolSize(it.args[0] as Int)
+            it.args[1] = LithoFilterPatch.getExecutorMaxThreads(it.args[1] as Int)
+        }
+    }
+
+    // endregion
+
     // region A/B test of new Litho native code.
 
     // Turn off native code that handles litho component names.  If this feature is on then nearly
@@ -159,8 +182,7 @@ fun YoutubeHook.LithoFilter() {
     }.hookMethod(
         scopedHook(getDexMethod("featureFlagCheck").toMethod()) {
             before { it.result = false }
-        }
-    )
+        })
 
     // endregion
 }
