@@ -13,6 +13,7 @@ import io.github.chsbuffer.revancedxposed.youtube.ad.VideoAds
 import io.github.chsbuffer.revancedxposed.youtube.interaction.SwipeControls
 import io.github.chsbuffer.revancedxposed.youtube.layout.NavigationButtons
 import io.github.chsbuffer.revancedxposed.youtube.layout.SponsorBlock
+import io.github.chsbuffer.revancedxposed.youtube.layout.hide.HideShortsComponents
 import io.github.chsbuffer.revancedxposed.youtube.misc.BackgroundPlayback
 import io.github.chsbuffer.revancedxposed.youtube.misc.RemoveTrackingQueryParameter
 import io.github.chsbuffer.revancedxposed.youtube.misc.SettingsHook
@@ -30,6 +31,7 @@ class YoutubeHook(
         ::RemoveTrackingQueryParameter,
         ::HideAds,
         ::SponsorBlock,
+        ::HideShortsComponents,
         ::NavigationButtons,
         ::SwipeControls,
         ::VideoQuality,
