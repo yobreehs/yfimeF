@@ -16,7 +16,7 @@ fun YoutubeHook.RemoveTrackingQueryParameter() {
     val sanitizeArg1 = object : XC_MethodHook() {
         override fun beforeHookedMethod(param: MethodHookParam) {
             if (!Settings.REMOVE_TRACKING_QUERY_PARAMETER.get()) return
-            val url = param.args[1] as String
+            val url = param.args[1] as? String ?: return
             param.args[1] = url.replace(".si=.+".toRegex(), "").replace(".feature=.+".toRegex(), "")
         }
     }
