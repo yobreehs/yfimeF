@@ -22,6 +22,7 @@
 - Swipe controls
 - Remember video quality changes
 - Show advanced video quality menu
+- Copy video url video player button
 
 ### Spotify
 - Unlock Spotify Premium
