@@ -189,7 +189,8 @@ abstract class CopyResourcesTask @Inject constructor() : DefaultTask() {
             "settings/drawable",
             "sponsorblock/drawable",
             "swipecontrols/drawable",
-            "copyvideourl/drawable"
+            "copyvideourl/drawable",
+            "downloads/drawable"
         )
 
         for (drawable in drawables) {

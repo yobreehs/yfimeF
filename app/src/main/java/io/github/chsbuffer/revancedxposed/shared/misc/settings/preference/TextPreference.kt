@@ -2,7 +2,7 @@
 
 package io.github.chsbuffer.revancedxposed.shared.misc.settings.preference
 
-import android.preference.EditTextPreference
+import android.preference.Preference
 import app.revanced.extension.shared.settings.preference.ResettableEditTextPreference
 
 class TextPreference(
@@ -11,7 +11,7 @@ class TextPreference(
     summaryKey: String? = "${key}_summary",
     icon: String? = null,
     layout: String? = null,
-    tag: Class<out EditTextPreference> = ResettableEditTextPreference::class.java,
+    tag: Class<out Preference> = ResettableEditTextPreference::class.java,
     val inputType: InputType = InputType.TEXT
 ) : BasePreference(key, titleKey, summaryKey, icon, layout, tag) {
 }

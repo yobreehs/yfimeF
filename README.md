@@ -23,6 +23,7 @@
 - Remember video quality changes
 - Show advanced video quality menu
 - Copy video url video player button
+- Open external downloader app
 
 ### Spotify
 - Unlock Spotify Premium

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="MissingClass">
+
+    <com.google.android.libraries.youtube.common.ui.TouchImageView
+        android:id="@+id/revanced_external_download_button"
+        android:layout_width="48.0dip"
+        android:layout_height="60.0dip"
+        android:background="@null"
+        android:clickable="true"
+        android:focusable="true"
+        android:longClickable="false"
+        android:paddingTop="6.5dp"
+        android:paddingBottom="0dp"
+        android:scaleType="center"
+        android:src="@drawable/revanced_yt_download_button" />
+</merge>

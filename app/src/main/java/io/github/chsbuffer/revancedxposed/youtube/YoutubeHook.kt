@@ -11,6 +11,7 @@ import io.github.chsbuffer.revancedxposed.injectHostClassLoaderToSelf
 import io.github.chsbuffer.revancedxposed.youtube.ad.HideAds
 import io.github.chsbuffer.revancedxposed.youtube.ad.VideoAds
 import io.github.chsbuffer.revancedxposed.youtube.interaction.CopyVideoUrl
+import io.github.chsbuffer.revancedxposed.youtube.interaction.Downloads
 import io.github.chsbuffer.revancedxposed.youtube.interaction.SwipeControls
 import io.github.chsbuffer.revancedxposed.youtube.layout.NavigationButtons
 import io.github.chsbuffer.revancedxposed.youtube.layout.SponsorBlock
@@ -33,6 +34,7 @@ class YoutubeHook(
         ::HideAds,
         ::SponsorBlock,
         ::CopyVideoUrl,
+        ::Downloads,
         ::HideShortsComponents,
         ::NavigationButtons,
         ::SwipeControls,
