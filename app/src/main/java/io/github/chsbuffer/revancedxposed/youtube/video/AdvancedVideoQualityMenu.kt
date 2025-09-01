@@ -8,6 +8,7 @@ import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.Opcode
 import io.github.chsbuffer.revancedxposed.findFirstFieldByExactType
 import io.github.chsbuffer.revancedxposed.fingerprint
+import io.github.chsbuffer.revancedxposed.scopedHook
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.SwitchPreference
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import io.github.chsbuffer.revancedxposed.youtube.misc.LithoFilter
@@ -30,18 +31,43 @@ fun YoutubeHook.AdvancedVideoQualityMenu() {
     // region Patch for the old type of the video quality menu.
     // Used for regular videos when spoofing to old app version,
     // and for the Shorts quality flyout on newer app versions.
-    DexMethod("Landroid/view/LayoutInflater;->inflate(ILandroid/view/ViewGroup;Z)Landroid/view/View;").hookMethod {
+    getDexMethod("videoQualityMenuViewInflateFingerprint") {
+        val videoQualityBottomSheetListFragmentTitle = Utils.getResourceIdentifier(
+            "video_quality_bottom_sheet_list_fragment_title", "layout",
+        )
+        fingerprint {
+            accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
+            returns("L")
+            parameters("L", "L", "L")
+            opcodes(
+                Opcode.INVOKE_SUPER,
+                Opcode.CONST,
+                Opcode.CONST_4,
+                Opcode.INVOKE_VIRTUAL,
+                Opcode.MOVE_RESULT_OBJECT,
+                Opcode.CONST,
+                Opcode.INVOKE_VIRTUAL,
+                Opcode.MOVE_RESULT_OBJECT,
+                Opcode.CONST_16,
+                Opcode.INVOKE_VIRTUAL,
+                Opcode.CONST,
+                Opcode.INVOKE_VIRTUAL,
+                Opcode.MOVE_RESULT_OBJECT,
+                Opcode.CHECK_CAST,
+            )
+            literal { videoQualityBottomSheetListFragmentTitle }
+        }
+    }.hookMethod(scopedHook(DexMethod("Landroid/view/LayoutInflater;->inflate(ILandroid/view/ViewGroup;Z)Landroid/view/View;").toMember()) {
         val bottom_sheet_list_fragment =
-            Utils.getResourceIdentifier("layout", "bottom_sheet_list_fragment")
-        val bottom_sheet_list_view = Utils.getResourceIdentifier("id", "bottom_sheet_list_view")
-
+            Utils.getResourceIdentifier("bottom_sheet_list_fragment", "layout")
+        val bottom_sheet_list_view = Utils.getResourceIdentifier("bottom_sheet_list_view", "id")
         after {
             if (it.args[0] != bottom_sheet_list_fragment) return@after
             val view = it.result as android.view.View
             val listView: ListView = view.findViewById(bottom_sheet_list_view)
             AdvancedVideoQualityMenuPatch.addVideoQualityListMenuListener(listView)
         }
-    }
+    })
 
     // Force YT to add the 'advanced' quality menu for Shorts.
     getDexMethod("videoQualityMenuOptionsFingerprint") {
