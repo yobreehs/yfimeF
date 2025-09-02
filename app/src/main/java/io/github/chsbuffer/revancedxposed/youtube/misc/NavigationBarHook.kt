@@ -108,34 +108,36 @@ fun YoutubeHook.NavigationBarHook() {
     val tabActivityCairo =
         navigationEnumClass.toClass().enumConstants?.firstOrNull { (it as? Enum<*>)?.name == "TAB_ACTIVITY_CAIRO" } as? Enum<*>
     if (tabActivityCairo != null) {
-        val setEnumMapFingerprint = getDexMethod("setEnumMapFingerprint") {
-            fingerprint {
-                returns("V")
-                literal {
-                    Utils.getResourceIdentifier("yt_fill_bell_black_24", "drawable")
+        getDexMethods("setEnumMapFingerprint") {
+            findMethod {
+                matcher {
+                    returns("V")
+                    literal {
+                        Utils.getResourceIdentifier("yt_fill_bell_black_24", "drawable")
+                    }
+                }
+            }.filter { it.isConstructor || it.isStaticInitializer }
+        }.forEach { setEnumMapFingerprint ->
+            fun processFields(obj: Any?, clazz: Class<*>) {
+                clazz.declaredFields.forEach { field ->
+                    field.isAccessible = true
+                    if (obj == null && !field.isStatic) return@forEach
+                    val enumMap = field.get(obj) as? EnumMap<*, *> ?: return@forEach
+                    // check is valueType int (resource id)
+                    val valueType = enumMap.values.firstOrNull()?.javaClass ?: return@forEach
+                    if (valueType != Int::class.javaObjectType) return@forEach
+                    if (!enumMap.containsKey(tabActivityCairo))
+                        NavigationBar.setCairoNotificationFilledIcon(enumMap, tabActivityCairo)
                 }
             }
-        }
 
-        val processFields: (Any?, Class<*>) -> Unit = { obj, clazz ->
-            clazz.declaredFields.forEach { field ->
-                field.isAccessible = true
-                if (obj == null && !field.isStatic) return@forEach
-                val enumMap = field.get(obj) as? EnumMap<*, *> ?: return@forEach
-                // check is valueType int (resource id)
-                val valueType = enumMap.values.firstOrNull()?.javaClass ?: return@forEach
-                if (valueType != Int::class.javaObjectType) return@forEach
-                if (!enumMap.containsKey(tabActivityCairo))
-                    NavigationBar.setCairoNotificationFilledIcon(enumMap, tabActivityCairo)
-            }
-        }
-
-        if (setEnumMapFingerprint.isStaticInitializer) {
-            processFields(null, classLoader.loadClass(setEnumMapFingerprint.declaredClassName))
-        } else {
-            setEnumMapFingerprint.hookMethod {
-                after { param ->
-                    processFields(param.thisObject, param.thisObject.javaClass)
+            if (setEnumMapFingerprint.isStaticInitializer) {
+                processFields(null, classLoader.loadClass(setEnumMapFingerprint.declaredClassName))
+            } else {
+                setEnumMapFingerprint.hookMethod {
+                    after { param ->
+                        processFields(param.thisObject, param.thisObject.javaClass)
+                    }
                 }
             }
         }
