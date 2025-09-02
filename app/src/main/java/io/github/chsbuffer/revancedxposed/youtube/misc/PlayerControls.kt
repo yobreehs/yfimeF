@@ -48,38 +48,38 @@ fun YoutubeHook.PlayerControls() {
             val viewStubName = Utils.getContext().resources.getResourceName(viewStub.id)
 //            Logger.printDebug { "ViewStub->inflate()" + viewStubName }
 
-            if (viewStubName.endsWith("bottom_ui_container_stub")) {
-//                Logger.printDebug { "inject into $viewStubName" }
-                val viewGroup = it.result as ViewGroup
+            if (!viewStubName.endsWith("bottom_ui_container_stub"))
+                return@after
+//            Logger.printDebug { "inject into $viewStubName" }
+            val viewGroup = it.result as ViewGroup
 
-                bottomControlLayouts.forEach { layout ->
-                    viewStub.layoutInflater.inflate(layout, viewGroup, true)
-                }
-
-                bottomControls.forEach { bottomControl -> bottomControl.initializeButton(viewGroup) }
+            bottomControlLayouts.forEach { layout ->
+                viewStub.layoutInflater.inflate(layout, viewGroup, true)
             }
+
+            bottomControls.forEach { bottomControl -> bottomControl.initializeButton(viewGroup) }
         }
+    }
 
-        initInjectVisibilityCheckCall()
+    initInjectVisibilityCheckCall()
 
-        val youtube_controls_bottom_ui_container =
-            Utils.getResourceIdentifier("youtube_controls_bottom_ui_container", "id")
+    val youtube_controls_bottom_ui_container =
+        Utils.getResourceIdentifier("youtube_controls_bottom_ui_container", "id")
 
-        DexMethod("Landroid/support/constraint/ConstraintLayout;->onLayout(ZIIII)V").hookMethod {
-            after {
-                val controlsView = it.thisObject as ViewGroup
-                if (controlsView.id != youtube_controls_bottom_ui_container) return@after
+    DexMethod("Landroid/support/constraint/ConstraintLayout;->onLayout(ZIIII)V").hookMethod {
+        after {
+            val controlsView = it.thisObject as ViewGroup
+            if (controlsView.id != youtube_controls_bottom_ui_container) return@after
 
-                var rightButton =
-                    Utils.getChildViewByResourceName<View>(controlsView, "fullscreen_button")
+            var rightButton =
+                Utils.getChildViewByResourceName<View>(controlsView, "fullscreen_button")
 
-                for (bottomControl in bottomControls) {
-                    val leftButton = controlsView.findViewById<View>(bottomControl.id)
-                    // put this button to the left
-                    leftButton.x = rightButton.x - leftButton.width
-                    leftButton.y = rightButton.y
-                    rightButton = leftButton
-                }
+            for (bottomControl in bottomControls) {
+                val leftButton = controlsView.findViewById<View>(bottomControl.id)
+                // put this button to the left
+                leftButton.x = rightButton.x - leftButton.width
+                leftButton.y = rightButton.y
+                rightButton = leftButton
             }
         }
     }
