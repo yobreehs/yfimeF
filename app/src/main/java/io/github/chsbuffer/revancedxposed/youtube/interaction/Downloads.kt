@@ -12,7 +12,7 @@ import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.Prefer
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.SwitchPreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.TextPreference
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
-import io.github.chsbuffer.revancedxposed.youtube.misc.BottomControl
+import io.github.chsbuffer.revancedxposed.youtube.misc.ControlInitializer
 import io.github.chsbuffer.revancedxposed.youtube.misc.PlayerControls
 import io.github.chsbuffer.revancedxposed.youtube.misc.PreferenceScreen
 import io.github.chsbuffer.revancedxposed.youtube.misc.addBottomControl
@@ -44,7 +44,7 @@ fun YoutubeHook.Downloads() {
 
     addBottomControl(R.layout.revanced_external_download_button)
     initializeBottomControl(
-        BottomControl(
+        ControlInitializer(
             R.id.revanced_external_download_button,
             ExternalDownloadButton::initializeButton,
             ExternalDownloadButton::setVisibility,

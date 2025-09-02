@@ -25,7 +25,7 @@
         android:focusable="true"
         android:visibility="gone" />
 
-<!--    <app.revanced.extension.youtube.sponsorblock.ui.NewSegmentLayout
+    <app.revanced.extension.youtube.sponsorblock.ui.NewSegmentLayout
         android:id="@+id/revanced_sb_new_segment_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -33,5 +33,5 @@
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="@dimen/brand_interaction_default_bottom_margin"
         android:focusable="true"
-        android:visibility="gone" />-->
+        android:visibility="gone" />
 </RelativeLayout>

@@ -4,17 +4,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewStub
 import android.widget.ImageView
+import android.widget.RelativeLayout
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.youtube.patches.PlayerControlsPatch
 import io.github.chsbuffer.revancedxposed.AccessFlags
+import io.github.chsbuffer.revancedxposed.R
 import io.github.chsbuffer.revancedxposed.fingerprint
 import io.github.chsbuffer.revancedxposed.scopedHook
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import org.luckypray.dexkit.wrap.DexMethod
 
-class BottomControl(
+class ControlInitializer(
     val id: Int,
     @JvmField val initializeButton: (controlsView: ViewGroup) -> Unit,
+    // visibilityCheckCalls
     @JvmField val setVisibility: (Boolean, Boolean) -> Unit,
     @JvmField val setVisibilityImmediate: (Boolean) -> Unit,
     // Patch works without this hook, but it is needed to use the correct fade out animation
@@ -22,22 +25,71 @@ class BottomControl(
     @JvmField val setVisibilityNegatedImmediate: () -> Unit
 )
 
+private val topControlLayouts = mutableListOf<Int>()
+private val bottomControlLayouts = mutableListOf<Int>()
+private val topControls = mutableListOf<ControlInitializer>()
+private val bottomControls = mutableListOf<ControlInitializer>()
+
 @JvmField
 var visibilityImmediateCallbacksExistModified = false
 
-@JvmField
-val bottomControls = mutableListOf<BottomControl>()
+fun onFullscreenButtonVisibilityChanged(isVisible: Boolean) {
+    topControls.forEach { it.setVisibilityImmediate(isVisible) }
+    bottomControls.forEach { it.setVisibilityImmediate(isVisible) }
+//    Logger.printDebug { ("setVisibilityImmediate($isVisible)") }
+}
 
-private val bottomControlLayouts = mutableListOf<Int>()
+fun addTopControl(layout: Int) {
+    topControlLayouts.add(layout)
+}
+
 fun addBottomControl(layout: Int) {
     bottomControlLayouts.add(layout)
 }
 
-fun initializeBottomControl(bottomControl: BottomControl) {
-    bottomControls.add(bottomControl)
+fun initializeTopControl(control: ControlInitializer) {
+    topControls.add(control)
+    injectVisibilityCheckCall()
+}
 
+fun initializeBottomControl(control: ControlInitializer) {
+    bottomControls.add(control)
+    injectVisibilityCheckCall()
+}
+
+private fun injectVisibilityCheckCall() {
     if (!visibilityImmediateCallbacksExistModified) {
         visibilityImmediateCallbacksExistModified = true
+    }
+}
+
+private fun onTopContainerInflate(viewStub: ViewStub, root: ViewGroup) {
+    topControlLayouts.forEach { layout ->
+        viewStub.layoutInflater.inflate(layout, root, true)
+    }
+
+    val heading = Utils.getChildViewByResourceName<View>(root, "player_video_heading")
+    (heading.layoutParams as RelativeLayout.LayoutParams).addRule(
+        RelativeLayout.START_OF, R.id.revanced_sb_voting_button
+    )
+
+    val revancedSbCreateSegmentButton =
+        Utils.getChildViewByResourceName<View>(root, "revanced_sb_create_segment_button")
+    (revancedSbCreateSegmentButton.layoutParams as RelativeLayout.LayoutParams).addRule(
+        RelativeLayout.START_OF, Utils.getResourceIdentifier("music_app_deeplink_button", "id")
+    )
+
+    topControls.forEach { control ->
+        control.initializeButton(root)
+    }
+}
+
+private fun onBottomContainerInflate(viewStub: ViewStub, root: ViewGroup) {
+    bottomControlLayouts.forEach { layout ->
+        viewStub.layoutInflater.inflate(layout, root, true)
+    }
+    bottomControls.forEach { control ->
+        control.initializeButton(root)
     }
 }
 
@@ -48,16 +100,18 @@ fun YoutubeHook.PlayerControls() {
             val viewStubName = Utils.getContext().resources.getResourceName(viewStub.id)
 //            Logger.printDebug { "ViewStub->inflate()" + viewStubName }
 
-            if (!viewStubName.endsWith("bottom_ui_container_stub"))
-                return@after
-//            Logger.printDebug { "inject into $viewStubName" }
-            val viewGroup = it.result as ViewGroup
+            when {
+                viewStubName.endsWith("bottom_ui_container_stub") -> {
+                    onBottomContainerInflate(viewStub, it.result as ViewGroup)
+                }
 
-            bottomControlLayouts.forEach { layout ->
-                viewStub.layoutInflater.inflate(layout, viewGroup, true)
+                viewStubName.endsWith("controls_layout_stub") -> {
+                    onTopContainerInflate(viewStub, it.result as ViewGroup)
+                }
+
+                else -> return@after
             }
-
-            bottomControls.forEach { bottomControl -> bottomControl.initializeButton(viewGroup) }
+//            Logger.printDebug { "inject into $viewStubName" }
         }
     }
 

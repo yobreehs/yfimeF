@@ -4,13 +4,15 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Rect
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.youtube.sponsorblock.SegmentPlaybackController
+import app.revanced.extension.youtube.sponsorblock.ui.CreateSegmentButton
 import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockAboutPreference
 import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockPreferenceGroup
 import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockStatsPreferenceCategory
 import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockViewController
+import app.revanced.extension.youtube.sponsorblock.ui.VotingButton
+import io.github.chsbuffer.revancedxposed.R
 import io.github.chsbuffer.revancedxposed.addModuleAssets
 import io.github.chsbuffer.revancedxposed.scopedHook
 import io.github.chsbuffer.revancedxposed.setObjectField
@@ -18,8 +20,12 @@ import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.NonInt
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceCategory
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
+import io.github.chsbuffer.revancedxposed.youtube.misc.ControlInitializer
+import io.github.chsbuffer.revancedxposed.youtube.misc.PlayerControls
 import io.github.chsbuffer.revancedxposed.youtube.misc.PlayerTypeHook
 import io.github.chsbuffer.revancedxposed.youtube.misc.PreferenceScreen
+import io.github.chsbuffer.revancedxposed.youtube.misc.addTopControl
+import io.github.chsbuffer.revancedxposed.youtube.misc.initializeTopControl
 import io.github.chsbuffer.revancedxposed.youtube.video.VideoIdPatch
 import io.github.chsbuffer.revancedxposed.youtube.video.VideoInformationHook
 import io.github.chsbuffer.revancedxposed.youtube.video.playerInitHooks
@@ -32,6 +38,7 @@ fun YoutubeHook.SponsorBlock() {
         ::VideoInformationHook,
         ::VideoIdPatch,
         ::PlayerTypeHook,
+        ::PlayerControls,
     )
 
     PreferenceScreen.SPONSORBLOCK.addPreferences(
@@ -42,14 +49,12 @@ fun YoutubeHook.SponsorBlock() {
             sorting = PreferenceScreenPreference.Sorting.UNSORTED,
             preferences = emptySet(), // Preferences are added by custom class at runtime.
             tag = SponsorBlockPreferenceGroup::class.java
-        ),
-        PreferenceCategory(
+        ), PreferenceCategory(
             key = "revanced_sb_stats",
             sorting = PreferenceScreenPreference.Sorting.UNSORTED,
             preferences = emptySet(), // Preferences are added by custom class at runtime.
             tag = SponsorBlockStatsPreferenceCategory::class.java
-        ),
-        PreferenceCategory(
+        ), PreferenceCategory(
             key = "revanced_sb_about",
             sorting = PreferenceScreenPreference.Sorting.UNSORTED,
             preferences = setOf(
@@ -62,12 +67,11 @@ fun YoutubeHook.SponsorBlock() {
         )
     )
 
+    addTopControl(R.layout.revanced_sb_button)
+
     // Hook the video time methods.
     videoTimeHooks.add { SegmentPlaybackController.setVideoTime(it) }
     videoIdHooks.add { SegmentPlaybackController.setCurrentVideoId(it) }
-
-    // Initialize the player controller.
-    playerInitHooks.add { SegmentPlaybackController.initialize(it) }
 
     getDexClass("SeekbarClass") {
         findMethod {
@@ -129,8 +133,35 @@ fun YoutubeHook.SponsorBlock() {
         )
     )
 
+    // Change visibility of the buttons.
+    initializeTopControl(
+        ControlInitializer(
+            R.id.revanced_sb_create_segment_button,
+            CreateSegmentButton::initialize,
+            CreateSegmentButton::setVisibility,
+            CreateSegmentButton::setVisibilityImmediate,
+            CreateSegmentButton::setVisibilityNegatedImmediate
+        )
+    )
+    initializeTopControl(
+        ControlInitializer(
+            R.id.revanced_sb_voting_button,
+            VotingButton::initialize,
+            VotingButton::setVisibility,
+            VotingButton::setVisibilityImmediate,
+            VotingButton::setVisibilityNegatedImmediate
+        )
+    )
+
+    // TODO Append the new time to the player layout.
+
+    // Initialize the player controller.
+    playerInitHooks.add { SegmentPlaybackController.initialize(it) }
+
     // Initialize the SponsorBlock view.
     val inset_overlay_view_layout = Utils.getResourceIdentifier("inset_overlay_view_layout", "id")
+    val controls_overlay_layout =
+        Utils.getResourceIdentifier("size_adjustable_youtube_controls_overlay", "layout")
     getDexMethod("controlsOverlayFingerprint") {
         findMethod {
             matcher {
@@ -138,20 +169,17 @@ fun YoutubeHook.SponsorBlock() {
                 paramCount = 0
                 returnType = "void"
             }
-        }.single().also {
-            getDexField("controlsOverlayParentLayout") { it.usingFields.first().field }
-        }
-    }.hookMethod {
-        val field = getDexField("controlsOverlayParentLayout").toField()
-        val id = inset_overlay_view_layout
+        }.single()
+    }.hookMethod(scopedHook(DexMethod("Landroid/view/LayoutInflater;->inflate(ILandroid/view/ViewGroup;)Landroid/view/View;").toMember()) {
         after { param ->
-            val layout = field.get(param.thisObject) as FrameLayout
+            if (param.args[0] != controls_overlay_layout) return@after
+            val layout = param.result as ViewGroup
             layout.context.addModuleAssets()
             Utils.getContext().addModuleAssets()
-            val overlay_view = layout.findViewById<ViewGroup>(id)
+            val overlay_view = layout.findViewById<ViewGroup>(inset_overlay_view_layout)
             SponsorBlockViewController.initialize(overlay_view)
         }
-    }
+    })
 
     fun injectClassLoader(self: ClassLoader, host: ClassLoader) {
         val bootClassLoader = Context::class.java.classLoader!!
