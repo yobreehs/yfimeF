@@ -13,6 +13,7 @@ import io.github.chsbuffer.revancedxposed.common.UpdateChecker
 import io.github.chsbuffer.revancedxposed.googlephotos.GooglePhotosHook
 import io.github.chsbuffer.revancedxposed.meta.MetaHook
 import io.github.chsbuffer.revancedxposed.music.MusicHook
+import io.github.chsbuffer.revancedxposed.photomath.PhotomathHook
 import io.github.chsbuffer.revancedxposed.reddit.RedditHook
 import io.github.chsbuffer.revancedxposed.spotify.SpotifyHook
 import io.github.chsbuffer.revancedxposed.strava.StravaHook
@@ -31,7 +32,9 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
         "com.google.android.apps.photos" to { GooglePhotosHook(lpparam) },
         "com.instagram.android" to { MetaHook(app, lpparam) },
         "com.instagram.barcelona" to { MetaHook(app, lpparam) },
-        "com.strava" to { StravaHook(app, lpparam) })
+        "com.strava" to { StravaHook(app, lpparam) },
+        "com.microblink.photomath" to { PhotomathHook(app, lpparam) },
+    )
 
     fun shouldHook(packageName: String): Boolean {
         if (!hooksByPackage.containsKey(packageName)) return false
