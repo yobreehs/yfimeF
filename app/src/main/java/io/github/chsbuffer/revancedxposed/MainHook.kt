@@ -50,6 +50,7 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
                 Utils.showToastLong("ReVanced Xposed module does not work with patched app")
                 return@inContext
             }
+            DebugHook(lpparam.classLoader).Hook()
             hooksByPackage[lpparam.packageName]?.invoke()?.Hook()
         }
     }

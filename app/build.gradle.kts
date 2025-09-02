@@ -40,7 +40,7 @@ android {
     packagingOptions.resources {
         excludes.addAll(
             arrayOf(
-                "META-INF/**", "kotlin/**", "**.bin"
+                "META-INF/**", "**.bin"
             )
         )
     }
@@ -109,6 +109,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.fuel)
+    debugImplementation(kotlin("reflect"))
     compileOnly(libs.xposed)
     compileOnly(project(":stub"))
 }
@@ -200,6 +201,10 @@ abstract class CopyResourcesTask @Inject constructor() : DefaultTask() {
 }
 
 androidComponents {
+    onVariants(selector().withBuildType("release")) { variant ->
+        variant.packaging.resources.excludes.add("kotlin/**")
+    }
+
     onVariants { variant ->
         val variantName = variant.name.uppercaseFirstChar()
         val strTask = project.tasks.register<GenerateStringsTask>("generateStrings$variantName") {
