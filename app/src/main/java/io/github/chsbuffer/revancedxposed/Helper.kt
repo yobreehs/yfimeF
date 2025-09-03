@@ -149,3 +149,12 @@ fun injectHostClassLoaderToSelf(self: ClassLoader, classLoader: ClassLoader) {
         }
     })
 }
+
+@Suppress("UNCHECKED_CAST")
+fun Class<*>.enumValueOf(name: String): Enum<*>? {
+    return try {
+        java.lang.Enum.valueOf(this as Class<out Enum<*>>, name)
+    } catch (_: IllegalArgumentException) {
+        null
+    }
+}

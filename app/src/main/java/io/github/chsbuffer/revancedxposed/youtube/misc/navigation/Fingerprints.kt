@@ -16,22 +16,21 @@ import io.github.chsbuffer.revancedxposed.returns
 //    literal { actionBarSearchResultsViewMicId }
 //}
 
-// val toolbarLayoutFingerprint = fingerprint {
-//    accessFlags(AccessFlags.PROTECTED, AccessFlags.CONSTRUCTOR)
-//    literal { toolbarContainerId }
-//}
+val toolbarContainerId = resourceMappings["id", "toolbar_container"]
+val toolbarLayoutFingerprint = fingerprint {
+    accessFlags(AccessFlags.PROTECTED, AccessFlags.CONSTRUCTOR)
+    literal { toolbarContainerId }
+}
 
 /**
  * Matches to https://android.googlesource.com/platform/frameworks/support/+/9eee6ba/v7/appcompat/src/android/support/v7/widget/Toolbar.java#963
  */
-// val appCompatToolbarBackButtonFingerprint = fingerprint {
-//    accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
-//    returns("Landroid/graphics/drawable/Drawable;")
-//    parameters()
-//    custom { methodDef, classDef ->
-//        classDef.type == "Landroid/support/v7/widget/Toolbar;"
-//    }
-//}
+val appCompatToolbarBackButtonFingerprint = fingerprint {
+    accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
+    returns("Landroid/graphics/drawable/Drawable;")
+    parameters()
+    classMatcher { descriptor = "Landroid/support/v7/widget/Toolbar;" }
+}
 
 val imageOnlyTabResourceId = resourceMappings["layout", "image_only_tab"]
 
@@ -99,15 +98,19 @@ val pivotBarButtonsCreateResourceViewFingerprint = fingerprint {
 //    opcode == Opcode.INVOKE_VIRTUAL && getReference<MethodReference>()?.name == "setSelected"
 //}
 
-// val pivotBarButtonsViewSetSelectedFingerprint = fingerprint {
-//    accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
-//    returns("V")
-//    parameters("I", "Z")
-//    custom { method, _ ->
-//        indexOfSetViewSelectedInstruction(method) >= 0 &&
-//                method.definingClass == "Lcom/google/android/libraries/youtube/rendering/ui/pivotbar/PivotBar;"
-//    }
-//}
+val pivotBarButtonsViewSetSelectedFingerprint = fingerprint {
+    accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
+    returns("V")
+    parameters("I", "Z")
+    classMatcher {
+        descriptor = "Lcom/google/android/libraries/youtube/rendering/ui/pivotbar/PivotBar;"
+    }
+    methodMatcher { addInvoke { name = "setSelected" } }
+}
+
+val pivotBarButtonsViewSetSelectedSubFingerprint = findMethodDirect {
+    pivotBarButtonsViewSetSelectedFingerprint().invokes.single { it.name == "setSelected" }
+}
 
 val pivotBarConstructorFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.CONSTRUCTOR)

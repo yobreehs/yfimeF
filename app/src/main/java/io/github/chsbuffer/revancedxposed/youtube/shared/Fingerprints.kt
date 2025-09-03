@@ -31,6 +31,14 @@ val mainActivityClass = findClassDirect {
     mainActivityConstructorFingerprint().declaredClass!!
 }
 
+val mainActivityOnBackPressedFingerprint = fingerprint {
+    accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
+    returns("V")
+    parameters()
+    methodMatcher { name = "onBackPressed" }
+    classMatcher { className(".MainActivity", StringMatchType.EndsWith) }
+}
+
 val mainActivityOnCreateFingerprint = fingerprint {
     returns("V")
     parameters("Landroid/os/Bundle;")
