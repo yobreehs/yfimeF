@@ -1,0 +1,67 @@
+package io.github.chsbuffer.revancedxposed.youtube.shared
+
+import io.github.chsbuffer.revancedxposed.AccessFlags
+import io.github.chsbuffer.revancedxposed.findClassDirect
+import io.github.chsbuffer.revancedxposed.findMethodDirect
+import io.github.chsbuffer.revancedxposed.fingerprint
+import org.luckypray.dexkit.query.enums.StringMatchType
+import java.lang.reflect.Modifier
+
+internal val conversionContextFingerprintToString = fingerprint {
+    parameters()
+    strings(
+        "ConversionContext{containerInternal=",
+        ", widthConstraint=",
+        ", heightConstraint=",
+        ", templateLoggerFactory=",
+        ", rootDisposableContainer=",
+        ", identifierProperty="
+    )
+}
+
+val mainActivityConstructorFingerprint = fingerprint {
+    accessFlags(AccessFlags.PUBLIC, AccessFlags.CONSTRUCTOR)
+    parameters()
+    classMatcher {
+        className(".MainActivity", StringMatchType.EndsWith)
+    }
+}
+
+val mainActivityClass = findClassDirect {
+    mainActivityConstructorFingerprint().declaredClass!!
+}
+
+val mainActivityOnCreateFingerprint = fingerprint {
+    returns("V")
+    parameters("Landroid/os/Bundle;")
+    methodMatcher { name = "onCreate" }
+    classMatcher { className(".MainActivity", StringMatchType.EndsWith) }
+}
+
+val seekbarFingerprint = fingerprint {
+    returns("V")
+    strings("timed_markers_width")
+}
+
+val videoQualityChangedFingerprint = fingerprint {
+    accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
+    methodMatcher {
+        addInvoke {
+            declaredClass =
+                "com.google.android.libraries.youtube.innertube.model.media.VideoQuality"
+            name = "<init>"
+        }
+        addUsingField {
+            field {
+                // VIDEO_QUALITY_SETTING_UNKNOWN Enum
+                declaredClass { usingStrings("VIDEO_QUALITY_SETTING_UNKNOWN") }
+                modifiers = Modifier.STATIC
+                name = "a"
+            }
+        }
+    }
+}
+
+val VideoQualityReceiver = findMethodDirect {
+    videoQualityChangedFingerprint().invokes.single { it.paramCount == 1 && it.paramTypeNames[0] == "com.google.android.libraries.youtube.innertube.model.media.VideoQuality" }
+}

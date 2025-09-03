@@ -8,18 +8,18 @@ import io.github.chsbuffer.revancedxposed.BaseHook
 import io.github.chsbuffer.revancedxposed.BuildConfig
 import io.github.chsbuffer.revancedxposed.addModuleAssets
 import io.github.chsbuffer.revancedxposed.injectHostClassLoaderToSelf
-import io.github.chsbuffer.revancedxposed.youtube.ad.HideAds
-import io.github.chsbuffer.revancedxposed.youtube.ad.VideoAds
-import io.github.chsbuffer.revancedxposed.youtube.interaction.CopyVideoUrl
-import io.github.chsbuffer.revancedxposed.youtube.interaction.Downloads
-import io.github.chsbuffer.revancedxposed.youtube.interaction.SwipeControls
-import io.github.chsbuffer.revancedxposed.youtube.layout.NavigationButtons
-import io.github.chsbuffer.revancedxposed.youtube.layout.SponsorBlock
-import io.github.chsbuffer.revancedxposed.youtube.layout.hide.HideShortsComponents
-import io.github.chsbuffer.revancedxposed.youtube.misc.BackgroundPlayback
-import io.github.chsbuffer.revancedxposed.youtube.misc.RemoveTrackingQueryParameter
-import io.github.chsbuffer.revancedxposed.youtube.misc.SettingsHook
-import io.github.chsbuffer.revancedxposed.youtube.video.VideoQuality
+import io.github.chsbuffer.revancedxposed.youtube.ad.general.HideAds
+import io.github.chsbuffer.revancedxposed.youtube.ad.video.VideoAds
+import io.github.chsbuffer.revancedxposed.youtube.interaction.copyvideourl.CopyVideoUrl
+import io.github.chsbuffer.revancedxposed.youtube.interaction.downloads.Downloads
+import io.github.chsbuffer.revancedxposed.youtube.interaction.swipecontrols.SwipeControls
+import io.github.chsbuffer.revancedxposed.youtube.layout.buttons.navigation.NavigationButtons
+import io.github.chsbuffer.revancedxposed.youtube.layout.hide.shorts.HideShortsComponents
+import io.github.chsbuffer.revancedxposed.youtube.layout.sponsorblock.SponsorBlock
+import io.github.chsbuffer.revancedxposed.youtube.misc.backgroundplayback.BackgroundPlayback
+import io.github.chsbuffer.revancedxposed.youtube.misc.privacy.RemoveTrackingQueryParameter
+import io.github.chsbuffer.revancedxposed.youtube.misc.settings.SettingsHook
+import io.github.chsbuffer.revancedxposed.youtube.video.quality.VideoQuality
 
 class YoutubeHook(
     app: Application,
@@ -44,8 +44,8 @@ class YoutubeHook(
     )
 
     fun ExtensionHook() {
-        Utils.setContext(app)
         injectHostClassLoaderToSelf(this::class.java.classLoader!!, classLoader)
+        val app = Utils.getContext()
         app.addModuleAssets()
         StringRef.resources = app.resources
         StringRef.packageName = BuildConfig.APPLICATION_ID

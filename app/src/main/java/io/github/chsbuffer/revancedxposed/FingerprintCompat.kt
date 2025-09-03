@@ -4,6 +4,8 @@ import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.matchers.ClassMatcher
 import org.luckypray.dexkit.query.matchers.MethodMatcher
 import org.luckypray.dexkit.query.matchers.base.OpCodesMatcher
+import org.luckypray.dexkit.result.ClassData
+import org.luckypray.dexkit.result.FieldData
 import org.luckypray.dexkit.result.MethodData
 import org.luckypray.dexkit.util.DexSignUtil.getTypeName
 import java.lang.reflect.Modifier
@@ -32,7 +34,8 @@ class Fingerprint(val dexkit: DexKitBridge, init: Fingerprint.() -> Unit) {
     }
 
     fun accessFlags(vararg accessFlags: AccessFlags) {
-        methodMatcher.modifiers(accessFlags.map { it.modifier }.reduce { acc, next -> acc or next })
+        val modifiers = accessFlags.map { it.modifier }.reduce { acc, next -> acc or next }
+        if (modifiers != 0) methodMatcher.modifiers(modifiers)
         if (accessFlags.contains(AccessFlags.CONSTRUCTOR)) {
             if (accessFlags.contains(AccessFlags.STATIC)) methodMatcher.name = "<clinit>"
             else methodMatcher.name = "<init>"
@@ -83,6 +86,29 @@ class Fingerprint(val dexkit: DexKitBridge, init: Fingerprint.() -> Unit) {
 fun DexKitBridge.fingerprint(block: Fingerprint.() -> Unit): MethodData {
     return Fingerprint(this, block).run()
 }
+
+interface ResourceFinder {
+    operator fun get(type: String, name: String): Int
+}
+
+lateinit var resourceMappings: ResourceFinder
+
+typealias FindClassFunc = DexKitBridge.() -> ClassData
+typealias FindMethodFunc = DexKitBridge.() -> MethodData
+typealias FindMethodListFunc = DexKitBridge.() -> List<MethodData>
+typealias FindFieldFunc = DexKitBridge.() -> FieldData
+
+fun fingerprint(block: Fingerprint.() -> Unit): FindMethodFunc {
+    return { Fingerprint(this, block).run() }
+}
+
+fun findMethodDirect(block: FindMethodFunc): FindMethodFunc = block
+
+fun findMethodListDirect(block: FindMethodListFunc): FindMethodListFunc = block
+
+fun findClassDirect(block: FindClassFunc): FindClassFunc = block
+
+fun findFieldDirect(block: FindFieldFunc): FindFieldFunc = block
 
 fun MethodMatcher.strings(vararg strings: String) {
     this.usingStrings(strings.toList())

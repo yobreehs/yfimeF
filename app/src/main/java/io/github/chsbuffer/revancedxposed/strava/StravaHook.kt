@@ -3,11 +3,8 @@ package io.github.chsbuffer.revancedxposed.strava
 import android.app.Application
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 import io.github.chsbuffer.revancedxposed.BaseHook
-import io.github.chsbuffer.revancedxposed.Opcode
-import io.github.chsbuffer.revancedxposed.getObjectFieldOrNullAs
-import io.github.chsbuffer.revancedxposed.opcodes
-import org.luckypray.dexkit.query.enums.StringMatchType
-import java.util.Collections
+import io.github.chsbuffer.revancedxposed.strava.subscription.UnlockSubscription
+import io.github.chsbuffer.revancedxposed.strava.upselling.DisableSubscriptionSuggestions
 
 class StravaHook(app: Application, lpparam: XC_LoadPackage.LoadPackageParam) :
     BaseHook(app, lpparam) {
@@ -15,43 +12,5 @@ class StravaHook(app: Application, lpparam: XC_LoadPackage.LoadPackageParam) :
         ::UnlockSubscription,
         ::DisableSubscriptionSuggestions
     )
-
-    fun UnlockSubscription() {
-        getDexMethod("getSubscribedFingerprint") {
-            findMethod {
-                matcher {
-                    name = "getSubscribed"
-                    declaredClass(".SubscriptionDetailResponse", StringMatchType.EndsWith)
-                    opcodes(
-                        Opcode.IGET_BOOLEAN,
-                    )
-                }
-            }.single()
-        }.hookMethod {
-            before { param ->
-                param.result = true
-            }
-        }
-    }
-
-    fun DisableSubscriptionSuggestions() {
-        getDexMethod("PivotBarConstructorFingerprint") {
-            findMethod {
-                matcher {
-                    name = "getModules"
-                    declaredClass(".GenericLayoutEntry", StringMatchType.EndsWith)
-                    opcodes(
-                        Opcode.IGET_OBJECT,
-                    )
-                }
-            }.single()
-        }.hookMethod {
-            before { param ->
-                val pageValue = param.thisObject.getObjectFieldOrNullAs<String>("page") ?: return@before
-                if (pageValue.contains("_upsell") || pageValue.contains("promo")) {
-                    param.result = Collections.EMPTY_LIST
-                }
-            }
-        }
-    }
 }
+

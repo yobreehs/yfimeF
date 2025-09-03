@@ -53,6 +53,15 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
                 Utils.showToastLong("ReVanced Xposed module does not work with patched app")
                 return@inContext
             }
+
+            resourceMappings = object : ResourceFinder {
+                override operator fun get(type: String, name: String): Int {
+                    val id = Utils.getResourceIdentifier(name, type)
+                    if (id == 0) throw Exception("Could not find resource type: $type name: $name")
+                    return id
+                }
+            }
+
             DebugHook(lpparam.classLoader).Hook()
             hooksByPackage[lpparam.packageName]?.invoke()?.Hook()
         }

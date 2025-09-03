@@ -24,6 +24,7 @@ import java.lang.reflect.Constructor
 import java.lang.reflect.Member
 import java.lang.reflect.Method
 import kotlin.reflect.KFunction0
+import kotlin.reflect.KProperty0
 import kotlin.system.measureTimeMillis
 
 private typealias HookFunction = KFunction0<Unit>
@@ -117,7 +118,7 @@ class DependedHookFailedException(
 
 @OptIn(DexKitExperimentalApi::class)
 @SuppressLint("CommitPrefEdits")
-abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : IHook {
+abstract class BaseHook(private val app: Application, val lpparam: LoadPackageParam) : IHook {
     override val classLoader = lpparam.classLoader!!
 
     // hooks
@@ -221,18 +222,52 @@ abstract class BaseHook(val app: Application, val lpparam: LoadPackageParam) : I
         }
     }
 
-    fun getDexClass(key: String, findFunc: (DexKitBridge.() -> ClassData)? = null): DexClass =
-        dexkit.getClassDirect(key) { findFunc!!().also { Logger.printInfo { "$key Matches: ${it.descriptor}" } } }
+    fun KProperty0<FindMethodFunc>.hookMethod(block: HookDsl<IHookCallback>.() -> Unit) {
+        getDexMethod(this.name, this.get()).hookMethod(block)
+    }
 
-    fun getDexMethod(key: String, findFunc: (DexKitBridge.() -> MethodData)? = null): DexMethod =
-        dexkit.getMethodDirect(key) { findFunc!!().also { Logger.printInfo { "$key Matches: ${it.descriptor}" } } }
+    fun KProperty0<FindMethodFunc>.hookMethod(callback: XC_MethodHook) {
+        getDexMethod(this.name, this.get()).hookMethod(callback)
+    }
 
-    fun getDexField(key: String, findFunc: (DexKitBridge.() -> FieldData)? = null): DexField =
-        dexkit.getFieldDirect(key) { findFunc!!().also { Logger.printInfo { "$key Matches: ${it.descriptor}" } } }
+    val KProperty0<FindMethodFunc>.member
+        get() = getDexMethod(this.name, this.get()).toMember()
 
-    fun getDexMethods(
-        key: String, findFunc: (DexKitBridge.() -> List<MethodData>)? = null
+    val KProperty0<FindMethodFunc>.memberOrNull
+        get() = runCatching { this.member }.getOrNull()
+
+    val KProperty0<FindMethodFunc>.method
+        get() = getDexMethod(this.name, this.get()).toMethod()
+
+    val KProperty0<FindMethodFunc>.dexMethod
+        get() = getDexMethod(this.name, this.get())
+
+    val KProperty0<FindMethodListFunc>.dexMethodList
+        get() = getDexMethods(this.name, this.get())
+
+    val KProperty0<FindFieldFunc>.field
+        get() = getDexField(this.name, this.get()).toField()
+
+    val KProperty0<FindClassFunc>.clazz
+        get() = getDexClass(this.name, this.get()).toClass()
+
+    private inline fun getDexClass(
+        key: String, crossinline findFunc: DexKitBridge.() -> ClassData
+    ): DexClass =
+        dexkit.getClassDirect(key) { findFunc().also { Logger.printInfo { "$key Matches: ${it.descriptor}" } } }
+
+    private inline fun getDexMethod(
+        key: String, crossinline findFunc: DexKitBridge.() -> MethodData
+    ): DexMethod =
+        dexkit.getMethodDirect(key) { findFunc().also { Logger.printInfo { "$key Matches: ${it.descriptor}" } } }
+
+    private inline fun getDexField(
+        key: String, crossinline findFunc: DexKitBridge.() -> FieldData
+    ): DexField =
+        dexkit.getFieldDirect(key) { findFunc().also { Logger.printInfo { "$key Matches: ${it.descriptor}" } } }
+
+    private inline fun getDexMethods(
+        key: String, crossinline findFunc: DexKitBridge.() -> List<MethodData>
     ): List<DexMethod> =
-        dexkit.getMethodsDirect(key) { findFunc!!().also { Logger.printInfo { "$key Matches: ${it.joinToString { m -> m.descriptor }}" } } }
-
+        dexkit.getMethodsDirect(key) { findFunc().also { Logger.printInfo { "$key Matches: ${it.joinToString { m -> m.descriptor }}" } } }
 }
