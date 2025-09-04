@@ -18,7 +18,7 @@ import io.github.chsbuffer.revancedxposed.returns
 
 val toolbarContainerId get() = resourceMappings["id", "toolbar_container"]
 val toolbarLayoutFingerprint = fingerprint {
-    accessFlags(AccessFlags.PROTECTED, AccessFlags.CONSTRUCTOR)
+    accessFlags(AccessFlags.CONSTRUCTOR)
     literal { toolbarContainerId }
 }
 

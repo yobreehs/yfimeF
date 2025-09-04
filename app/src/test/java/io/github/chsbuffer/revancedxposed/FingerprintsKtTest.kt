@@ -1,6 +1,7 @@
 package io.github.chsbuffer.revancedxposed
 
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.params.ParameterizedClass
@@ -11,7 +12,7 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.name
-import kotlin.reflect.KProperty0
+import kotlin.time.measureTime
 
 @ParameterizedClass
 @ArgumentsSource(FilePathArgumentsProvider::class)
@@ -19,29 +20,34 @@ class FingerprintsKtTest(val apkPath: Path) {
 
     val dexkit: DexKitBridge = TestSetup.getDexKit(apkPath.toString())
 
-    fun <T, B> KProperty0<T>.testMatcher() where T : (DexKitBridge) -> B {
-        Assertions.assertDoesNotThrow {
-            val value = this.getter()(dexkit)
-            println("$name: $value")
-        }
-    }
-
     fun testFingerprints(clazz: Class<*>) {
-        clazz.methods.forEach {
-            if (it.isAnnotationPresent(SkipTest::class.java)) return@forEach
-            if (!it.isStatic) return@forEach
+        clazz.methods.forEach { method ->
+            if (method.isAnnotationPresent(SkipTest::class.java)) return@forEach
+            if (!method.isStatic) return@forEach
 
-            print("${it.name.drop(3)}:")
-            val func = it(null) as? (DexKitBridge) -> Any ?: return@forEach
-            Assertions.assertDoesNotThrow {
-                val value = func(dexkit)
-                println(value)
+            print("${method.name.drop(3)}:")
+            val func = method(null) as? (DexKitBridge) -> Any ?: return@forEach
+            assertDoesNotThrow {
+                measureTime {
+                    val value = func(dexkit)
+                    if (value is List<*>) {
+                        assertTrue(value.isNotEmpty())
+                        print(value.joinToString(", "))
+                    } else {
+                        print("$value")
+                    }
+                }.let {
+                    if (it.inWholeMilliseconds > 20)
+                        println(", slow match: $it")
+                    else
+                        println()
+                }
             }
         }
     }
 
     @TestFactory
-    fun `Fingerprint Tests`(): Iterator<DynamicTest> = sequence {
+    fun fingerprintTest(): Iterator<DynamicTest> = sequence {
         val app = when {
             apkPath.name.startsWith("com.google.android.youtube") -> "youtube"
             apkPath.name.startsWith("com.google.android.apps.youtube.music") -> "music"

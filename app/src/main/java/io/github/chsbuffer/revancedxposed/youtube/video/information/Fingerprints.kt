@@ -79,7 +79,8 @@ val videoLengthField = findFieldDirect {
 }
 
 val videoLengthHolderField = findFieldDirect {
-    videoLengthFingerprint().usingFields.single { it.usingType == FieldUsingType.Read && it.field.typeName == videoLengthField().declaredClassName }.field
+    val videoLengthField = videoLengthField()
+    videoLengthFingerprint().usingFields.single { it.usingType == FieldUsingType.Read && it.field.typeName == videoLengthField.declaredClassName }.field
 }
 
 /**
