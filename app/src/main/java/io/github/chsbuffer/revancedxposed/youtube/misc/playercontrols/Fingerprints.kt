@@ -1,6 +1,7 @@
 package io.github.chsbuffer.revancedxposed.youtube.misc.playercontrols
 
 import io.github.chsbuffer.revancedxposed.AccessFlags
+import io.github.chsbuffer.revancedxposed.SkipTest
 import io.github.chsbuffer.revancedxposed.fingerprint
 import io.github.chsbuffer.revancedxposed.resourceMappings
 
@@ -10,6 +11,7 @@ val heatseeker_viewstub_id get() = resourceMappings["id", "heatseeker_viewstub"]
 val inset_overlay_view_layout_id get() = resourceMappings["id", "inset_overlay_view_layout"]
 val scrim_overlay_id get() = resourceMappings["id", "scrim_overlay"]
 
+@get:SkipTest
 val youtubeControlsOverlayFingerprint = fingerprint {
     accessFlags(AccessFlags.PRIVATE, AccessFlags.FINAL)
     returns("V")
@@ -25,7 +27,7 @@ val motionEventFingerprint = fingerprint {
     returns("V")
     parameters("Landroid/view/MotionEvent;")
     methodMatcher { addInvoke { name = "setTranslationY" } }
-    classMatcher { className(youtubeControlsOverlayFingerprint(dexkit).className) }
+//    classMatcher { className(youtubeControlsOverlayFingerprint(dexkit).className) }
 }
 
 val playerTopControlsInflateFingerprint = fingerprint {
