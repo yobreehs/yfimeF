@@ -16,7 +16,7 @@ import io.github.chsbuffer.revancedxposed.returns
 //    literal { actionBarSearchResultsViewMicId }
 //}
 
-val toolbarContainerId = resourceMappings["id", "toolbar_container"]
+val toolbarContainerId get() = resourceMappings["id", "toolbar_container"]
 val toolbarLayoutFingerprint = fingerprint {
     accessFlags(AccessFlags.PROTECTED, AccessFlags.CONSTRUCTOR)
     literal { toolbarContainerId }
@@ -32,7 +32,7 @@ val appCompatToolbarBackButtonFingerprint = fingerprint {
     classMatcher { descriptor = "Landroid/support/v7/widget/Toolbar;" }
 }
 
-val imageOnlyTabResourceId = resourceMappings["layout", "image_only_tab"]
+val imageOnlyTabResourceId get() = resourceMappings["layout", "image_only_tab"]
 
 /**
  * Matches to the class found in [pivotBarConstructorFingerprint].
@@ -134,4 +134,4 @@ val setEnumMapFingerprint = findMethodListDirect {
     }.filter { it.isConstructor || it.isStaticInitializer }
 }
 
-val ytFillBellId = resourceMappings["drawable", "yt_fill_bell_black_24"]
+val ytFillBellId get() = resourceMappings["drawable", "yt_fill_bell_black_24"]

@@ -2,7 +2,7 @@ package io.github.chsbuffer.revancedxposed.youtube.video.videoid
 
 import io.github.chsbuffer.revancedxposed.findMethodDirect
 
-internal val videoIdFingerprint = findMethodDirect {
+val videoIdFingerprint = findMethodDirect {
     findMethod {
         matcher {
             addEqString("Null initialPlayabilityStatus")
@@ -18,7 +18,7 @@ val PlayerResponseModel_getVideoId = findMethodDirect {
     }
 }
 
-//internal val videoIdBackgroundPlayFingerprint = fingerprint {
+//val videoIdBackgroundPlayFingerprint = fingerprint {
 //    accessFlags(AccessFlags.DECLARED_SYNCHRONIZED, AccessFlags.FINAL, AccessFlags.PUBLIC)
 //    returns("V")
 //    parameters("L")
@@ -45,7 +45,7 @@ val PlayerResponseModel_getVideoId = findMethodDirect {
 //
 //}
 //
-//internal val videoIdParentFingerprint = fingerprint {
+//val videoIdParentFingerprint = fingerprint {
 //    accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
 //    returns("[L")
 //    parameters("L")

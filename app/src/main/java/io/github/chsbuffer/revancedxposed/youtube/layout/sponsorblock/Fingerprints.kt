@@ -25,7 +25,7 @@ val seekbarOnDrawFingerprint = findMethodDirect {
     }.single()
 }
 
-val inset_overlay_view_layout = resourceMappings["id", "inset_overlay_view_layout"]
+val inset_overlay_view_layout get() = resourceMappings["id", "inset_overlay_view_layout"]
 
 val controlsOverlayFingerprint = findMethodDirect {
     findMethod {

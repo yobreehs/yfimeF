@@ -5,7 +5,7 @@ import io.github.chsbuffer.revancedxposed.Opcode
 import io.github.chsbuffer.revancedxposed.fingerprint
 import io.github.chsbuffer.revancedxposed.resourceMappings
 
-internal val videoQualityItemOnClickParentFingerprint = fingerprint {
+val videoQualityItemOnClickParentFingerprint = fingerprint {
     returns("V")
     strings("VIDEO_QUALITIES_MENU_BOTTOM_SHEET_FRAGMENT")
 }
@@ -13,17 +13,17 @@ internal val videoQualityItemOnClickParentFingerprint = fingerprint {
 /**
  * Resolves to class found in [videoQualityItemOnClickFingerprint].
  */
-internal val videoQualityItemOnClickFingerprint = fingerprint {
+val videoQualityItemOnClickFingerprint = fingerprint {
     classMatcher { className(videoQualityItemOnClickParentFingerprint(dexkit).className) }
     methodMatcher { name = "onItemClick" }
 }
 
-val videoQualityQuickMenuAdvancedMenuDescription = resourceMappings[
+val videoQualityQuickMenuAdvancedMenuDescription get() = resourceMappings[
     "string",
     "video_quality_quick_menu_advanced_menu_description",
 ]
 
-internal val videoQualityMenuOptionsFingerprint = fingerprint {
+val videoQualityMenuOptionsFingerprint = fingerprint {
     accessFlags(AccessFlags.STATIC)
     returns("[L")
     parameters("Landroid/content/Context", "L", "L")
@@ -36,12 +36,12 @@ internal val videoQualityMenuOptionsFingerprint = fingerprint {
     )
     literal { videoQualityQuickMenuAdvancedMenuDescription }
 }
-val videoQualityBottomSheetListFragmentTitle = resourceMappings[
+val videoQualityBottomSheetListFragmentTitle get() = resourceMappings[
     "layout",
     "video_quality_bottom_sheet_list_fragment_title",
 ]
 
-internal val videoQualityMenuViewInflateFingerprint = fingerprint {
+val videoQualityMenuViewInflateFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("L")
     parameters("L", "L", "L")

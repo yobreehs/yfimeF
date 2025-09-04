@@ -2,13 +2,14 @@ package io.github.chsbuffer.revancedxposed.youtube.misc.backgroundplayback
 
 import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.Opcode
+import io.github.chsbuffer.revancedxposed.SkipTest
 import io.github.chsbuffer.revancedxposed.findMethodDirect
 import io.github.chsbuffer.revancedxposed.fingerprint
 import io.github.chsbuffer.revancedxposed.resourceMappings
 
-val prefBackgroundAndOfflineCategoryId = resourceMappings["string", "pref_background_and_offline_category"]
+val prefBackgroundAndOfflineCategoryId get() = resourceMappings["string", "pref_background_and_offline_category"]
 
-internal val backgroundPlaybackManagerFingerprint = fingerprint {
+val backgroundPlaybackManagerFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.STATIC)
     returns("Z")
     parameters("L")
@@ -41,7 +42,7 @@ internal val backgroundPlaybackManagerFingerprint = fingerprint {
     )
 }
 
-internal val backgroundPlaybackSettingsFingerprint = fingerprint {
+val backgroundPlaybackSettingsFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("Ljava/lang/String;")
     parameters()
@@ -61,7 +62,8 @@ val backgroundPlaybackSettingsSubFingerprint = findMethodDirect {
     backgroundPlaybackSettingsFingerprint().invokes.filter { it.returnTypeName == "boolean" }[1]
 }
 
-internal val kidsBackgroundPlaybackPolicyControllerFingerprint = fingerprint {
+@get:SkipTest
+val kidsBackgroundPlaybackPolicyControllerFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("V")
     parameters("I", "L", "L")
@@ -78,14 +80,16 @@ internal val kidsBackgroundPlaybackPolicyControllerFingerprint = fingerprint {
     literal { 5 }
 }
 
-internal val backgroundPlaybackManagerShortsFingerprint = fingerprint {
+@get:SkipTest
+val backgroundPlaybackManagerShortsFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.STATIC)
     returns("Z")
     parameters("L")
     literal { 151635310 }
 }
 
-internal val shortsBackgroundPlaybackFeatureFlagFingerprint = fingerprint {
+@get:SkipTest
+val shortsBackgroundPlaybackFeatureFlagFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("Z")
     parameters()
@@ -95,6 +99,7 @@ internal val shortsBackgroundPlaybackFeatureFlagFingerprint = fingerprint {
 internal const val PIP_INPUT_CONSUMER_FEATURE_FLAG = 45638483L
 
 // Fix 'E/InputDispatcher: Window handle pip_input_consumer has no registered input channel'
-internal val pipInputConsumerFeatureFlagFingerprint = fingerprint {
+@get:SkipTest
+val pipInputConsumerFeatureFlagFingerprint = fingerprint {
     literal { PIP_INPUT_CONSUMER_FEATURE_FLAG}
 }

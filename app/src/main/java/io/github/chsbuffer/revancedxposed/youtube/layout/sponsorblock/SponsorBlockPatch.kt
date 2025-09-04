@@ -135,12 +135,13 @@ fun YoutubeHook.SponsorBlock() {
     val controls_overlay_layout =
         Utils.getResourceIdentifier("size_adjustable_youtube_controls_overlay", "layout")
     ::controlsOverlayFingerprint.hookMethod(scopedHook(DexMethod("Landroid/view/LayoutInflater;->inflate(ILandroid/view/ViewGroup;)Landroid/view/View;").toMember()) {
+        val insetOverlayViewLayout = inset_overlay_view_layout
         after { param ->
             if (param.args[0] != controls_overlay_layout) return@after
             val layout = param.result as ViewGroup
             layout.context.addModuleAssets()
             Utils.getContext().addModuleAssets()
-            val overlay_view = layout.findViewById<ViewGroup>(inset_overlay_view_layout)
+            val overlay_view = layout.findViewById<ViewGroup>(insetOverlayViewLayout)
             SponsorBlockViewController.initialize(overlay_view)
         }
     })

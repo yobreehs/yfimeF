@@ -6,7 +6,7 @@ import io.github.chsbuffer.revancedxposed.findMethodDirect
 import io.github.chsbuffer.revancedxposed.fingerprint
 import org.luckypray.dexkit.result.ClassData
 
-internal val recyclerViewTreeObserverFingerprint = fingerprint {
+val recyclerViewTreeObserverFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.CONSTRUCTOR)
     returns("V")
     opcodes(

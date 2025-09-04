@@ -2,9 +2,11 @@ package io.github.chsbuffer.revancedxposed.spotify.layout.hide.createbutton
 
 import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.Opcode
+import io.github.chsbuffer.revancedxposed.SkipTest
 import io.github.chsbuffer.revancedxposed.findClassDirect
 import io.github.chsbuffer.revancedxposed.fingerprint
 
+@get:SkipTest
 val oldNavigationBarAddItemFingerprint = fingerprint {
     strings("Bottom navigation tabs exceeds maximum of 5 tabs")
 }

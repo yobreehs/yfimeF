@@ -2,6 +2,7 @@ package io.github.chsbuffer.revancedxposed.spotify.misc
 
 import io.github.chsbuffer.revancedxposed.FindClassFunc
 import io.github.chsbuffer.revancedxposed.Opcode
+import io.github.chsbuffer.revancedxposed.SkipTest
 import io.github.chsbuffer.revancedxposed.findClassDirect
 import io.github.chsbuffer.revancedxposed.findFieldDirect
 import io.github.chsbuffer.revancedxposed.findMethodDirect
@@ -53,6 +54,7 @@ val oldContextMenuViewModelAddItemFingerprint = fingerprint {
     methodMatcher { addInvoke { name = "add" } }
 }
 
+@SkipTest
 fun structureGetSectionsFingerprint(className: String) = fingerprint {
     classMatcher { className(className, StringMatchType.EndsWith) }
     methodMatcher {

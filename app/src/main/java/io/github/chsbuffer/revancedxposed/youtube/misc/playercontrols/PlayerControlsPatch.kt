@@ -150,8 +150,9 @@ private fun YoutubeHook.initInjectVisibilityCheckCall() {
     // Hook the fullscreen close button.  Used to fix visibility
     // when seeking and other situations.
     ::overlayViewInflateFingerprint.hookMethod(scopedHook(DexMethod("Landroid/view/View;->findViewById(I)Landroid/view/View;").toMember()) {
+        val fullscreenButtonId = fullscreen_button_id
         after {
-            if (it.args[0] == fullscreen_button_id) {
+            if (it.args[0] == fullscreenButtonId) {
                 PlayerControlsPatch.setFullscreenCloseButton(it.result as ImageView)
             }
         }

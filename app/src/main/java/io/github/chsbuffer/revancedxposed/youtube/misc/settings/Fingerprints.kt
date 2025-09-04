@@ -64,7 +64,7 @@ val licenseActivityNOTonCreate = findMethodListDirect {
     licenseActivityClass().methods.filter { it.name != "onCreate" && it.isMethod }
 }
 
-val appearanceStringId = resourceMappings["string", "app_theme_appearance_dark"]
+val appearanceStringId get() = resourceMappings["string", "app_theme_appearance_dark"]
 
 val setThemeFingerprint = findMethodDirect {
     findMethod {

@@ -22,7 +22,7 @@ val playerTypeFingerprint = fingerprint {
     }
 }
 
-val reelWatchPlayerId = resourceMappings["id", "reel_watch_player"]
+val reelWatchPlayerId get() = resourceMappings["id", "reel_watch_player"]
 val reelWatchPagerFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("Landroid/view/View;")

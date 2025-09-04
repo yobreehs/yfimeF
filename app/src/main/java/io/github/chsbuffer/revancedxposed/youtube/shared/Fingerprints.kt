@@ -7,7 +7,7 @@ import io.github.chsbuffer.revancedxposed.fingerprint
 import org.luckypray.dexkit.query.enums.StringMatchType
 import java.lang.reflect.Modifier
 
-internal val conversionContextFingerprintToString = fingerprint {
+val conversionContextFingerprintToString = fingerprint {
     parameters()
     strings(
         "ConversionContext{containerInternal=",

@@ -101,6 +101,10 @@ android {
     }
 }
 
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
 dependencies {
 //    implementation(libs.dexkit)
     implementation(group = "", name = "dexkit-android", ext = "aar")
@@ -109,6 +113,10 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.fuel)
+    testImplementation(kotlin("test-junit5"))
+    testImplementation(libs.junit.jupiter.params)
+    testImplementation(libs.jadx.core)
+    testImplementation(libs.slf4j.simple)
     debugImplementation(kotlin("reflect"))
     compileOnly(libs.xposed)
     compileOnly(project(":stub"))

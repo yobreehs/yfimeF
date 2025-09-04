@@ -8,7 +8,7 @@ import io.github.chsbuffer.revancedxposed.strings
 
 internal const val ANDROID_AUTOMOTIVE_STRING = "Android Automotive"
 
-internal val addCreateButtonViewFingerprint = fingerprint {
+val addCreateButtonViewFingerprint = fingerprint {
     strings("Android Wear", ANDROID_AUTOMOTIVE_STRING)
 }
 
@@ -19,7 +19,7 @@ val AutoMotiveFeatureMethod = findMethodDirect {
     }.single()
 }
 
-internal val createPivotBarFingerprint = fingerprint {
+val createPivotBarFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.CONSTRUCTOR)
     returns("V")
     parameters(

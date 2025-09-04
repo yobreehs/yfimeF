@@ -5,7 +5,7 @@ import io.github.chsbuffer.revancedxposed.Opcode
 import io.github.chsbuffer.revancedxposed.fingerprint
 import org.luckypray.dexkit.query.enums.StringMatchType
 
-internal val canScrollVerticallyFingerprint = fingerprint {
+val canScrollVerticallyFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("Z")
     parameters()

@@ -2,6 +2,7 @@ package io.github.chsbuffer.revancedxposed.youtube.video.information
 
 import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.Opcode
+import io.github.chsbuffer.revancedxposed.SkipTest
 import io.github.chsbuffer.revancedxposed.findClassDirect
 import io.github.chsbuffer.revancedxposed.findFieldDirect
 import io.github.chsbuffer.revancedxposed.findMethodDirect
@@ -9,6 +10,7 @@ import io.github.chsbuffer.revancedxposed.fingerprint
 import org.luckypray.dexkit.query.enums.OpCodeMatchType
 import org.luckypray.dexkit.result.FieldUsingType
 
+@get:SkipTest
 val createVideoPlayerSeekbarFingerprint = fingerprint {
     returns("V")
     strings("timed_markers_width")
@@ -139,6 +141,7 @@ val seekRelativeFingerprint = fingerprint {
 /**
  * Resolves with the class found in [videoQualityChangedFingerprint].
  */
+@get:SkipTest
 val playbackSpeedMenuSpeedChangedFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("L")
@@ -151,6 +154,7 @@ val playbackSpeedMenuSpeedChangedFingerprint = fingerprint {
     )
 }
 
+@get:SkipTest
 val playbackSpeedClassFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.STATIC)
     returns("L")
@@ -165,7 +169,8 @@ val playbackSpeedClassFingerprint = fingerprint {
 const val YOUTUBE_VIDEO_QUALITY_CLASS_TYPE =
     "Lcom/google/android/libraries/youtube/innertube/model/media/VideoQuality;"
 
-val videoQualityFingerprint = fingerprint {
+@get:SkipTest
+private val videoQualityFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.CONSTRUCTOR)
     parameters(
         "I", // Resolution.

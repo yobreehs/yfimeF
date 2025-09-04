@@ -16,7 +16,7 @@ import org.luckypray.dexkit.wrap.DexMethod
 import java.util.EnumMap
 
 fun onNavigationTabCreated(button: NavigationBar.NavigationButton, tabView: View) {
-    hookNavigationButtonCreated.forEach { it(button, tabView) };
+    hookNavigationButtonCreated.forEach { it(button, tabView) }
 }
 
 val hookNavigationButtonCreated: MutableList<(NavigationBar.NavigationButton, View) -> Unit> =
@@ -86,6 +86,7 @@ fun YoutubeHook.NavigationBarHook() {
         val appCompatToolbarClass =
             classLoader.loadClass(::appCompatToolbarBackButtonFingerprint.dexMethod.className)
         val getNavigationIcon = ::appCompatToolbarBackButtonFingerprint.method
+        val toolbarContainerId = toolbarContainerId
         after {
             if (it.args[0] != toolbarContainerId) return@after
             val layout = it.result as FrameLayout
