@@ -1,6 +1,5 @@
 package io.github.chsbuffer.revancedxposed.youtube.misc.litho.filter
 
-import android.annotation.SuppressLint
 import app.revanced.extension.youtube.patches.components.Filter
 import app.revanced.extension.youtube.patches.components.LithoFilterPatch
 import de.robv.android.xposed.XC_MethodReplacement.returnConstant
@@ -12,7 +11,6 @@ import java.nio.ByteBuffer
 lateinit var addLithoFilter: (Filter) -> Unit
     private set
 
-@SuppressLint("NonUniqueDexKitData")
 fun YoutubeHook.LithoFilter() {
     addLithoFilter = { filter ->
         LithoFilterPatch.addFilter(filter)
