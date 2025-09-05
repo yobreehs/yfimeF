@@ -25,8 +25,8 @@ class FingerprintsKtTest(val apkPath: Path) {
             if (method.isAnnotationPresent(SkipTest::class.java)) return@forEach
             if (!method.isStatic) return@forEach
 
-            print("${method.name.drop(3)}:")
             val func = method(null) as? (DexKitBridge) -> Any ?: return@forEach
+            print("${method.name.drop(3)}: ")
             assertDoesNotThrow {
                 measureTime {
                     val value = func(dexkit)
