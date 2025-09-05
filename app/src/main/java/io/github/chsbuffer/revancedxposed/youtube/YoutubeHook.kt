@@ -16,6 +16,7 @@ import io.github.chsbuffer.revancedxposed.youtube.interaction.swipecontrols.Swip
 import io.github.chsbuffer.revancedxposed.youtube.layout.buttons.navigation.NavigationButtons
 import io.github.chsbuffer.revancedxposed.youtube.layout.hide.shorts.HideShortsComponents
 import io.github.chsbuffer.revancedxposed.youtube.layout.sponsorblock.SponsorBlock
+import io.github.chsbuffer.revancedxposed.youtube.layout.startupshortsreset.DisableResumingShortsOnStartup
 import io.github.chsbuffer.revancedxposed.youtube.misc.backgroundplayback.BackgroundPlayback
 import io.github.chsbuffer.revancedxposed.youtube.misc.privacy.RemoveTrackingQueryParameter
 import io.github.chsbuffer.revancedxposed.youtube.misc.settings.SettingsHook
@@ -39,6 +40,7 @@ class YoutubeHook(
         ::NavigationButtons,
         ::SwipeControls,
         ::VideoQuality,
+        ::DisableResumingShortsOnStartup,
         // make sure settingsHook at end to build preferences
         ::SettingsHook
     )
