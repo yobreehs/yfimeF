@@ -130,7 +130,8 @@ fun injectHostClassLoaderToSelf(self: ClassLoader, classLoader: ClassLoader) {
     val bootClassLoader = Context::class.java.classLoader!!
 
     self.setObjectField("parent", object : ClassLoader(bootClassLoader) {
-        override fun findClass(name: String?): Class<*> {
+        val denyList = listOf("app.revanced")
+        override fun findClass(name: String): Class<*> {
             try {
                 return bootClassLoader.loadClass(name)
             } catch (_: ClassNotFoundException) {
@@ -140,8 +141,10 @@ fun injectHostClassLoaderToSelf(self: ClassLoader, classLoader: ClassLoader) {
                 return loader.loadClass(name)
             } catch (_: ClassNotFoundException) {
             }
+
             try {
-                return host.loadClass(name)
+                if (denyList.all { !name.startsWith(it) })
+                    return host.loadClass(name)
             } catch (_: ClassNotFoundException) {
             }
 

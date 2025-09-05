@@ -86,7 +86,7 @@ class UpdateChecker(private val context: Context) : CoroutineScope {
     fun autoCheckUpdate() {
         if (Random.nextInt(0, 10) != 0) return
         Logger.printInfo { "start auto check update." }
-        checkUpdate()
+        runCatching { checkUpdate() }
     }
 
     fun checkUpdate() {
