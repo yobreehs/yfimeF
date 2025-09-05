@@ -93,7 +93,7 @@ fun YoutubeHook.NavigationBarHook() {
             val toolbar = Utils.getChildView<View>(
                 layout, false
             ) { it: View -> appCompatToolbarClass.isAssignableFrom(it.javaClass) }
-            NavigationBar.setToolbar { getNavigationIcon(toolbar) as Drawable }
+            NavigationBar.setToolbar { getNavigationIcon(toolbar) as Drawable? }
         }
     })
 
