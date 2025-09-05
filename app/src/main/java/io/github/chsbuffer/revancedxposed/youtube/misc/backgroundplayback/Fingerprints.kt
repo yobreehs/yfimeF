@@ -62,7 +62,6 @@ val backgroundPlaybackSettingsSubFingerprint = findMethodDirect {
     backgroundPlaybackSettingsFingerprint().invokes.filter { it.returnTypeName == "boolean" }[1]
 }
 
-@get:SkipTest
 val kidsBackgroundPlaybackPolicyControllerFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("V")
@@ -80,7 +79,6 @@ val kidsBackgroundPlaybackPolicyControllerFingerprint = fingerprint {
     literal { 5 }
 }
 
-@get:SkipTest
 val backgroundPlaybackManagerShortsFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.STATIC)
     returns("Z")
@@ -88,7 +86,6 @@ val backgroundPlaybackManagerShortsFingerprint = fingerprint {
     literal { 151635310 }
 }
 
-@get:SkipTest
 val shortsBackgroundPlaybackFeatureFlagFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("Z")
