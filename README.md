@@ -21,9 +21,16 @@
 - Hide and change navigation buttons
 - Swipe controls
 - Remember video quality changes
+- Show video quality button
 - Show advanced video quality menu
 - Copy video url video player button
 - Open external downloader app
+- Custom playback speed
+- Remember playback speed
+- Playback speed dialog button
+- Hide layout components
+- Hide video action buttons
+- Disable resuming Shorts on startup
 
 ### Spotify
 - Unlock Spotify Premium
