@@ -8,7 +8,7 @@ import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.Switch
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import io.github.chsbuffer.revancedxposed.youtube.shared.VideoQualityReceiver
 import io.github.chsbuffer.revancedxposed.youtube.shared.videoQualityChangedFingerprint
-import io.github.chsbuffer.revancedxposed.youtube.video.information.playerInitHooks
+import io.github.chsbuffer.revancedxposed.youtube.video.information.onCreateHook
 
 fun YoutubeHook.RememberVideoQuality() {
     settingsMenuVideoQualityGroup.addAll(
@@ -40,7 +40,7 @@ fun YoutubeHook.RememberVideoQuality() {
         )
     )
 
-    playerInitHooks.add { controller ->
+    onCreateHook.add { controller ->
         RememberVideoQualityPatch.newVideoStarted(controller)
     }
 

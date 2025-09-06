@@ -1,11 +1,13 @@
 package io.github.chsbuffer.revancedxposed.youtube.video.information
 
+import app.revanced.extension.shared.Logger
 import app.revanced.extension.youtube.patches.VideoInformation
 import com.google.android.libraries.youtube.innertube.model.media.VideoQuality
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import io.github.chsbuffer.revancedxposed.findFirstFieldByExactType
 import io.github.chsbuffer.revancedxposed.getStaticObjectField
+import io.github.chsbuffer.revancedxposed.scopedHook
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import io.github.chsbuffer.revancedxposed.youtube.video.playerresponse.PlayerResponseMethodHook
 import io.github.chsbuffer.revancedxposed.youtube.video.playerresponse.playerResponseBeforeVideoIdHooks
@@ -13,6 +15,7 @@ import io.github.chsbuffer.revancedxposed.youtube.video.playerresponse.playerRes
 import io.github.chsbuffer.revancedxposed.youtube.video.videoid.VideoId
 import io.github.chsbuffer.revancedxposed.youtube.video.videoid.videoIdHooks
 import org.luckypray.dexkit.wrap.DexClass
+import java.lang.reflect.Field
 import java.lang.reflect.Method
 
 /**
@@ -24,8 +27,33 @@ import java.lang.reflect.Method
  * @param targetMethodClass The descriptor for the class to invoke when the player controller is created.
  * @param targetMethodName The name of the static method to invoke when the player controller is created.
  */
-val playerInitHooks = mutableListOf<(VideoInformation.PlaybackController) -> Unit>()
+val onCreateHook = mutableListOf<(VideoInformation.PlaybackController) -> Unit>()
 val videoTimeHooks = mutableListOf<(Long) -> Unit>()
+
+/*
+ * Hook when the video speed is changed for any reason _except when the user manually selects a new speed_.
+ * */
+val videoSpeedChangedHook = mutableListOf<(Float) -> Unit>()
+/**
+ * Hook the video speed selected by the user.
+ */
+val userSelectedPlaybackSpeedHook = mutableListOf<(Float) -> Unit>()
+
+lateinit var setPlaybackSpeedMethod: Method
+lateinit var setPlaybackSpeedClassField: Field
+lateinit var setPlaybackSpeedContainerClassField: Field
+
+private var playbackSpeedClass: Any? = null
+
+fun doOverridePlaybackSpeed(speedOverride: Float) {
+    val setPlaybackSpeedObj = playbackSpeedClass.let { setPlaybackSpeedContainerClassField.get(it) }
+    if (speedOverride <= 0.0f || setPlaybackSpeedObj == null)
+        return
+
+    setPlaybackSpeedObj
+        .let { setPlaybackSpeedClassField.get(it) }
+        .let { setPlaybackSpeedMethod(it, speedOverride) }
+}
 
 class PlaybackController(
     private val obj: Any,
@@ -48,7 +76,7 @@ private lateinit var getResolution: (VideoQuality) -> Int
 fun VideoQuality.getResolution() = getResolution(this)
 fun VideoQuality.getQualityName() = getQualityName(this)
 
-fun YoutubeHook.VideoInformationHook() {
+fun YoutubeHook.VideoInformation() {
     dependsOn(
         ::VideoId,
         ::PlayerResponseMethodHook,
@@ -66,12 +94,11 @@ fun YoutubeHook.VideoInformationHook() {
                 val playerController = PlaybackController(
                     param.thisObject, seekFingerprint, seekRelativeFingerprint, seekSourceNone
                 )
-                playerInitHooks.forEach { it(playerController) }
+                onCreateHook.forEach { it(playerController) }
             }
         }
     }
 
-    playerInitHooks.add { VideoInformation.initialize(it) }
     //endregion
 
     //region mdxPlayerDirector
@@ -97,8 +124,9 @@ fun YoutubeHook.VideoInformationHook() {
         val videoLengthHolderField = ::videoLengthHolderField.field
 
         after { param ->
-            val videoLengthHolder = videoLengthHolderField.get(param.thisObject)
-            val videoLength = videoLengthField.getLong(videoLengthHolder)
+            val videoLength = param.thisObject
+                .let { videoLengthHolderField.get(it) }
+                .let { videoLengthField.getLong(it) }
             VideoInformation.setVideoLength(videoLength)
         }
     }
@@ -127,13 +155,49 @@ fun YoutubeHook.VideoInformationHook() {
         }
     }
 
+    /*
+     * Hook the methods which set the time
+     */
     videoTimeHooks.add { videoTime ->
         VideoInformation.setVideoTime(videoTime)
     }
 
-    // TODO Hook the user playback speed selection.
+    /*
+     * Hook the user playback speed selection.
+     */
+    setPlaybackSpeedMethod = ::setPlaybackSpeedMethodReference.method
+    setPlaybackSpeedClassField = ::setPlaybackSpeedClassFieldReference.field
+    setPlaybackSpeedContainerClassField = ::setPlaybackSpeedContainerClassFieldReference.field
 
-    // TODO Handle new playback speed menu.
+    ::setPlaybackSpeedMethodReference.hookMethod {
+        before { param ->
+            // Hook when the video speed is changed for any reason _except when the user manually selects a new speed_.
+            videoSpeedChangedHook.forEach { it(param.args[0] as Float) }
+        }
+    }
+
+    ::onPlaybackSpeedItemClickFingerprint.hookMethod(scopedHook(::setPlaybackSpeedMethodReference.member) {
+        before { param ->
+            // Hook the video speed selected by the user.
+            Logger.printDebug { "onPlaybackSpeedItemClickFingerprint: ${param.args[0]}" }
+            userSelectedPlaybackSpeedHook.forEach { it.invoke(param.args[0] as Float) }
+            videoSpeedChangedHook.forEach { it.invoke(param.args[0] as Float) }
+        }
+    })
+
+    ::playbackSpeedClassFingerprint.hookMethod {
+        // Set playback speed class.
+        after { playbackSpeedClass = it.result }
+    }
+
+    // Handle new playback speed menu.
+    ::playbackSpeedMenuSpeedChangedFingerprint.hookMethod(scopedHook(::setPlaybackSpeedMethodReference.member) {
+        before { param ->
+            Logger.printDebug { "Playback speed menu speed changed: ${param.args[0]}" }
+            userSelectedPlaybackSpeedHook.forEach { it.invoke(param.args[0] as Float) }
+            videoSpeedChangedHook.forEach { it.invoke(param.args[0] as Float) }
+        }
+    })
 
     // videoQuality
     val YOUTUBE_VIDEO_QUALITY_CLASS_TYPE =
@@ -177,4 +241,8 @@ fun YoutubeHook.VideoInformationHook() {
             )
         }
     }
+
+    onCreateHook.add { VideoInformation.initialize(it) }
+    videoSpeedChangedHook.add { VideoInformation.videoSpeedChanged(it) }
+    userSelectedPlaybackSpeedHook.add { VideoInformation.userSelectedPlaybackSpeed(it) }
 }

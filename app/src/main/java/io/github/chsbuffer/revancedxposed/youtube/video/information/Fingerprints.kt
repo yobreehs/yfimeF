@@ -7,7 +7,10 @@ import io.github.chsbuffer.revancedxposed.findClassDirect
 import io.github.chsbuffer.revancedxposed.findFieldDirect
 import io.github.chsbuffer.revancedxposed.findMethodDirect
 import io.github.chsbuffer.revancedxposed.fingerprint
+import io.github.chsbuffer.revancedxposed.parameters
+import io.github.chsbuffer.revancedxposed.youtube.shared.videoQualityChangedFingerprint
 import org.luckypray.dexkit.query.enums.OpCodeMatchType
+import org.luckypray.dexkit.query.enums.UsingType
 import org.luckypray.dexkit.result.FieldUsingType
 
 @get:SkipTest
@@ -16,18 +19,42 @@ val createVideoPlayerSeekbarFingerprint = fingerprint {
     strings("timed_markers_width")
 }
 
-//val onPlaybackSpeedItemClickFingerprint = fingerprint {
-//    accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
-//    returns("V")
-//    parameters("L", "L", "I", "J")
-//    custom { method, _ ->
-//        method.name == "onItemClick" &&
-//            method.implementation?.instructions?.find {
-//                it.opcode == Opcode.IGET_OBJECT &&
-//                    it.getReference<FieldReference>()!!.type == "Lcom/google/android/libraries/youtube/innertube/model/player/PlayerResponseModel;"
-//            } != null
-//    }
-//}
+val onPlaybackSpeedItemClickFingerprint = fingerprint {
+    accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
+    returns("V")
+    parameters("L", "L", "I", "J")
+    methodMatcher {
+        name = "onItemClick"
+        addUsingField {
+            this.type {
+                descriptor =
+                    "Lcom/google/android/libraries/youtube/innertube/model/player/PlayerResponseModel;"
+            }
+            this.usingType = UsingType.Read
+        }
+    }
+}
+
+val setPlaybackSpeedMethodReference = findMethodDirect {
+    onPlaybackSpeedItemClickFingerprint().invokes.findMethod { matcher { paramTypes("float") } }
+        .single()
+}
+
+val setPlaybackSpeedClass = findClassDirect {
+    setPlaybackSpeedMethodReference().declaredClass!!
+}
+
+val setPlaybackSpeedClassFieldReference = findFieldDirect {
+    val setPlaybackSpeedClassName = setPlaybackSpeedClass().name
+    onPlaybackSpeedItemClickFingerprint().usingFields.distinct()
+        .single { it.field.typeName == setPlaybackSpeedClassName }.field
+}
+
+val setPlaybackSpeedContainerClassFieldReference = findFieldDirect {
+    val setPlaybackSpeedContainerClassName = setPlaybackSpeedClassFieldReference().declaredClassName
+    onPlaybackSpeedItemClickFingerprint().usingFields.distinct()
+        .single { it.field.typeName == setPlaybackSpeedContainerClassName }.field
+}
 
 val playerControllerSetTimeReferenceFingerprint = fingerprint {
     opcodes(Opcode.INVOKE_DIRECT_RANGE, Opcode.IGET_OBJECT)
@@ -142,8 +169,8 @@ val seekRelativeFingerprint = fingerprint {
 /**
  * Resolves with the class found in [videoQualityChangedFingerprint].
  */
-@get:SkipTest
 val playbackSpeedMenuSpeedChangedFingerprint = fingerprint {
+    classMatcher { className(videoQualityChangedFingerprint(dexkit).className) }
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("L")
     parameters("L")
@@ -155,7 +182,6 @@ val playbackSpeedMenuSpeedChangedFingerprint = fingerprint {
     )
 }
 
-@get:SkipTest
 val playbackSpeedClassFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.STATIC)
     returns("L")
@@ -163,9 +189,8 @@ val playbackSpeedClassFingerprint = fingerprint {
     opcodes(
         Opcode.RETURN_OBJECT
     )
-    strings("PLAYBACK_RATE_MENU_BOTTOM_SHEET_FRAGMENT")
+    methodMatcher { addEqString("PLAYBACK_RATE_MENU_BOTTOM_SHEET_FRAGMENT") }
 }
-
 
 const val YOUTUBE_VIDEO_QUALITY_CLASS_TYPE =
     "Lcom/google/android/libraries/youtube/innertube/model/media/VideoQuality;"

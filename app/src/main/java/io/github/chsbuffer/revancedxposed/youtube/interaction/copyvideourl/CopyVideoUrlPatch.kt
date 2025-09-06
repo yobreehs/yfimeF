@@ -10,12 +10,12 @@ import io.github.chsbuffer.revancedxposed.youtube.misc.playercontrols.PlayerCont
 import io.github.chsbuffer.revancedxposed.youtube.misc.playercontrols.addBottomControl
 import io.github.chsbuffer.revancedxposed.youtube.misc.playercontrols.initializeBottomControl
 import io.github.chsbuffer.revancedxposed.youtube.misc.settings.PreferenceScreen
-import io.github.chsbuffer.revancedxposed.youtube.video.information.VideoInformationHook
+import io.github.chsbuffer.revancedxposed.youtube.video.information.VideoInformation
 
 fun YoutubeHook.CopyVideoUrl() {
     dependsOn(
         ::PlayerControls,
-        ::VideoInformationHook,
+        ::VideoInformation,
     )
 
     PreferenceScreen.PLAYER.addPreferences(

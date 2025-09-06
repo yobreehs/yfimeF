@@ -23,6 +23,7 @@ import io.github.chsbuffer.revancedxposed.youtube.misc.backgroundplayback.Backgr
 import io.github.chsbuffer.revancedxposed.youtube.misc.privacy.RemoveTrackingQueryParameter
 import io.github.chsbuffer.revancedxposed.youtube.misc.settings.SettingsHook
 import io.github.chsbuffer.revancedxposed.youtube.video.quality.VideoQuality
+import io.github.chsbuffer.revancedxposed.youtube.video.speed.PlaybackSpeed
 
 class YoutubeHook(
     app: Application,
@@ -45,6 +46,7 @@ class YoutubeHook(
         ::DisableResumingShortsOnStartup,
         ::HideLayoutComponents,
         ::HideButtons,
+        ::PlaybackSpeed,
         // make sure settingsHook at end to build preferences
         ::SettingsHook
     )

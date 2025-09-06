@@ -1,6 +1,5 @@
 package io.github.chsbuffer.revancedxposed.youtube.layout.sponsorblock
 
-import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Rect
 import android.view.ViewGroup
@@ -26,8 +25,8 @@ import io.github.chsbuffer.revancedxposed.youtube.misc.playercontrols.addTopCont
 import io.github.chsbuffer.revancedxposed.youtube.misc.playercontrols.initializeTopControl
 import io.github.chsbuffer.revancedxposed.youtube.misc.playertype.PlayerTypeHook
 import io.github.chsbuffer.revancedxposed.youtube.misc.settings.PreferenceScreen
-import io.github.chsbuffer.revancedxposed.youtube.video.information.VideoInformationHook
-import io.github.chsbuffer.revancedxposed.youtube.video.information.playerInitHooks
+import io.github.chsbuffer.revancedxposed.youtube.video.information.VideoInformation
+import io.github.chsbuffer.revancedxposed.youtube.video.information.onCreateHook
 import io.github.chsbuffer.revancedxposed.youtube.video.information.videoTimeHooks
 import io.github.chsbuffer.revancedxposed.youtube.video.videoid.VideoId
 import io.github.chsbuffer.revancedxposed.youtube.video.videoid.videoIdHooks
@@ -35,7 +34,7 @@ import org.luckypray.dexkit.wrap.DexMethod
 
 fun YoutubeHook.SponsorBlock() {
     dependsOn(
-        ::VideoInformationHook,
+        ::VideoInformation,
         ::VideoId,
         ::PlayerTypeHook,
         ::PlayerControls,
@@ -128,7 +127,7 @@ fun YoutubeHook.SponsorBlock() {
     // TODO Append the new time to the player layout.
 
     // Initialize the player controller.
-    playerInitHooks.add { SegmentPlaybackController.initialize(it) }
+    onCreateHook.add { SegmentPlaybackController.initialize(it) }
 
     // Initialize the SponsorBlock view.
     val controls_overlay_layout =

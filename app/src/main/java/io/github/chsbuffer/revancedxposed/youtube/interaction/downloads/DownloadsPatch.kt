@@ -15,13 +15,13 @@ import io.github.chsbuffer.revancedxposed.youtube.misc.playercontrols.addBottomC
 import io.github.chsbuffer.revancedxposed.youtube.misc.playercontrols.initializeBottomControl
 import io.github.chsbuffer.revancedxposed.youtube.misc.settings.PreferenceScreen
 import io.github.chsbuffer.revancedxposed.youtube.shared.mainActivityOnCreateFingerprint
-import io.github.chsbuffer.revancedxposed.youtube.video.information.VideoInformationHook
+import io.github.chsbuffer.revancedxposed.youtube.video.information.VideoInformation
 
 fun YoutubeHook.Downloads() {
 
     dependsOn(
         ::PlayerControls,
-        ::VideoInformationHook,
+        ::VideoInformation,
     )
 
     PreferenceScreen.PLAYER.addPreferences(
