@@ -10,7 +10,9 @@ import androidx.annotation.RequiresApi
 import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
+import de.robv.android.xposed.XposedHelpers
 import java.io.File
+import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Member
 
 typealias IScopedHookCallback = ScopedHookParam.(MethodHookParam) -> Unit
@@ -122,29 +124,44 @@ fun Context.addModuleAssets() {
     resources.assets.callMethod("addAssetPath", XposedInit.modulePath)
 }
 
-
 @SuppressLint("DiscouragedPrivateApi")
-fun injectHostClassLoaderToSelf(self: ClassLoader, classLoader: ClassLoader) {
-    val loader = self.parent
-    val host = classLoader
-    val bootClassLoader = Context::class.java.classLoader!!
-
-    self.setObjectField("parent", object : ClassLoader(bootClassLoader) {
-        val denyList = listOf("app.revanced")
+fun injectHostClassLoaderToSelf(self: ClassLoader, host: ClassLoader) {
+    val findClassMethod =
+        XposedHelpers.findMethodExact(ClassLoader::class.java, "findClass", String::class.java)
+    self.setObjectField("parent", object : ClassLoader(self.parent) {
+        /**
+         * In the context of Xposed modules, the class loading hierarchy can be complex.
+         * The module's classes are loaded by its own ClassLoader (`self`).
+         * The host application's classes are loaded by its ClassLoader (`host`).
+         *
+         * The goal here is to allow the module to access classes from the host application.
+         * We achieve this by creating a new ClassLoader that becomes the parent of `self`.
+         * This new parent ClassLoader will first attempt to load classes using `self.findClass()`.
+         * If that fails, it will then try to load the class from the `host` ClassLoader.
+         *
+         * This explicit ordering is crucial for compatibility with various Xposed frameworks:
+         * - **LSPosed:** LSPosed's `LspModuleClassLoader` already prioritizes its own `findClass`
+         *   before delegating to `parent.loadClass`. So, this customization might seem redundant for LSPosed.
+         *
+         * - **Other Xposed Frameworks:** Other frameworks might use a standard `PathClassLoader`
+         *   as the module's ClassLoader. A standard `PathClassLoader` typically delegates to
+         *   `parent.loadClass` *before* attempting `findClass` itself. If the host ClassLoader's parent
+         *   is replaced with another intermediary ClassLoader that attempts to load classes from the module
+         *   (see `SponsorBlockPatch.kt`), it could lead to infinite recursion.
+         *
+         * By inserting this intermediary ClassLoader and overriding `findClass` to prioritize
+         * `self.findClass()`, we ensure that the module's classes are always checked first,
+         * preventing potential infinite recursion and ensuring that stubbed classes are loaded
+         * from the host only as a fallback.
+         */
         override fun findClass(name: String): Class<*> {
             try {
-                return bootClassLoader.loadClass(name)
-            } catch (_: ClassNotFoundException) {
+                return findClassMethod(self, name) as Class<*>
+            } catch (_: InvocationTargetException) {
             }
 
             try {
-                return loader.loadClass(name)
-            } catch (_: ClassNotFoundException) {
-            }
-
-            try {
-                if (denyList.all { !name.startsWith(it) })
-                    return host.loadClass(name)
+                return host.loadClass(name)
             } catch (_: ClassNotFoundException) {
             }
 

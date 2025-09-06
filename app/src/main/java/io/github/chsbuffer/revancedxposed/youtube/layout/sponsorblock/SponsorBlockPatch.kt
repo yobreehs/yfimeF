@@ -71,8 +71,7 @@ fun YoutubeHook.SponsorBlock() {
 
     // Hook the video time methods.
     videoTimeHooks.add { SegmentPlaybackController.setVideoTime(it) }
-    videoIdHooks.add {
-        SegmentPlaybackController.setCurrentVideoId(it) }
+    videoIdHooks.add { SegmentPlaybackController.setCurrentVideoId(it) }
 
     // Seekbar drawing
     var rectSetOnce = false
@@ -147,17 +146,11 @@ fun YoutubeHook.SponsorBlock() {
     })
 
     fun injectClassLoader(self: ClassLoader, host: ClassLoader) {
-        val bootClassLoader = Context::class.java.classLoader!!
-        host.setObjectField("parent", object : ClassLoader(bootClassLoader) {
+        host.setObjectField("parent", object : ClassLoader(host.parent) {
             override fun findClass(name: String): Class<*> {
                 try {
-                    return bootClassLoader.loadClass(name)
-                } catch (ignored: ClassNotFoundException) {
-                }
-
-                try {
                     if (name.startsWith("app.revanced")) return self.loadClass(name)
-                } catch (ignored: ClassNotFoundException) {
+                } catch (_: ClassNotFoundException) {
                 }
 
                 throw ClassNotFoundException(name)
