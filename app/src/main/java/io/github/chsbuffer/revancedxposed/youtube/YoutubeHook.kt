@@ -1,6 +1,7 @@
 package io.github.chsbuffer.revancedxposed.youtube
 
 import android.app.Application
+import android.view.LayoutInflater
 import app.revanced.extension.shared.StringRef
 import app.revanced.extension.shared.Utils
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
@@ -24,6 +25,7 @@ import io.github.chsbuffer.revancedxposed.youtube.misc.privacy.RemoveTrackingQue
 import io.github.chsbuffer.revancedxposed.youtube.misc.settings.SettingsHook
 import io.github.chsbuffer.revancedxposed.youtube.video.quality.VideoQuality
 import io.github.chsbuffer.revancedxposed.youtube.video.speed.PlaybackSpeed
+import org.luckypray.dexkit.wrap.DexMethod
 
 class YoutubeHook(
     app: Application,
@@ -53,6 +55,11 @@ class YoutubeHook(
 
     fun ExtensionHook() {
         injectHostClassLoaderToSelf(this::class.java.classLoader!!, classLoader)
+        DexMethod("Landroid/view/LayoutInflater;->inflate(ILandroid/view/ViewGroup;)Landroid/view/View;").hookMethod{
+            before {
+                (it.thisObject as LayoutInflater).context.addModuleAssets()
+            }
+        }
         val app = Utils.getContext()
         app.addModuleAssets()
         StringRef.resources = app.resources
