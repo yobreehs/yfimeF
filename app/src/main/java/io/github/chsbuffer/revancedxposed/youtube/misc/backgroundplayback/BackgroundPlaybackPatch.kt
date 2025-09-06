@@ -2,8 +2,10 @@ package io.github.chsbuffer.revancedxposed.youtube.misc.backgroundplayback
 
 import app.revanced.extension.youtube.patches.BackgroundPlaybackPatch
 import de.robv.android.xposed.XC_MethodReplacement.returnConstant
+import io.github.chsbuffer.revancedxposed.scopedHook
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.SwitchPreference
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
+import io.github.chsbuffer.revancedxposed.youtube.misc.litho.filter.featureFlagCheck
 import io.github.chsbuffer.revancedxposed.youtube.misc.settings.PreferenceScreen
 
 fun YoutubeHook.BackgroundPlayback() {
@@ -33,5 +35,10 @@ fun YoutubeHook.BackgroundPlayback() {
     // Force allowing background play for videos labeled for kids.
     ::kidsBackgroundPlaybackPolicyControllerFingerprint.hookMethod(returnConstant(Unit))
 
-    // TODO Fix PiP buttons not working after locking/unlocking device screen.
+    // Fix PiP buttons not working after locking/unlocking device screen.
+    runCatching {
+        ::pipInputConsumerFeatureFlagFingerprint.hookMethod(scopedHook(::featureFlagCheck.member) {
+            before { if (it.args[0] == PIP_INPUT_CONSUMER_FEATURE_FLAG) it.result = false }
+        })
+    }
 }
