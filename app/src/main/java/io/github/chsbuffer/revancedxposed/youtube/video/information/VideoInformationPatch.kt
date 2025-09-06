@@ -5,6 +5,7 @@ import app.revanced.extension.youtube.patches.VideoInformation
 import com.google.android.libraries.youtube.innertube.model.media.VideoQuality
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
+import de.robv.android.xposed.XposedHelpers
 import io.github.chsbuffer.revancedxposed.findFirstFieldByExactType
 import io.github.chsbuffer.revancedxposed.getStaticObjectField
 import io.github.chsbuffer.revancedxposed.scopedHook
@@ -15,6 +16,7 @@ import io.github.chsbuffer.revancedxposed.youtube.video.playerresponse.playerRes
 import io.github.chsbuffer.revancedxposed.youtube.video.videoid.VideoId
 import io.github.chsbuffer.revancedxposed.youtube.video.videoid.videoIdHooks
 import org.luckypray.dexkit.wrap.DexClass
+import java.lang.ref.WeakReference
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 
@@ -34,6 +36,7 @@ val videoTimeHooks = mutableListOf<(Long) -> Unit>()
  * Hook when the video speed is changed for any reason _except when the user manually selects a new speed_.
  * */
 val videoSpeedChangedHook = mutableListOf<(Float) -> Unit>()
+
 /**
  * Hook the video speed selected by the user.
  */
@@ -56,17 +59,23 @@ fun doOverridePlaybackSpeed(speedOverride: Float) {
 }
 
 class PlaybackController(
-    private val obj: Any,
+    obj: Any,
     private val seekTo: Method,
     private val seekToRelative: Method,
     val seekSourceNone: Any
 ) : VideoInformation.PlaybackController {
+    val obj = WeakReference(obj)
+
+    init {
+        XposedHelpers.setAdditionalInstanceField(obj, "patch_controller", this)
+    }
+
     override fun patch_seekTo(videoTime: Long): Boolean {
-        return seekTo.invoke(obj, videoTime, seekSourceNone) as Boolean
+        return seekTo.invoke(obj.get(), videoTime, seekSourceNone) as Boolean
     }
 
     override fun patch_seekToRelative(videoTimeOffset: Long) {
-        seekToRelative.invoke(obj)
+        seekToRelative.invoke(obj.get())
     }
 }
 
