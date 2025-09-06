@@ -1,6 +1,5 @@
 package io.github.chsbuffer.revancedxposed
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.loader.ResourcesLoader
 import android.content.res.loader.ResourcesProvider
@@ -124,7 +123,6 @@ fun Context.addModuleAssets() {
     resources.assets.callMethod("addAssetPath", XposedInit.modulePath)
 }
 
-@SuppressLint("DiscouragedPrivateApi")
 fun injectHostClassLoaderToSelf(self: ClassLoader, host: ClassLoader) {
     val findClassMethod =
         XposedHelpers.findMethodExact(ClassLoader::class.java, "findClass", String::class.java)

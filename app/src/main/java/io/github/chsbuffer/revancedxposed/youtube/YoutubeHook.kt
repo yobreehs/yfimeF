@@ -55,5 +55,6 @@ class YoutubeHook(
         app.addModuleAssets()
         StringRef.resources = app.resources
         StringRef.packageName = BuildConfig.APPLICATION_ID
+        StringRef.packageName2 = app.packageName
     }
 }

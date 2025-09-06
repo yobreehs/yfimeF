@@ -13,6 +13,7 @@ fun YoutubeHook.VideoQuality() {
     dependsOn(
         ::RememberVideoQuality,
         ::AdvancedVideoQualityMenu,
+        ::VideoQualityDialogButton
     )
 
     PreferenceScreen.VIDEO.addPreferences(
