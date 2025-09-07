@@ -13,7 +13,6 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.BuildConfig.DEBUG
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.DexKitCacheBridge
-import org.luckypray.dexkit.annotations.DexKitExperimentalApi
 import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.FieldData
 import org.luckypray.dexkit.result.MethodData
@@ -72,7 +71,6 @@ interface IHook {
 }
 
 @Suppress("UNCHECKED_CAST")
-@OptIn(DexKitExperimentalApi::class)
 class SharedPrefCache(app: Application) : DexKitCacheBridge.Cache {
     val pref = app.getSharedPreferences("xprevanced", MODE_PRIVATE)!!
     private val map = mutableMapOf<String, String>().apply {
@@ -116,7 +114,6 @@ class DependedHookFailedException(
     subHookName: String, exception: Throwable
 ) : Exception("Depended hook $subHookName failed.", exception)
 
-@OptIn(DexKitExperimentalApi::class)
 @SuppressLint("CommitPrefEdits")
 abstract class BaseHook(private val app: Application, val lpparam: LoadPackageParam) : IHook {
     override val classLoader = lpparam.classLoader!!
