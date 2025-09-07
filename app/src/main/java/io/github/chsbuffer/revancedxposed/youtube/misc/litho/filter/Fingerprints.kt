@@ -2,7 +2,7 @@ package io.github.chsbuffer.revancedxposed.youtube.misc.litho.filter
 
 import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.Opcode
-import io.github.chsbuffer.revancedxposed.SkipTest
+import io.github.chsbuffer.revancedxposed.RequireAppVersion
 import io.github.chsbuffer.revancedxposed.findClassDirect
 import io.github.chsbuffer.revancedxposed.findFieldDirect
 import io.github.chsbuffer.revancedxposed.findMethodDirect
@@ -50,7 +50,7 @@ val lithoThreadExecutorFingerprint = fingerprint {
     literal { 1L }
 }
 
-@get:SkipTest
+@get:RequireAppVersion("19.25", "20.04.99")
 val lithoComponentNameUpbFeatureFlagFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("Z")

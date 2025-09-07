@@ -2,7 +2,7 @@ package io.github.chsbuffer.revancedxposed.youtube.video.speed.custom
 
 import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.Opcode
-import io.github.chsbuffer.revancedxposed.SkipTest
+import io.github.chsbuffer.revancedxposed.RequireAppVersion
 import io.github.chsbuffer.revancedxposed.findMethodDirect
 import io.github.chsbuffer.revancedxposed.fingerprint
 import io.github.chsbuffer.revancedxposed.parameters
@@ -77,7 +77,7 @@ val getPlaybackSpeedMethodReference = findMethodDirect {
     }.single()
 }
 
-@get:SkipTest
+@get:RequireAppVersion("19.25")
 val onSpeedTapAndHoldFingerprint = findMethodDirect {
     findMethod {
         matcher {

@@ -15,6 +15,46 @@ private fun getTypeNameCompat(it: String): String? {
     else getTypeName(it)
 }
 
+enum class AccessFlags(val modifier: Int) {
+    PUBLIC(Modifier.PUBLIC),
+    PRIVATE(Modifier.PRIVATE),
+    PROTECTED(Modifier.PROTECTED),
+    STATIC(Modifier.STATIC),
+    FINAL(Modifier.FINAL),
+    CONSTRUCTOR(0),
+}
+
+fun MethodMatcher.strings(vararg strings: String) {
+    this.usingStrings(strings.toList())
+}
+
+fun MethodMatcher.opcodes(vararg opcodes: Opcode): OpCodesMatcher {
+    return OpCodesMatcher(opcodes.map { it.opCode }).also {
+        this.opCodes(it)
+    }
+}
+
+fun MethodMatcher.accessFlags(vararg accessFlags: AccessFlags) {
+    val modifiers = accessFlags.map { it.modifier }.reduce { acc, next -> acc or next }
+    if (modifiers != 0) this.modifiers(modifiers)
+    if (accessFlags.contains(AccessFlags.CONSTRUCTOR)) {
+        if (accessFlags.contains(AccessFlags.STATIC)) this.name = "<clinit>"
+        else this.name = "<init>"
+    }
+}
+
+fun MethodMatcher.parameters(vararg parameters: String) {
+    this.paramTypes(parameters.map(::getTypeNameCompat))
+}
+
+fun MethodMatcher.returns(returnType: String) {
+    getTypeNameCompat(returnType)?.let { this.returnType = it }
+}
+
+fun MethodMatcher.literal(literalSupplier: () -> Number) {
+    this.usingNumbers(literalSupplier())
+}
+
 class Fingerprint(val dexkit: DexKitBridge, init: Fingerprint.() -> Unit) {
     var classMatcher: ClassMatcher? = null
     val methodMatcher = MethodMatcher()
@@ -23,36 +63,12 @@ class Fingerprint(val dexkit: DexKitBridge, init: Fingerprint.() -> Unit) {
         init(this)
     }
 
-    fun strings(vararg strings: String) {
-        methodMatcher.usingStrings(strings.toList())
-    }
-
-    fun opcodes(vararg opcodes: Opcode): OpCodesMatcher {
-        return OpCodesMatcher(opcodes.map { it.opCode }).also {
-            methodMatcher.opCodes(it)
-        }
-    }
-
-    fun accessFlags(vararg accessFlags: AccessFlags) {
-        val modifiers = accessFlags.map { it.modifier }.reduce { acc, next -> acc or next }
-        if (modifiers != 0) methodMatcher.modifiers(modifiers)
-        if (accessFlags.contains(AccessFlags.CONSTRUCTOR)) {
-            if (accessFlags.contains(AccessFlags.STATIC)) methodMatcher.name = "<clinit>"
-            else methodMatcher.name = "<init>"
-        }
-    }
-
-    fun parameters(vararg parameters: String) {
-        methodMatcher.paramTypes(parameters.map(::getTypeNameCompat))
-    }
-
-    fun returns(returnType: String) {
-        getTypeNameCompat(returnType)?.let { methodMatcher.returnType = it }
-    }
-
-    fun literal(literalSupplier: () -> Number) {
-        methodMatcher.usingNumbers(literalSupplier())
-    }
+    fun strings(vararg strings: String) = methodMatcher.strings(*strings)
+    fun opcodes(vararg opcodes: Opcode) = methodMatcher.opcodes(*opcodes)
+    fun accessFlags(vararg accessFlags: AccessFlags) = methodMatcher.accessFlags(*accessFlags)
+    fun parameters(vararg parameters: String) = methodMatcher.parameters(*parameters)
+    fun returns(returnType: String) = methodMatcher.returns(returnType)
+    fun literal(literalSupplier: () -> Number) = methodMatcher.literal(literalSupplier)
 
     /*
     * dexkit method matcher
@@ -93,6 +109,7 @@ interface ResourceFinder {
 
 lateinit var resourceMappings: ResourceFinder
 
+typealias FindFunc = DexKitBridge.() -> Any
 typealias FindClassFunc = DexKitBridge.() -> ClassData
 typealias FindMethodFunc = DexKitBridge.() -> MethodData
 typealias FindMethodListFunc = DexKitBridge.() -> List<MethodData>
@@ -102,49 +119,7 @@ fun fingerprint(block: Fingerprint.() -> Unit): FindMethodFunc {
     return { Fingerprint(this, block).run() }
 }
 
-fun findMethodDirect(block: FindMethodFunc): FindMethodFunc = block
-
-fun findMethodListDirect(block: FindMethodListFunc): FindMethodListFunc = block
-
-fun findClassDirect(block: FindClassFunc): FindClassFunc = block
-
-fun findFieldDirect(block: FindFieldFunc): FindFieldFunc = block
-
-fun MethodMatcher.strings(vararg strings: String) {
-    this.usingStrings(strings.toList())
-}
-
-fun MethodMatcher.opcodes(vararg opcodes: Opcode): OpCodesMatcher {
-    return OpCodesMatcher(opcodes.map { it.opCode }).also {
-        this.opCodes(it)
-    }
-}
-
-enum class AccessFlags(val modifier: Int) {
-    PUBLIC(Modifier.PUBLIC),
-    PRIVATE(Modifier.PRIVATE),
-    PROTECTED(Modifier.PROTECTED),
-    STATIC(Modifier.STATIC),
-    FINAL(Modifier.FINAL),
-    CONSTRUCTOR(0),
-}
-
-fun MethodMatcher.accessFlags(vararg accessFlags: AccessFlags) {
-    this.modifiers(accessFlags.map { it.modifier }.reduce { acc, next -> acc or next })
-    if (accessFlags.contains(AccessFlags.CONSTRUCTOR)) {
-        if (accessFlags.contains(AccessFlags.STATIC)) this.name = "<clinit>"
-        else this.name = "<init>"
-    }
-}
-
-fun MethodMatcher.parameters(vararg parameters: String) {
-    this.paramTypes(parameters.map(::getTypeNameCompat))
-}
-
-fun MethodMatcher.returns(returnType: String) {
-    getTypeNameCompat(returnType)?.let { this.returnType = it }
-}
-
-fun MethodMatcher.literal(literalSupplier: () -> Number) {
-    this.usingNumbers(literalSupplier())
-}
+fun findMethodDirect(block: FindMethodFunc) = block
+fun findMethodListDirect(block: FindMethodListFunc) = block
+fun findClassDirect(block: FindClassFunc) = block
+fun findFieldDirect(block: FindFieldFunc) = block

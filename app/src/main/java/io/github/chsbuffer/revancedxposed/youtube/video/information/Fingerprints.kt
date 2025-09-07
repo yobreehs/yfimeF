@@ -7,7 +7,6 @@ import io.github.chsbuffer.revancedxposed.findClassDirect
 import io.github.chsbuffer.revancedxposed.findFieldDirect
 import io.github.chsbuffer.revancedxposed.findMethodDirect
 import io.github.chsbuffer.revancedxposed.fingerprint
-import io.github.chsbuffer.revancedxposed.parameters
 import io.github.chsbuffer.revancedxposed.youtube.shared.videoQualityChangedFingerprint
 import org.luckypray.dexkit.query.enums.OpCodeMatchType
 import org.luckypray.dexkit.query.enums.UsingType

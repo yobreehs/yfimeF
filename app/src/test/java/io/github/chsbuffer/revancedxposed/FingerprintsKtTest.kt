@@ -1,6 +1,5 @@
 package io.github.chsbuffer.revancedxposed
 
-import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
@@ -12,38 +11,59 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.name
-import kotlin.time.measureTime
+import kotlin.system.measureTimeMillis
 
 @ParameterizedClass
 @ArgumentsSource(FilePathArgumentsProvider::class)
 class FingerprintsKtTest(val apkPath: Path) {
+    init {
+        TestSetup.setupForApk(apkPath.toString())
+    }
 
-    val dexkit: DexKitBridge = TestSetup.getDexKit(apkPath.toString())
+    val dexkit: DexKitBridge = TestSetup.dexkit.get()!!
+    val appVersion: AppVersion = TestSetup.appVersion.get()!!
 
     fun testFingerprints(clazz: Class<*>) {
-        clazz.methods.forEach { method ->
-            if (method.isAnnotationPresent(SkipTest::class.java)) return@forEach
-            if (!method.isStatic) return@forEach
-
-            val func = method(null) as? (DexKitBridge) -> Any ?: return@forEach
-            print("${method.name.drop(3)}: ")
-            assertDoesNotThrow {
-                measureTime {
-                    val value = func(dexkit)
-                    if (value is List<*>) {
-                        assertTrue(value.isNotEmpty())
-                        print(value.joinToString(", "))
-                    } else {
-                        print("$value")
+        val errors = mutableListOf<Throwable>()
+        clazz.methods.asSequence()
+            .filter { it.isStatic }
+            .filter { !it.isAnnotationPresent(SkipTest::class.java) }
+            .forEach { method ->
+                val func = method(null) as? FindFunc ?: return@forEach
+                val methodName = method.name.drop(3)
+                print("$methodName: ")
+                method.getAnnotation(RequireAppVersion::class.java)?.also { anno ->
+                    try {
+                        match(appVersion, anno.minVersion, anno.maxVersion)
+                    } catch (e: VersionConstraintFailedException) {
+                        System.out.flush()
+                        System.err.println("Skipping: ${e.message}")
+                        return@forEach
                     }
-                }.let {
-                    if (it.inWholeMilliseconds > 20)
-                        println(", slow match: $it")
-                    else
-                        println()
+                }
+                try {
+                    val time = measureTimeMillis {
+                        val value = func(dexkit)
+                        if (value is List<*>) {
+                            assertTrue(value.isNotEmpty())
+                            print(value.joinToString(", "))
+                        } else {
+                            print("$value")
+                        }
+                    }
+                    if (time > 20) {
+                        print(", slow match: ${time}ms")
+                    }
+                    println()
+                } catch (e: Throwable) {
+                    println()
+                    errors.add(e)
+                    System.err.println(e.stackTraceToString())
                 }
             }
-        }
+
+        if (errors.isNotEmpty())
+            throw AssertionError()
     }
 
     @TestFactory

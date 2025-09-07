@@ -2,7 +2,7 @@ package io.github.chsbuffer.revancedxposed.youtube.misc.backgroundplayback
 
 import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.Opcode
-import io.github.chsbuffer.revancedxposed.SkipTest
+import io.github.chsbuffer.revancedxposed.RequireAppVersion
 import io.github.chsbuffer.revancedxposed.findMethodDirect
 import io.github.chsbuffer.revancedxposed.fingerprint
 import io.github.chsbuffer.revancedxposed.resourceMappings
@@ -96,7 +96,7 @@ val shortsBackgroundPlaybackFeatureFlagFingerprint = fingerprint {
 internal const val PIP_INPUT_CONSUMER_FEATURE_FLAG = 45638483L
 
 // Fix 'E/InputDispatcher: Window handle pip_input_consumer has no registered input channel'
-@get:SkipTest
+@get:RequireAppVersion("19.34")
 val pipInputConsumerFeatureFlagFingerprint = fingerprint {
     literal { PIP_INPUT_CONSUMER_FEATURE_FLAG}
 }
