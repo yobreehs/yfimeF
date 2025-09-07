@@ -71,11 +71,11 @@ class PlaybackController(
     }
 
     override fun patch_seekTo(videoTime: Long): Boolean {
-        return seekTo.invoke(obj.get(), videoTime, seekSourceNone) as Boolean
+        return seekTo(obj.get(), videoTime, seekSourceNone) as Boolean
     }
 
     override fun patch_seekToRelative(videoTimeOffset: Long) {
-        seekToRelative.invoke(obj.get())
+        seekToRelative(obj.get(), videoTimeOffset, seekSourceNone)
     }
 }
 
