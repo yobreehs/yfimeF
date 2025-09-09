@@ -248,23 +248,52 @@ abstract class BaseHook(private val app: Application, val lpparam: LoadPackagePa
     val KProperty0<FindClassFunc>.clazz
         get() = getDexClass(this.name, this.get()).toClass()
 
+    private inline fun <reified T : Any> wrapFind(
+        key: String,
+        crossinline funcFunc: DexKitBridge.() -> T,
+        crossinline serializer: (T) -> String
+    ): DexKitBridge.() -> T? {
+        return {
+            try {
+                funcFunc().also { Logger.printInfo { "$key Matches: ${serializer(it)}" } }
+            } catch (e: Exception) {
+                Logger.printInfo({ "Fingerprint $key Not Found" }, e)
+                null
+            }
+        }
+    }
+
+    private inline fun <reified T : Any> wrapFindList(
+        key: String,
+        crossinline funcFunc: DexKitBridge.() -> List<T>,
+        crossinline serializer: (T) -> String
+    ): DexKitBridge.() -> List<T> {
+        return {
+            try {
+                funcFunc().also {
+                    Logger.printInfo { "$key Matches: ${it.joinToString { serializer(it) }}" }
+                }
+            } catch (e: Exception) {
+                Logger.printInfo({ "Fingerprint $key Not Found" }, e)
+                emptyList()
+            }
+        }
+    }
+
     private inline fun getDexClass(
         key: String, crossinline findFunc: DexKitBridge.() -> ClassData
-    ): DexClass =
-        dexkit.getClassDirect(key) { findFunc().also { Logger.printInfo { "$key Matches: ${it.descriptor}" } } }
+    ): DexClass = dexkit.getClassDirectOrNull(key, wrapFind(key, findFunc) { it.descriptor })!!
 
     private inline fun getDexMethod(
         key: String, crossinline findFunc: DexKitBridge.() -> MethodData
-    ): DexMethod =
-        dexkit.getMethodDirect(key) { findFunc().also { Logger.printInfo { "$key Matches: ${it.descriptor}" } } }
+    ): DexMethod = dexkit.getMethodDirectOrNull(key, wrapFind(key, findFunc) { it.descriptor })!!
 
     private inline fun getDexField(
         key: String, crossinline findFunc: DexKitBridge.() -> FieldData
-    ): DexField =
-        dexkit.getFieldDirect(key) { findFunc().also { Logger.printInfo { "$key Matches: ${it.descriptor}" } } }
+    ): DexField = dexkit.getFieldDirectOrNull(key, wrapFind(key, findFunc) { it.descriptor })!!
 
     private inline fun getDexMethods(
         key: String, crossinline findFunc: DexKitBridge.() -> List<MethodData>
-    ): List<DexMethod> =
-        dexkit.getMethodsDirect(key) { findFunc().also { Logger.printInfo { "$key Matches: ${it.joinToString { m -> m.descriptor }}" } } }
+    ): List<DexMethod> = dexkit.getMethodsDirectOrEmpty(
+        key, wrapFindList(key, findFunc) { it.descriptor })
 }
