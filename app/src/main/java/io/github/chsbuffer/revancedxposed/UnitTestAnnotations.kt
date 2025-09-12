@@ -7,8 +7,8 @@ annotation class SkipTest()
 
 class AppVersion(val versionString: String) : Comparable<AppVersion> {
     init {
-        require(versionString.matches(Regex("\\d+\\.\\d+(\\.\\d+)?"))) {
-            "Version string must be in the format major.minor[.patch] (e.g., 1.2 or 1.2.3)"
+        require(versionString.matches(Regex("\\d+\\.\\d+(\\.\\d+)?(\\.\\d+)?"))) {
+            "Version string must be in the format major.minor[.build][.revision] (e.g., 1.2 or 1.2.3)"
         }
     }
 
@@ -20,8 +20,11 @@ class AppVersion(val versionString: String) : Comparable<AppVersion> {
     val minor: Int
         get() = parts[1]
 
-    val patch: Int
-        get() = if (parts.size > 2) parts[2] else 0
+    val build: Int
+        get() = parts.elementAtOrElse(2) { 0 }
+
+    val revision: Int
+        get() = parts.elementAtOrElse(3) { 0 }
 
     override fun compareTo(other: AppVersion): Int {
         if (this.major != other.major) {
@@ -30,7 +33,10 @@ class AppVersion(val versionString: String) : Comparable<AppVersion> {
         if (this.minor != other.minor) {
             return this.minor.compareTo(other.minor)
         }
-        return this.patch.compareTo(other.patch)
+        if (this.build != other.build) {
+            return this.build.compareTo(other.build)
+        }
+        return this.revision.compareTo(other.revision)
     }
 
     override fun toString(): String = versionString
