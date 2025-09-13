@@ -73,16 +73,7 @@ fun YoutubeHook.SettingsHook() {
             }
 
             activity.addModuleAssets()
-
-            try {
-                LicenseActivityHook.initialize(activity)
-            } catch (_: Resources.NotFoundException) {
-                AlertDialog.Builder(activity).setTitle("Restart needed")
-                    .setMessage("ReVanced Xposed has been updated")
-                    .setPositiveButton("Restart now") { _, _ ->
-                        restartApplication(activity)
-                    }.show()
-            }
+            LicenseActivityHook.initialize(activity)
         }
 
         fun restartApplication(activity: Activity) {

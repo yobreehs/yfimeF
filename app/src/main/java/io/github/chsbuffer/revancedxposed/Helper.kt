@@ -6,6 +6,7 @@ import android.content.res.loader.ResourcesProvider
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import androidx.annotation.RequiresApi
+import app.revanced.extension.shared.Utils
 import de.robv.android.xposed.IXposedHookZygoteInit
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
@@ -115,6 +116,12 @@ private val resourceLoader by lazy @RequiresApi(Build.VERSION_CODES.R) {
 }
 
 fun Context.addModuleAssets() {
+    val modulePath = File(XposedInit.modulePath)
+    if (!modulePath.exists()) {
+        Utils.showToastLong("ReVanced Xposed has been updated")
+        Utils.restartApp(this)
+    }
+
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         resources.addLoaders(resourceLoader)
         return
