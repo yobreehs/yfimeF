@@ -1,5 +1,6 @@
 package io.github.chsbuffer.revancedxposed.youtube
 
+import android.app.Activity
 import android.app.Application
 import android.view.LayoutInflater
 import app.revanced.extension.shared.StringRef
@@ -24,6 +25,7 @@ import io.github.chsbuffer.revancedxposed.youtube.misc.backgroundplayback.Backgr
 import io.github.chsbuffer.revancedxposed.youtube.misc.debugging.EnableDebugging
 import io.github.chsbuffer.revancedxposed.youtube.misc.privacy.RemoveTrackingQueryParameter
 import io.github.chsbuffer.revancedxposed.youtube.misc.settings.SettingsHook
+import io.github.chsbuffer.revancedxposed.youtube.shared.YOUTUBE_MAIN_ACTIVITY_CLASS_TYPE
 import io.github.chsbuffer.revancedxposed.youtube.video.quality.VideoQuality
 import io.github.chsbuffer.revancedxposed.youtube.video.speed.PlaybackSpeed
 import org.luckypray.dexkit.wrap.DexMethod
@@ -67,5 +69,13 @@ class YoutubeHook(
         StringRef.resources = app.resources
         StringRef.packageName = BuildConfig.APPLICATION_ID
         StringRef.packageName2 = app.packageName
+
+        DexMethod("$YOUTUBE_MAIN_ACTIVITY_CLASS_TYPE->onCreate(Landroid/os/Bundle;)V").hookMethod {
+            before {
+                val mainActivity = it.thisObject as Activity
+                Utils.setContext(mainActivity)
+                mainActivity.addModuleAssets()
+            }
+        }
     }
 }

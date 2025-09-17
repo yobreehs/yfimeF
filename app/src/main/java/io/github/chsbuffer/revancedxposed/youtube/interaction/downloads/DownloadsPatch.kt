@@ -51,7 +51,7 @@ fun YoutubeHook.Downloads() {
     )
 
     ::mainActivityOnCreateFingerprint.hookMethod {
-        after { DownloadsPatch.activityCreated(it.thisObject as Activity) }
+        before { DownloadsPatch.activityCreated(it.thisObject as Activity) }
     }
 
     ::offlineVideoEndpointFingerprint.hookMethod {

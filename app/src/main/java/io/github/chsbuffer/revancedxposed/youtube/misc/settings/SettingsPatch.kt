@@ -1,9 +1,7 @@
 package io.github.chsbuffer.revancedxposed.youtube.misc.settings
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Context
-import android.content.res.Resources
 import android.webkit.WebView
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
@@ -21,13 +19,8 @@ import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.Intent
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.NonInteractivePreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
-import kotlin.system.exitProcess
 
 val preferences = mutableSetOf<BasePreference>()
-
-fun addSettingPreference(screen: BasePreference) {
-    preferences += screen
-}
 
 fun newIntent(settingsName: String) = IntentPreference.Intent(
     data = settingsName,
@@ -64,8 +57,10 @@ fun YoutubeHook.SettingsHook() {
     ::licenseActivityOnCreateFingerprint.hookMethod(object : XC_MethodReplacement() {
         override fun replaceHookedMethod(param: MethodHookParam) {
             val activity = param.thisObject as Activity
-            // must set theme before onCreate call super
-            LicenseActivityHook.setActivityTheme(activity)
+            val hook = LicenseActivityHook.createInstance()
+            // must set theme before original set theme
+            hook.customizeActivityTheme(activity)
+
             try {
                 param.invokeOriginalMethod()
             } catch (e: Throwable) {
@@ -73,16 +68,7 @@ fun YoutubeHook.SettingsHook() {
             }
 
             activity.addModuleAssets()
-            LicenseActivityHook.initialize(activity)
-        }
-
-        fun restartApplication(activity: Activity) {
-            // https://stackoverflow.com/a/58530756
-            val pm = activity.packageManager
-            val intent = pm.getLaunchIntentForPackage(activity.packageName)
-            activity.finishAffinity()
-            activity.startActivity(intent)
-            exitProcess(0)
+            LicenseActivityHook.initialize(hook, activity)
         }
     })
 

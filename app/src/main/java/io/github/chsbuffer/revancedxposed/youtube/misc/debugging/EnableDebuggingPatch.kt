@@ -1,9 +1,11 @@
 package io.github.chsbuffer.revancedxposed.youtube.misc.debugging
 
+import app.revanced.extension.shared.settings.preference.ClearLogBufferPreference
+import app.revanced.extension.shared.settings.preference.ExportLogToClipboardPreference
 import app.revanced.extension.youtube.patches.EnableDebuggingPatch
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.NonInteractivePreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference
-import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference.*
+import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference.Sorting
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.SwitchPreference
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import io.github.chsbuffer.revancedxposed.youtube.misc.settings.PreferenceScreen
@@ -20,12 +22,12 @@ fun YoutubeHook.EnableDebugging() {
                 SwitchPreference("revanced_debug_toast_on_error"),
                 NonInteractivePreference(
                     "revanced_debug_export_logs_to_clipboard",
-                    tag = app.revanced.extension.youtube.settings.preference.ExportLogToClipboardPreference::class.java,
+                    tag = ExportLogToClipboardPreference::class.java,
                     selectable = true,
                 ),
                 NonInteractivePreference(
                     "revanced_debug_logs_clear_buffer",
-                    tag = app.revanced.extension.youtube.settings.preference.ClearLogBufferPreference::class.java,
+                    tag = ClearLogBufferPreference::class.java,
                     selectable = true,
                 ),
             ),

@@ -153,10 +153,15 @@ abstract class GenerateStringsTask @Inject constructor(
 
                 doubleQuotes = true
                 withGroovyBuilder {
+                    val keys = mutableSetOf<String>()
                     "resources" {
                         // resources.app.patch.*
                         inputXml.children().children().children().forEach {
+                            if (it !is NodeChild) return@forEach
+                            val key = it.attributes()["name"] as String
+                            if (keys.contains(key)) return@forEach
                             writeNode(it)
+                            keys.add(key)
                         }
                     }
                 }
@@ -169,14 +174,20 @@ abstract class GenerateStringsTask @Inject constructor(
         val inputDir = inputDirectory.get().asFile
         val outputDir = outputDirectory.get().asFile
 
-        inputDir.listFiles()?.forEach { variant ->
-            val inputFile = File(variant, "strings.xml")
-            val genResDir = File(outputDir, variant.name).apply { mkdirs() }
-            val outputFile = File(genResDir, "strings.xml")
-            unwrapPatch(inputFile, outputFile)
-        }
+        runCatching {
 
-        unwrapPatch(File(inputDir, "values/arrays.xml"), File(outputDir, "values/arrays.xml"))
+            inputDir.listFiles()?.forEach { variant ->
+                val inputFile = File(variant, "strings.xml")
+                val genResDir = File(outputDir, variant.name).apply { mkdirs() }
+                val outputFile = File(genResDir, "strings.xml")
+                unwrapPatch(inputFile, outputFile)
+            }
+
+            unwrapPatch(File(inputDir, "values/arrays.xml"), File(outputDir, "values/arrays.xml"))
+        }.onFailure {
+            System.err.println(it)
+            throw it
+        }
     }
 }
 

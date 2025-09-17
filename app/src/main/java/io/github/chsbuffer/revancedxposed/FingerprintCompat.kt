@@ -24,9 +24,11 @@ enum class AccessFlags(val modifier: Int) {
     CONSTRUCTOR(0),
 }
 
-fun MethodMatcher.strings(vararg strings: String) {
+fun MethodMatcher.definingClass(descriptor: String) =
+    this.declaredClass { this.descriptor = descriptor }
+
+fun MethodMatcher.strings(vararg strings: String) =
     this.usingStrings(strings.toList())
-}
 
 fun MethodMatcher.opcodes(vararg opcodes: Opcode): OpCodesMatcher {
     return OpCodesMatcher(opcodes.map { it.opCode }).also {
@@ -63,6 +65,8 @@ class Fingerprint(val dexkit: DexKitBridge, init: Fingerprint.() -> Unit) {
         init(this)
     }
 
+    fun name(name: String) = methodMatcher.name(name)
+    fun definingClass(descriptor: String) = classMatcher { this.descriptor = descriptor }
     fun strings(vararg strings: String) = methodMatcher.strings(*strings)
     fun opcodes(vararg opcodes: Opcode) = methodMatcher.opcodes(*opcodes)
     fun accessFlags(vararg accessFlags: AccessFlags) = methodMatcher.accessFlags(*accessFlags)

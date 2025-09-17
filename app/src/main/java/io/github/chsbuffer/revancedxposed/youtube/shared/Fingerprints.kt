@@ -7,6 +7,8 @@ import io.github.chsbuffer.revancedxposed.fingerprint
 import org.luckypray.dexkit.query.enums.StringMatchType
 import java.lang.reflect.Modifier
 
+internal const val YOUTUBE_MAIN_ACTIVITY_CLASS_TYPE = "Lcom/google/android/apps/youtube/app/watchwhile/MainActivity;"
+
 val conversionContextFingerprintToString = fingerprint {
     parameters()
     strings(

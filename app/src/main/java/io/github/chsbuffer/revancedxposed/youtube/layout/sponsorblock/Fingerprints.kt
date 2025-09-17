@@ -1,8 +1,13 @@
 package io.github.chsbuffer.revancedxposed.youtube.layout.sponsorblock
 
+import io.github.chsbuffer.revancedxposed.AccessFlags
+import io.github.chsbuffer.revancedxposed.accessFlags
 import io.github.chsbuffer.revancedxposed.findFieldDirect
 import io.github.chsbuffer.revancedxposed.findMethodDirect
+import io.github.chsbuffer.revancedxposed.fingerprint
+import io.github.chsbuffer.revancedxposed.parameters
 import io.github.chsbuffer.revancedxposed.resourceMappings
+import io.github.chsbuffer.revancedxposed.returns
 import io.github.chsbuffer.revancedxposed.youtube.shared.seekbarFingerprint
 
 val SponsorBarRect = findFieldDirect {
@@ -33,6 +38,21 @@ val controlsOverlayFingerprint = findMethodDirect {
             addUsingNumber(inset_overlay_view_layout)
             paramCount = 0
             returnType = "void"
+        }
+    }.single()
+}
+
+val AdProgressTextVisibility = fingerprint {
+    definingClass("Lcom/google/android/libraries/youtube/ads/player/ui/AdProgressTextView;")
+    name("setVisibility")
+}
+
+internal val adProgressTextViewVisibilityFingerprint = findMethodDirect {
+    AdProgressTextVisibility().callers.findMethod {
+        matcher {
+            accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
+            returns("V")
+            parameters("Z")
         }
     }.single()
 }

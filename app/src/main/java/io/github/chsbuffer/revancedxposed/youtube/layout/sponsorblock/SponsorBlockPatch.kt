@@ -144,6 +144,12 @@ fun YoutubeHook.SponsorBlock() {
         }
     })
 
+    ::adProgressTextViewVisibilityFingerprint.hookMethod(scopedHook(::AdProgressTextVisibility.method){
+        before {
+            SegmentPlaybackController.setAdProgressTextVisibility(it.args[0] as Int)
+        }
+    })
+
     fun injectClassLoader(self: ClassLoader, host: ClassLoader) {
         host.setObjectField("parent", object : ClassLoader(host.parent) {
             override fun findClass(name: String): Class<*> {
