@@ -2,6 +2,7 @@ package io.github.chsbuffer.revancedxposed.music.layout.upgradebutton
 
 import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.Opcode
+import io.github.chsbuffer.revancedxposed.findFieldDirect
 import io.github.chsbuffer.revancedxposed.fingerprint
 
 internal val pivotBarConstructorFingerprint = fingerprint {
@@ -15,4 +16,8 @@ internal val pivotBarConstructorFingerprint = fingerprint {
         Opcode.IPUT_OBJECT,
         Opcode.RETURN_VOID
     )
+}
+
+val pivotBarElementField = findFieldDirect {
+    pivotBarConstructorFingerprint().declaredClass!!.fields.single { f -> f.typeName == "java.util.List" }
 }

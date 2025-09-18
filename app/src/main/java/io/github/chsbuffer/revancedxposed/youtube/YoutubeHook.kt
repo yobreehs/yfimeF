@@ -2,13 +2,9 @@ package io.github.chsbuffer.revancedxposed.youtube
 
 import android.app.Activity
 import android.app.Application
-import android.view.LayoutInflater
-import app.revanced.extension.shared.StringRef
 import app.revanced.extension.shared.Utils
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.BaseHook
-import io.github.chsbuffer.revancedxposed.BuildConfig
-import io.github.chsbuffer.revancedxposed.addModuleAssets
 import io.github.chsbuffer.revancedxposed.injectHostClassLoaderToSelf
 import io.github.chsbuffer.revancedxposed.youtube.ad.general.HideAds
 import io.github.chsbuffer.revancedxposed.youtube.ad.video.VideoAds
@@ -59,23 +55,13 @@ class YoutubeHook(
 
     fun ExtensionHook() {
         injectHostClassLoaderToSelf(this::class.java.classLoader!!, classLoader)
-        DexMethod("Landroid/view/LayoutInflater;->inflate(ILandroid/view/ViewGroup;)Landroid/view/View;").hookMethod{
-            before {
-                (it.thisObject as LayoutInflater).context.addModuleAssets()
-            }
-        }
-        val app = Utils.getContext()
-        app.addModuleAssets()
-        StringRef.resources = app.resources
-        StringRef.packageName = BuildConfig.APPLICATION_ID
-        StringRef.packageName2 = app.packageName
-
         DexMethod("$YOUTUBE_MAIN_ACTIVITY_CLASS_TYPE->onCreate(Landroid/os/Bundle;)V").hookMethod {
             before {
                 val mainActivity = it.thisObject as Activity
                 Utils.setContext(mainActivity)
-                mainActivity.addModuleAssets()
             }
         }
+
+        ExtensionResourceHook()
     }
 }

@@ -1,8 +1,6 @@
 package io.github.chsbuffer.revancedxposed.youtube.misc.settings
 
 import android.app.Activity
-import android.content.Context
-import android.webkit.WebView
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.shared.settings.preference.ReVancedAboutPreference
@@ -10,41 +8,22 @@ import app.revanced.extension.youtube.settings.LicenseActivityHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import io.github.chsbuffer.revancedxposed.R
-import io.github.chsbuffer.revancedxposed.addModuleAssets
 import io.github.chsbuffer.revancedxposed.invokeOriginalMethod
 import io.github.chsbuffer.revancedxposed.scopedHook
-import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.BasePreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.BasePreferenceScreen
-import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.IntentPreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.NonInteractivePreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference
+import io.github.chsbuffer.revancedxposed.shared.settings.preferences
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
-
-val preferences = mutableSetOf<BasePreference>()
-
-fun newIntent(settingsName: String) = IntentPreference.Intent(
-    data = settingsName,
-    targetClass = "com.google.android.libraries.social.licenses.LicenseActivity",
-) { "com.google.android.youtube" }
 
 @Suppress("UNREACHABLE_CODE")
 fun YoutubeHook.SettingsHook() {
     ::PreferenceFragmentCompat_addPreferencesFromResource.hookMethod(scopedHook(::PreferenceInflater_inflate.member) {
-        var handleWebView = false
         before { param ->
             val context = Utils.getContext()
             val preferencesName = context.resources.getResourceName(outerParam.args[0] as Int)
             Logger.printDebug { "addPreferencesFromResource $preferencesName" }
             if (!preferencesName.contains("settings_fragment")) return@before
-            if (!handleWebView) {
-                // workaround "AssetManager.addAssetPath gets Invalid When WebView is created":
-                // let WebView replace the AssetManager first then addModuleAssets
-                // https://issuetracker.google.com/issues/140652425
-                WebView(context).destroy()
-                handleWebView = true
-            }
-            context.addModuleAssets()
-            (param.args[2] as Context).addModuleAssets()
             val xml =
                 if (preferencesName.contains("settings_fragment_cairo")) R.xml.yt_revanced_settings_cairo else R.xml.yt_revanced_settings
             XposedBridge.invokeOriginalMethod(
@@ -67,7 +46,6 @@ fun YoutubeHook.SettingsHook() {
                 // ignored
             }
 
-            activity.addModuleAssets()
             LicenseActivityHook.initialize(hook, activity)
         }
     })

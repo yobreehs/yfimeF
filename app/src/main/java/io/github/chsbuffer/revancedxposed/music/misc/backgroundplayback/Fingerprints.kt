@@ -4,7 +4,7 @@ import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.Opcode
 import io.github.chsbuffer.revancedxposed.fingerprint
 
-val backgroundPlaybackDisableFingerprint = fingerprint {
+internal val backgroundPlaybackDisableFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.STATIC)
     returns("Z")
     parameters("L")
@@ -21,7 +21,7 @@ val backgroundPlaybackDisableFingerprint = fingerprint {
     )
 }
 
-val kidsBackgroundPlaybackPolicyControllerFingerprint = fingerprint {
+internal val kidsBackgroundPlaybackPolicyControllerFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("V")
     parameters("I", "L", "Z")

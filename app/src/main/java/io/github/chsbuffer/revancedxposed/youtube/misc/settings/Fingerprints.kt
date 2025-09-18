@@ -24,8 +24,7 @@ val PreferenceInflater_inflate = findMethodDirect {
     }.single()
 }
 
-
-val PreferenceFragmentCompat_addPreferencesFromResource = findMethodDirect {
+val PreferenceFragmentCompatClass = findClassDirect {
     findClass {
         matcher {
             usingStrings(
@@ -34,7 +33,11 @@ val PreferenceFragmentCompat_addPreferencesFromResource = findMethodDirect {
                 "androidx.preference.PreferenceFragmentCompat.PREFERENCE_ROOT"
             )
         }
-    }.single().let { preferenceFragmentCompat ->
+    }.single()
+}
+
+val PreferenceFragmentCompat_addPreferencesFromResource = findMethodDirect {
+    PreferenceFragmentCompatClass().let { preferenceFragmentCompat ->
         preferenceFragmentCompat.findMethod {
             matcher {
                 returnType = "void"

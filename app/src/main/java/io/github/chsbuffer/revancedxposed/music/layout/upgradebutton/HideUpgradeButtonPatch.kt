@@ -1,14 +1,9 @@
 package io.github.chsbuffer.revancedxposed.music.layout.upgradebutton
 
 import de.robv.android.xposed.XposedHelpers
-import io.github.chsbuffer.revancedxposed.findFieldDirect
 import io.github.chsbuffer.revancedxposed.music.MusicHook
 
-val pivotBarElementField = findFieldDirect {
-    pivotBarConstructorFingerprint().declaredClass!!.fields.single { f -> f.typeName == "java.util.List" }
-}
-
-fun MusicHook.RemoveUpgradeButton() {
+fun MusicHook.HideUpgradeButton() {
     ::pivotBarConstructorFingerprint.hookMethod {
         val pivotBarElementField = ::pivotBarElementField.field
 

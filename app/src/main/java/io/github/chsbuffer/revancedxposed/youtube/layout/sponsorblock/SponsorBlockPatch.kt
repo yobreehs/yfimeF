@@ -12,7 +12,6 @@ import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockStatsPreferenc
 import app.revanced.extension.youtube.sponsorblock.ui.SponsorBlockViewController
 import app.revanced.extension.youtube.sponsorblock.ui.VotingButton
 import io.github.chsbuffer.revancedxposed.R
-import io.github.chsbuffer.revancedxposed.addModuleAssets
 import io.github.chsbuffer.revancedxposed.scopedHook
 import io.github.chsbuffer.revancedxposed.setObjectField
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.NonInteractivePreference
@@ -137,8 +136,6 @@ fun YoutubeHook.SponsorBlock() {
         after { param ->
             if (param.args[0] != controls_overlay_layout) return@after
             val layout = param.result as ViewGroup
-            layout.context.addModuleAssets()
-            Utils.getContext().addModuleAssets()
             val overlay_view = layout.findViewById<ViewGroup>(insetOverlayViewLayout)
             SponsorBlockViewController.initialize(overlay_view)
         }

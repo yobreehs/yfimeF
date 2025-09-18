@@ -1,10 +1,14 @@
 package io.github.chsbuffer.revancedxposed
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Application
 import android.content.Context.MODE_PRIVATE
 import android.os.Build
+import android.os.Bundle
+import android.webkit.WebView
 import app.revanced.extension.shared.Logger
+import app.revanced.extension.shared.StringRef
 import app.revanced.extension.shared.Utils
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
@@ -217,6 +221,57 @@ abstract class BaseHook(private val app: Application, val lpparam: LoadPackagePa
                 appliedHooks.add(hook)
             }
         }
+    }
+
+    fun ExtensionResourceHook() {
+        app.addModuleAssets()
+        StringRef.resources = app.resources
+        StringRef.packageName = BuildConfig.APPLICATION_ID
+        StringRef.packageName2 = app.packageName
+
+        app.callMethod(
+            "registerActivityLifecycleCallbacks",
+            object : Application.ActivityLifecycleCallbacks {
+                var handleWebView: Boolean = false
+
+                override fun onActivityCreated(activity: Activity, bundle: Bundle?) {
+                    Logger.printDebug { "onActivityCreated $activity" }
+                    if (!handleWebView) {
+                        WebView(activity).destroy()
+                        app.addModuleAssets()
+                        StringRef.resources = app.resources
+                        StringRef.packageName = BuildConfig.APPLICATION_ID
+                        StringRef.packageName2 = app.packageName
+                    }
+
+                    activity.addModuleAssets()
+                }
+
+                override fun onActivityDestroyed(activity: Activity) {
+                    Logger.printDebug { "onActivityDestroyed $activity" }
+                }
+
+                override fun onActivityPaused(activity: Activity) {
+                    Logger.printDebug { "onActivityPaused $activity" }
+                }
+
+                override fun onActivityResumed(activity: Activity) {
+                    Logger.printDebug { "onActivityResumed $activity" }
+                    activity.addModuleAssets()
+                }
+
+                override fun onActivitySaveInstanceState(activity: Activity, bundle: Bundle) {
+                    Logger.printDebug { "onActivitySaveInstanceState $activity" }
+                }
+
+                override fun onActivityStarted(activity: Activity) {
+                    Logger.printDebug { "onActivityStarted $activity" }
+                }
+
+                override fun onActivityStopped(activity: Activity) {
+                    Logger.printDebug { "onActivityStopped $activity" }
+                }
+            })
     }
 
     fun KProperty0<FindMethodFunc>.hookMethod(block: HookDsl<IHookCallback>.() -> Unit) {
