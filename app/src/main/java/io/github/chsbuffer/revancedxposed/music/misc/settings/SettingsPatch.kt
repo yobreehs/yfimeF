@@ -68,7 +68,8 @@ fun MusicHook.SettingsHook() {
             val activity = param.thisObject as Activity
             val hook = GoogleApiActivityHook.createInstance()
             // must set theme before original set theme
-            hook.customizeActivityTheme(activity)
+            val musicTheme = Utils.getResourceIdentifier("@style/Theme.YouTubeMusic", "style")
+            activity.setTheme(musicTheme)
 
             try {
                 param.invokeOriginalMethod()
