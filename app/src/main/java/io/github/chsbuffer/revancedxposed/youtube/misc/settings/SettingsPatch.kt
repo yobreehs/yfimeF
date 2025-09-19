@@ -39,6 +39,7 @@ fun YoutubeHook.SettingsHook() {
             val hook = LicenseActivityHook.createInstance()
             // must set theme before original set theme
             hook.customizeActivityTheme(activity)
+            activity.theme.applyStyle(R.style.ListDividerNull, true)
 
             try {
                 param.invokeOriginalMethod()

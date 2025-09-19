@@ -14,4 +14,8 @@
         <item name="android:textColorSecondary">@android:color/secondary_text_light_nodisable</item>
     </style>
 
+    <style name="ListDividerNull">
+        <item name="android:listDivider">@null</item>
+    </style>
+
 </resources>

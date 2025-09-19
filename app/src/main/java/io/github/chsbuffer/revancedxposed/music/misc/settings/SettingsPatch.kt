@@ -71,6 +71,7 @@ fun MusicHook.SettingsHook() {
             GoogleApiActivityHook.initialize(hook, activity)
             val musicTheme = Utils.getResourceIdentifier("@style/Theme.YouTubeMusic", "style")
             activity.setTheme(musicTheme)
+            activity.theme.applyStyle(R.style.ListDividerNull, true)
             param.result = Unit
         }
     }
