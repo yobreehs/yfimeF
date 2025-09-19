@@ -65,19 +65,12 @@ fun MusicHook.SettingsHook() {
 
     ::googleApiActivityFingerprint.hookMethod {
         before { param ->
+            param.invokeOriginalMethod()
             val activity = param.thisObject as Activity
             val hook = GoogleApiActivityHook.createInstance()
-            // must set theme before original set theme
+            GoogleApiActivityHook.initialize(hook, activity)
             val musicTheme = Utils.getResourceIdentifier("@style/Theme.YouTubeMusic", "style")
             activity.setTheme(musicTheme)
-
-            try {
-                param.invokeOriginalMethod()
-            } catch (e: Throwable) {
-                // ignored
-            }
-
-            GoogleApiActivityHook.initialize(hook, activity)
             param.result = Unit
         }
     }
