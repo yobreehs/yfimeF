@@ -3,6 +3,7 @@ package io.github.chsbuffer.revancedxposed.youtube.misc.settings
 import android.app.Activity
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
+import app.revanced.extension.shared.settings.preference.ImportExportPreference
 import app.revanced.extension.shared.settings.preference.ReVancedAboutPreference
 import app.revanced.extension.youtube.settings.LicenseActivityHook
 import de.robv.android.xposed.XC_MethodReplacement
@@ -11,8 +12,10 @@ import io.github.chsbuffer.revancedxposed.R
 import io.github.chsbuffer.revancedxposed.invokeOriginalMethod
 import io.github.chsbuffer.revancedxposed.scopedHook
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.BasePreferenceScreen
+import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.InputType
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.NonInteractivePreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference
+import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.TextPreference
 import io.github.chsbuffer.revancedxposed.shared.settings.preferences
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 
@@ -72,6 +75,26 @@ fun YoutubeHook.SettingsHook() {
         tag = ReVancedAboutPreference::class.java,
         selectable = true,
     )
+
+//    PreferenceScreen.GENERAL_LAYOUT.addPreferences(
+//        SwitchPreference("revanced_settings_search_history"),
+//        SwitchPreference("revanced_show_menu_icons")
+//    )
+
+    PreferenceScreen.MISC.addPreferences(
+        TextPreference(
+            key = null,
+            titleKey = "revanced_pref_import_export_title",
+            summaryKey = "revanced_pref_import_export_summary",
+            inputType = InputType.TEXT_MULTI_LINE,
+            tag = ImportExportPreference::class.java,
+        ),
+//        ListPreference(
+//            key = "revanced_language",
+//            tag = SortedListPreference::class.java
+//        )
+    )
+
     PreferenceScreen.close()
 }
 
