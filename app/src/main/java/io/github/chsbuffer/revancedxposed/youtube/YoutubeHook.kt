@@ -6,6 +6,7 @@ import app.revanced.extension.shared.Utils
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.BaseHook
 import io.github.chsbuffer.revancedxposed.injectHostClassLoaderToSelf
+import io.github.chsbuffer.revancedxposed.shared.misc.CheckRecycleBitmapMediaSession
 import io.github.chsbuffer.revancedxposed.youtube.ad.general.HideAds
 import io.github.chsbuffer.revancedxposed.youtube.ad.video.VideoAds
 import io.github.chsbuffer.revancedxposed.youtube.interaction.copyvideourl.CopyVideoUrl
@@ -51,6 +52,7 @@ class YoutubeHook(
         ::PlaybackSpeed,
         ::EnableDebugging,
         ::ForceOriginalAudio,
+        ::CheckRecycleBitmapMediaSession,
         // make sure settingsHook at end to build preferences
         ::SettingsHook
     )

@@ -9,6 +9,7 @@ import io.github.chsbuffer.revancedxposed.music.layout.premium.HideGetPremium
 import io.github.chsbuffer.revancedxposed.music.layout.upgradebutton.HideUpgradeButton
 import io.github.chsbuffer.revancedxposed.music.misc.backgroundplayback.BackgroundPlayback
 import io.github.chsbuffer.revancedxposed.music.misc.settings.SettingsHook
+import io.github.chsbuffer.revancedxposed.shared.misc.CheckRecycleBitmapMediaSession
 
 class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpparam) {
     override val hooks = arrayOf(
@@ -18,6 +19,7 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
         ::HideUpgradeButton,
         ::HideGetPremium,
         ::EnableExclusiveAudioPlayback,
+        ::CheckRecycleBitmapMediaSession,
         ::SettingsHook
     )
 }
