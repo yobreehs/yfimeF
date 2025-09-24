@@ -73,6 +73,8 @@ class FingerprintsKtTest(val apkPath: Path) {
             apkPath.name.startsWith("com.google.android.apps.youtube.music") -> "music"
             apkPath.name.startsWith("com.spotify.music") -> "spotify"
             apkPath.name.startsWith("com.reddit.frontpage") -> "reddit"
+            apkPath.name.startsWith("com.instagram.android") -> "meta"
+            apkPath.name.startsWith("com.instagram.barcelona") -> "meta"
             else -> return@sequence
         }
 

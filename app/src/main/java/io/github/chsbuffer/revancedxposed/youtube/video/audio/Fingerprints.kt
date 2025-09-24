@@ -60,7 +60,7 @@ val getAudioTrackDisplayNameFingerprint = findMethodDirect {
 
 internal const val AUDIO_STREAM_IGNORE_DEFAULT_FEATURE_FLAG = 45666189L
 
-@get:RequireAppVersion("20.07")
+@get:RequireAppVersion("20.07.00")
 internal val selectAudioStreamFingerprint = findMethodDirect {
     findMethod {
         matcher {

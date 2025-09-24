@@ -96,7 +96,7 @@ val shortsBackgroundPlaybackFeatureFlagFingerprint = fingerprint {
 internal const val PIP_INPUT_CONSUMER_FEATURE_FLAG = 45638483L
 
 // Fix 'E/InputDispatcher: Window handle pip_input_consumer has no registered input channel'
-@get:RequireAppVersion("19.34")
+@get:RequireAppVersion("19.34.00")
 val pipInputConsumerFeatureFlagFingerprint = fingerprint {
     literal { PIP_INPUT_CONSUMER_FEATURE_FLAG}
 }

@@ -7,36 +7,29 @@ annotation class SkipTest()
 
 class AppVersion(val versionString: String) : Comparable<AppVersion> {
     init {
-        require(versionString.matches(Regex("\\d+\\.\\d+(\\.\\d+)?(\\.\\d+)?"))) {
-            "Version string must be in the format major.minor[.build][.revision] (e.g., 1.2 or 1.2.3)"
+        require(versionString.matches(Regex("\\d+(\\.\\d+)*"))) {
+            "Version string must consist of numbers separated by dots (e.g., 1.2 or 1.2.3.4)"
         }
     }
 
     private val parts: List<Int> by lazy { versionString.split('.').map { it.toInt() } }
 
-    val major: Int
-        get() = parts[0]
-
-    val minor: Int
-        get() = parts[1]
-
-    val build: Int
-        get() = parts.elementAtOrElse(2) { 0 }
-
-    val revision: Int
-        get() = parts.elementAtOrElse(3) { 0 }
+    fun getPart(index: Int): Int = parts.elementAtOrElse(index) { 0 }
 
     override fun compareTo(other: AppVersion): Int {
-        if (this.major != other.major) {
-            return this.major.compareTo(other.major)
+        require(this.parts.size == other.parts.size) {
+            "Version parts count mismatch: ${this.versionString} (${this.parts.size} parts) vs ${other.versionString} (${other.parts.size} parts)"
         }
-        if (this.minor != other.minor) {
-            return this.minor.compareTo(other.minor)
+
+        val len = parts.size
+        for (i in 0 until len) {
+            val thisPart = this.getPart(i)
+            val otherPart = other.getPart(i)
+            if (thisPart != otherPart) {
+                return thisPart.compareTo(otherPart)
+            }
         }
-        if (this.build != other.build) {
-            return this.build.compareTo(other.build)
-        }
-        return this.revision.compareTo(other.revision)
+        return 0
     }
 
     override fun toString(): String = versionString

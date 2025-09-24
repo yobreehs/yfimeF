@@ -77,7 +77,7 @@ val getPlaybackSpeedMethodReference = findMethodDirect {
     }.single()
 }
 
-@get:RequireAppVersion("19.25")
+@get:RequireAppVersion("19.25.00")
 val onSpeedTapAndHoldFingerprint = findMethodDirect {
     findMethod {
         matcher {

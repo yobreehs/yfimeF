@@ -50,7 +50,7 @@ val lithoThreadExecutorFingerprint = fingerprint {
     literal { 1L }
 }
 
-@get:RequireAppVersion("19.25", "20.04.99")
+@get:RequireAppVersion("19.25.00", "20.04.99")
 val lithoComponentNameUpbFeatureFlagFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
     returns("Z")
