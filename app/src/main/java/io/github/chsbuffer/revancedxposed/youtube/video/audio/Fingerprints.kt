@@ -1,12 +1,11 @@
 package io.github.chsbuffer.revancedxposed.youtube.video.audio
 
 import io.github.chsbuffer.revancedxposed.AccessFlags
-import io.github.chsbuffer.revancedxposed.Opcode
 import io.github.chsbuffer.revancedxposed.RequireAppVersion
 import io.github.chsbuffer.revancedxposed.accessFlags
 import io.github.chsbuffer.revancedxposed.findMethodDirect
+import io.github.chsbuffer.revancedxposed.findMethodListDirect
 import io.github.chsbuffer.revancedxposed.fingerprint
-import io.github.chsbuffer.revancedxposed.opcodes
 import io.github.chsbuffer.revancedxposed.returns
 
 internal val formatStreamModelToStringFingerprint = fingerprint {
@@ -16,45 +15,21 @@ internal val formatStreamModelToStringFingerprint = fingerprint {
     definingClass("Lcom/google/android/libraries/youtube/innertube/model/media/FormatStreamModel;")
 }
 
-val getFormatFingerprint = findMethodDirect {
-    findMethod {
-        matcher {
-            returnType = "androidx.media3.common.Format"
-            declaredClass = "com.google.android.libraries.youtube.innertube.model.media.FormatStreamModel"
-            paramCount = 0
+/*
+* isDefaultAudioTrack
+* audioTrackId
+* audioTrackDisplayName
+* */
+val getFormatStreamModelGetter = findMethodListDirect {
+    formatStreamModelToStringFingerprint().invokes.windowed(3).first {
+        it[0].returnTypeName == "boolean" &&
+                it[1].returnTypeName == "java.lang.String" &&
+                it[2].returnTypeName == "java.lang.String"
+    }.also {
+        it.forEach { m ->
+            require(m.paramCount == 0) { "Expected no parameters for FormatStreamModel getter methods" }
+            require(m.declaredClass!!.simpleName == "FormatStreamModel") { "Expected FormatStreamModel instance method" }
         }
-    }.single()
-}
-
-val getIsDefaultAudioTrackFingerprint = findMethodDirect {
-    formatStreamModelToStringFingerprint().invokes.findMethod {
-        matcher {
-            addCaller(getFormatFingerprint().descriptor)
-            returns("Z")
-            opcodes(
-                Opcode.IGET_OBJECT,
-                Opcode.IGET_OBJECT,
-                Opcode.IF_NEZ,
-                Opcode.SGET_OBJECT,
-                Opcode.IGET_BOOLEAN,
-            )
-        }
-    }.single()
-}
-
-val getAudioTrackIdFingerprint = findMethodDirect {
-    val toStringInvokes = formatStreamModelToStringFingerprint().invokes
-    val isDefaultAudioTrack = getIsDefaultAudioTrackFingerprint()
-    toStringInvokes[toStringInvokes.indexOf(isDefaultAudioTrack) + 1].also {
-        require(it.returnTypeName == "java.lang.String")
-    }
-}
-
-val getAudioTrackDisplayNameFingerprint = findMethodDirect {
-    val toStringInvokes = formatStreamModelToStringFingerprint().invokes
-    val isDefaultAudioTrack = getIsDefaultAudioTrackFingerprint()
-    toStringInvokes[toStringInvokes.indexOf(isDefaultAudioTrack) + 2].also {
-        require(it.returnTypeName == "java.lang.String")
     }
 }
 

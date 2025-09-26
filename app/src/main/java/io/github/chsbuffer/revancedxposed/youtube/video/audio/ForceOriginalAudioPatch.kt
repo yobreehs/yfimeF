@@ -29,9 +29,14 @@ fun YoutubeHook.ForceOriginalAudio() {
         }
     }
 
-    ::getIsDefaultAudioTrackFingerprint.hookMethod {
-        val getAudioTrackIdMethod = ::getAudioTrackIdFingerprint.method
-        val getAudioTrackDisplayNameMethod = ::getAudioTrackDisplayNameFingerprint.method
+    val getFormatStreamModelGetter = ::getFormatStreamModelGetter.dexMethodList
+    val getIsDefaultAudioTrackFingerprint = getFormatStreamModelGetter[0]
+    val getAudioTrackIdFingerprint = getFormatStreamModelGetter[1]
+    val getAudioTrackDisplayNameFingerprint = getFormatStreamModelGetter[2]
+
+    getIsDefaultAudioTrackFingerprint.hookMethod {
+        val getAudioTrackIdMethod = getAudioTrackIdFingerprint.toMethod()
+        val getAudioTrackDisplayNameMethod = getAudioTrackDisplayNameFingerprint.toMethod()
         after {
             it.result = ForceOriginalAudioPatch.isDefaultAudioStream(
                 it.result as Boolean,
