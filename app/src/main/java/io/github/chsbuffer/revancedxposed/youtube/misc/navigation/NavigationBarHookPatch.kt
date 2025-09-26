@@ -103,7 +103,7 @@ fun YoutubeHook.NavigationBarHook() {
 
     // Fix YT bug of notification tab missing the filled icon.
     val tabActivityCairo = ::navigationEnumClass.clazz.enumValueOf("TAB_ACTIVITY_CAIRO")
-    if (tabActivityCairo != null) {
+    if (tabActivityCairo != null && ytFillBellId != 0) {
         ::setEnumMapFingerprint.dexMethodList.forEach { setEnumMapFingerprint ->
             fun processFields(obj: Any?, clazz: Class<*>) {
                 clazz.declaredFields.forEach { field ->

@@ -91,7 +91,7 @@ class SharedPrefCache(app: Application) : DexKitCacheBridge.Cache {
 
     override fun getList(
         key: String, default: List<String>?
-    ): List<String>? = map.getOrDefault(key, null)?.split('|') ?: default
+    ): List<String>? = map.getOrDefault(key, null)?.takeIf(String::isNotBlank)?.split('|') ?: default
 
     override fun put(key: String, value: String) {
         map.put(key, value)
