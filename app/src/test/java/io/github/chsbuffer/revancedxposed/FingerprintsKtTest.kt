@@ -29,19 +29,21 @@ class FingerprintsKtTest(val apkPath: Path) {
             .filter { it.isStatic }
             .filter { !it.isAnnotationPresent(SkipTest::class.java) }
             .forEach { method ->
-                val func = method(null) as? FindFunc ?: return@forEach
                 val methodName = method.name.drop(3)
-                print("$methodName: ")
                 method.getAnnotation(RequireAppVersion::class.java)?.also { anno ->
                     try {
                         match(appVersion, anno.minVersion, anno.maxVersion)
                     } catch (e: VersionConstraintFailedException) {
+                        print("$methodName: ")
                         System.out.flush()
                         System.err.println("Skipping: ${e.message}")
                         return@forEach
                     }
                 }
+
+                print("$methodName: ")
                 try {
+                    val func = method(null) as? FindFunc ?: return@forEach
                     val time = measureTimeMillis {
                         val value = func(dexkit)
                         if (value is List<*>) {

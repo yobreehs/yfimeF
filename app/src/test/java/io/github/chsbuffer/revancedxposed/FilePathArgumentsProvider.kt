@@ -23,8 +23,8 @@ class FilePathArgumentsProvider : ArgumentsProvider {
             throw IllegalStateException("APKs folder not found: $testInputPath")
         }
 
-        return Files.walk(testInputPath)
-            .filter { Files.isRegularFile(it) && it.name != ".gitignore" }
-            .map { Arguments.of(it) }
+        return Files.walk(testInputPath).filter { path ->
+                Files.isRegularFile(path) && path.normalize().none { it.name.startsWith(".") }
+            }.map { Arguments.of(it) }
     }
 }
