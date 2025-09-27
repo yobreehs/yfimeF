@@ -9,7 +9,10 @@ import io.github.chsbuffer.revancedxposed.youtube.shared.mainActivityOnCreateFin
 
 fun YoutubeHook.ForceOriginalAudio() {
     PreferenceScreen.VIDEO.addPreferences(
-        SwitchPreference("revanced_force_original_audio")
+        SwitchPreference(
+            key = "revanced_force_original_audio",
+            tag = app.revanced.extension.youtube.settings.preference.ForceOriginalAudioSwitchPreference::class.java
+        )
     )
 
     ::mainActivityOnCreateFingerprint.hookMethod {

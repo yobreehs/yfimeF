@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
     'android.R.style.ThemeOverlay_Material_Dialog' is a theme added in Android 6.0+.
 
     'android:windowBackground' is the background color of the alert dialog.
@@ -17,8 +16,6 @@
         https://developer.android.com/about/versions/marshmallow/android-6.0-changes#behavior-text-selection
 -->
 <resources>
-    <style name="revanced_searchbar_cursor">
-        <item name="android:textCursorDrawable">@drawable/revanced_settings_cursor</item>
-        <item name="android:textSize">16sp</item>
+    <style name="Theme.ReVanced.YouTubeMusic.Settings" parent="android:ThemeOverlay.Material.Dark">
     </style>
 </resources>

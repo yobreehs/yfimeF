@@ -8,6 +8,8 @@ import io.github.chsbuffer.revancedxposed.music.audio.exclusiveaudio.EnableExclu
 import io.github.chsbuffer.revancedxposed.music.layout.premium.HideGetPremium
 import io.github.chsbuffer.revancedxposed.music.layout.upgradebutton.HideUpgradeButton
 import io.github.chsbuffer.revancedxposed.music.misc.backgroundplayback.BackgroundPlayback
+import io.github.chsbuffer.revancedxposed.music.misc.debugging.EnableDebugging
+import io.github.chsbuffer.revancedxposed.music.misc.privacy.SanitizeSharingLinks
 import io.github.chsbuffer.revancedxposed.music.misc.settings.SettingsHook
 import io.github.chsbuffer.revancedxposed.shared.misc.CheckRecycleBitmapMediaSession
 
@@ -20,6 +22,8 @@ class MusicHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, lpp
         ::HideGetPremium,
         ::EnableExclusiveAudioPlayback,
         ::CheckRecycleBitmapMediaSession,
+        ::EnableDebugging,
+        ::SanitizeSharingLinks,
         ::SettingsHook
     )
 }

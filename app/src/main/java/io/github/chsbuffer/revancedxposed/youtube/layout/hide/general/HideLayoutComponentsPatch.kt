@@ -1,8 +1,6 @@
 package io.github.chsbuffer.revancedxposed.youtube.layout.hide.general
 
-import android.graphics.drawable.Drawable
 import android.view.View
-import android.widget.ImageView
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.youtube.patches.components.CommentsFilter
 import app.revanced.extension.youtube.patches.components.CustomFilter
@@ -49,9 +47,9 @@ fun YoutubeHook.HideLayoutComponents() {
                 SwitchPreference("revanced_hide_comments_section"),
                 SwitchPreference("revanced_hide_comments_community_guidelines"),
                 SwitchPreference("revanced_hide_comments_create_a_short_button"),
+                SwitchPreference("revanced_hide_comments_emoji_and_timestamp_buttons"),
                 SwitchPreference("revanced_hide_comments_preview_comment"),
                 SwitchPreference("revanced_hide_comments_thanks_button"),
-                SwitchPreference("revanced_hide_comments_timestamp_button"),
             ),
             sorting = PreferenceScreenPreference.Sorting.UNSORTED,
         ),
@@ -78,7 +76,10 @@ fun YoutubeHook.HideLayoutComponents() {
                 TextPreference(
                     "revanced_hide_keyword_content_phrases", inputType = InputType.TEXT_MULTI_LINE
                 ),
-                NonInteractivePreference("revanced_hide_keyword_content_about"),
+                NonInteractivePreference(
+                    key = "revanced_hide_keyword_content_about",
+                    tag = app.revanced.extension.shared.settings.preference.BulletPointPreference::class.java
+                ),
                 NonInteractivePreference(
                     key = "revanced_hide_keyword_content_about_whole_words",
                     tag = app.revanced.extension.youtube.settings.preference.HtmlPreference::class.java
@@ -112,7 +113,10 @@ fun YoutubeHook.HideLayoutComponents() {
         SwitchPreference("revanced_hide_chips_shelf"),
         SwitchPreference("revanced_hide_expandable_card"),
 //        SwitchPreference("revanced_hide_floating_microphone_button"),
-        SwitchPreference("revanced_hide_horizontal_shelves"),
+        SwitchPreference(
+            key = "revanced_hide_horizontal_shelves",
+            tag = app.revanced.extension.shared.settings.preference.BulletPointSwitchPreference::class.java
+        ),
         SwitchPreference("revanced_hide_image_shelf"),
         SwitchPreference("revanced_hide_latest_posts"),
         SwitchPreference("revanced_hide_mix_playlists"),
@@ -123,6 +127,8 @@ fun YoutubeHook.HideLayoutComponents() {
         SwitchPreference("revanced_hide_surveys"),
         SwitchPreference("revanced_hide_ticket_shelf"),
         SwitchPreference("revanced_hide_video_recommendation_labels"),
+//        SwitchPreference("revanced_hide_view_count"),
+//        SwitchPreference("revanced_hide_upload_time"),
 //        SwitchPreference("revanced_hide_doodles"),
     )
 
@@ -196,6 +202,8 @@ fun YoutubeHook.HideLayoutComponents() {
     // TODO hide floating microphone
 
     // TODO 'Yoodles'
+
+    // TODO hide view count
 
     // region hide filter bar
 

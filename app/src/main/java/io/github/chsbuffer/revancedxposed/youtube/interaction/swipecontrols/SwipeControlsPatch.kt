@@ -1,6 +1,6 @@
 package io.github.chsbuffer.revancedxposed.youtube.interaction.swipecontrols
 
-import app.revanced.extension.shared.settings.preference.ColorPickerPreference
+import app.revanced.extension.shared.settings.preference.ColorPickerWithOpacitySliderPreference
 import app.revanced.extension.youtube.swipecontrols.SwipeControlsHostActivity
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.InputType
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.ListPreference
@@ -29,12 +29,12 @@ fun YoutubeHook.SwipeControls() {
         TextPreference("revanced_swipe_overlay_background_opacity", inputType = InputType.NUMBER),
         TextPreference(
             "revanced_swipe_overlay_progress_brightness_color",
-            tag = ColorPickerPreference::class.java,
+            tag = ColorPickerWithOpacitySliderPreference::class.java,
             inputType = InputType.TEXT_CAP_CHARACTERS
         ),
         TextPreference(
             "revanced_swipe_overlay_progress_volume_color",
-            tag = ColorPickerPreference::class.java,
+            tag = ColorPickerWithOpacitySliderPreference::class.java,
             inputType = InputType.TEXT_CAP_CHARACTERS
         ),
         TextPreference("revanced_swipe_text_overlay_size", inputType = InputType.NUMBER),

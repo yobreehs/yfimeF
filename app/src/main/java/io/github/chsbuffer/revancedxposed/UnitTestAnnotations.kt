@@ -5,6 +5,9 @@ package io.github.chsbuffer.revancedxposed
 @Target(AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.FUNCTION)
 annotation class SkipTest()
 
+@Target(AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.FUNCTION)
+annotation class TargetApp(val app: String)
+
 class AppVersion(val versionString: String) : Comparable<AppVersion> {
     init {
         require(versionString.matches(Regex("\\d+(\\.\\d+)*"))) {

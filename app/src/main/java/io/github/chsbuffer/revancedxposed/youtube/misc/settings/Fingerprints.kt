@@ -59,6 +59,10 @@ val licenseActivityClass = findClassDirect {
     }.single()
 }
 
+val licenseActivitySuperOnCreate = findMethodDirect {
+    licenseActivityClass().superClass!!.findMethod { matcher { name = "onCreate" } }.single()
+}
+
 val licenseActivityOnCreateFingerprint = findMethodDirect {
     licenseActivityClass().findMethod { matcher { name = "onCreate" } }.single()
 }

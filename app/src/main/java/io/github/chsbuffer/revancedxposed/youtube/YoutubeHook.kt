@@ -20,7 +20,7 @@ import io.github.chsbuffer.revancedxposed.youtube.layout.sponsorblock.SponsorBlo
 import io.github.chsbuffer.revancedxposed.youtube.layout.startupshortsreset.DisableResumingShortsOnStartup
 import io.github.chsbuffer.revancedxposed.youtube.misc.backgroundplayback.BackgroundPlayback
 import io.github.chsbuffer.revancedxposed.youtube.misc.debugging.EnableDebugging
-import io.github.chsbuffer.revancedxposed.youtube.misc.privacy.RemoveTrackingQueryParameter
+import io.github.chsbuffer.revancedxposed.youtube.misc.privacy.SanitizeSharingLinks
 import io.github.chsbuffer.revancedxposed.youtube.misc.settings.SettingsHook
 import io.github.chsbuffer.revancedxposed.youtube.shared.YOUTUBE_MAIN_ACTIVITY_CLASS_TYPE
 import io.github.chsbuffer.revancedxposed.youtube.video.audio.ForceOriginalAudio
@@ -37,7 +37,7 @@ class YoutubeHook(
         ::ExtensionHook,
         ::VideoAds,
         ::BackgroundPlayback,
-        ::RemoveTrackingQueryParameter,
+        ::SanitizeSharingLinks,
         ::HideAds,
         ::SponsorBlock,
         ::CopyVideoUrl,

@@ -5,11 +5,11 @@ import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.shared.settings.preference.ImportExportPreference
 import app.revanced.extension.shared.settings.preference.ReVancedAboutPreference
-import app.revanced.extension.youtube.settings.LicenseActivityHook
+import app.revanced.extension.youtube.settings.YouTubeActivityHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import io.github.chsbuffer.revancedxposed.R
-import io.github.chsbuffer.revancedxposed.invokeOriginalMethod
+import io.github.chsbuffer.revancedxposed.hookMethod
 import io.github.chsbuffer.revancedxposed.scopedHook
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.BasePreferenceScreen
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.InputType
@@ -36,21 +36,15 @@ fun YoutubeHook.SettingsHook() {
         }
     })
 
+    val superOnCreate = ::licenseActivitySuperOnCreate.method
+    superOnCreate.hookMethod { }
+
     ::licenseActivityOnCreateFingerprint.hookMethod(object : XC_MethodReplacement() {
         override fun replaceHookedMethod(param: MethodHookParam) {
             val activity = param.thisObject as Activity
-            val hook = LicenseActivityHook.createInstance()
-            // must set theme before original set theme
-            hook.customizeActivityTheme(activity)
+            YouTubeActivityHook.initialize(activity)
             activity.theme.applyStyle(R.style.ListDividerNull, true)
-
-            try {
-                param.invokeOriginalMethod()
-            } catch (e: Throwable) {
-                // ignored
-            }
-
-            LicenseActivityHook.initialize(hook, activity)
+            XposedBridge.invokeOriginalMethod(superOnCreate, param.thisObject, param.args)
         }
     })
 
@@ -64,7 +58,7 @@ fun YoutubeHook.SettingsHook() {
     // which then differs from the system dark mode status.
     ::setThemeFingerprint.hookMethod {
         after { param ->
-            LicenseActivityHook.updateLightDarkModeStatus(param.result as Enum<*>)
+            YouTubeActivityHook.updateLightDarkModeStatus(param.result as Enum<*>)
         }
     }
     preferences += NonInteractivePreference(

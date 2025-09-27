@@ -39,7 +39,7 @@ fun YoutubeHook.NavigationBarHook() {
                 Utils.getChildViewByResourceName<View>(
                     it.result as ViewGroup,
                     "you_tab_border"
-                )
+                ) ?: throw Exception("You tab border not found")
             }.isSuccess
             if (isYouTab) {
                 NavigationBar.setLastAppNavigationEnumYou()

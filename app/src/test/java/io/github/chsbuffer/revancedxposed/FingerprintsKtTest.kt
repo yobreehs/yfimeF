@@ -23,7 +23,7 @@ class FingerprintsKtTest(val apkPath: Path) {
     val dexkit: DexKitBridge = TestSetup.dexkit.get()!!
     val appVersion: AppVersion = TestSetup.appVersion.get()!!
 
-    fun testFingerprints(clazz: Class<*>) {
+    fun testFingerprints(app: String, clazz: Class<*>) {
         val errors = mutableListOf<Throwable>()
         clazz.methods.asSequence()
             .filter { it.isStatic }
@@ -39,6 +39,10 @@ class FingerprintsKtTest(val apkPath: Path) {
                         System.err.println("Skipping: ${e.message}")
                         return@forEach
                     }
+                }
+
+                method.getAnnotation(TargetApp::class.java)?.also { anno ->
+                    if (anno.app != app) return@forEach
                 }
 
                 print("$methodName: ")
@@ -90,12 +94,14 @@ class FingerprintsKtTest(val apkPath: Path) {
                     it.invariantSeparatorsPathString.split("/").drop(3)
                         // convert to class name
                         .joinToString(".").replace(".kt", "Kt")
-                }.toList()
+                }.toList().toMutableList()
+
+        fingerprintClassList.addAll(SharedFingerprintsProvider.getSharedFingerprints(app))
 
         fingerprintClassList.forEach {
             val clz = classLoader.loadClass(it)
             val category = it.split(".").drop(5).joinToString(".") // drop your.patches.app prefix
-            yield(DynamicTest.dynamicTest(category) { testFingerprints(clz) })
+            yield(DynamicTest.dynamicTest(category) { testFingerprints(app, clz) })
         }
     }.iterator()
 }

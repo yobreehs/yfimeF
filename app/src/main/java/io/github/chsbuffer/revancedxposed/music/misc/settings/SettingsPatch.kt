@@ -1,21 +1,22 @@
 package io.github.chsbuffer.revancedxposed.music.misc.settings
 
 import android.app.Activity
-import app.revanced.extension.music.settings.GoogleApiActivityHook
+import app.revanced.extension.music.settings.MusicActivityHook
 import app.revanced.extension.shared.Logger
 import app.revanced.extension.shared.Utils
-import app.revanced.extension.shared.settings.preference.ClearLogBufferPreference
-import app.revanced.extension.shared.settings.preference.ExportLogToClipboardPreference
+import app.revanced.extension.shared.settings.preference.ImportExportPreference
 import app.revanced.extension.shared.settings.preference.ReVancedAboutPreference
 import de.robv.android.xposed.XC_MethodReplacement
+import de.robv.android.xposed.XposedBridge
 import io.github.chsbuffer.revancedxposed.R
-import io.github.chsbuffer.revancedxposed.invokeOriginalMethod
+import io.github.chsbuffer.revancedxposed.hookMethod
 import io.github.chsbuffer.revancedxposed.music.MusicHook
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.BasePreferenceScreen
+import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.InputType
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.NonInteractivePreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference
-import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.PreferenceScreenPreference.Sorting
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.SwitchPreference
+import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.TextPreference
 import io.github.chsbuffer.revancedxposed.shared.settings.preferences
 import io.github.chsbuffer.revancedxposed.youtube.misc.settings.PreferenceFragmentCompat_addPreferencesFromResource
 
@@ -34,27 +35,6 @@ fun MusicHook.SettingsHook() {
         }
     }
 
-    // Should make a separate debugging patch, but for now include it with all installations.
-    PreferenceScreen.MISC.addPreferences(
-        PreferenceScreenPreference(
-            key = "revanced_debug_screen",
-            sorting = Sorting.UNSORTED,
-            preferences = setOf(
-                SwitchPreference("revanced_debug"),
-                NonInteractivePreference(
-                    "revanced_debug_export_logs_to_clipboard",
-                    tag = ExportLogToClipboardPreference::class.java,
-                    selectable = true
-                ),
-                NonInteractivePreference(
-                    "revanced_debug_logs_clear_buffer",
-                    tag = ClearLogBufferPreference::class.java,
-                    selectable = true
-                )
-            )
-        )
-    )
-
     // Add an "About" preference to the top.
     preferences += NonInteractivePreference(
         key = "revanced_settings_music_screen_0_about",
@@ -63,15 +43,30 @@ fun MusicHook.SettingsHook() {
         selectable = true,
     )
 
+    PreferenceScreen.GENERAL.addPreferences(
+        SwitchPreference("revanced_settings_search_history")
+    )
+
+    PreferenceScreen.MISC.addPreferences(
+        TextPreference(
+            key = null,
+            titleKey = "revanced_pref_import_export_title",
+            summaryKey = "revanced_pref_import_export_summary",
+            inputType = InputType.TEXT_MULTI_LINE,
+            tag = ImportExportPreference::class.java,
+        )
+    )
+
+    val superOnCreate =
+        Activity::class.java.getDeclaredMethod("onCreate", android.os.Bundle::class.java)
+    superOnCreate.hookMethod { }
     ::googleApiActivityFingerprint.hookMethod {
         before { param ->
-            param.invokeOriginalMethod()
             val activity = param.thisObject as Activity
-            val hook = GoogleApiActivityHook.createInstance()
-            GoogleApiActivityHook.initialize(hook, activity)
-            val musicTheme = Utils.getResourceIdentifier("@style/Theme.YouTubeMusic", "style")
-            activity.setTheme(musicTheme)
+            activity.setTheme(Utils.getResourceIdentifier("@style/Theme.YouTubeMusic", "style"))
+            MusicActivityHook.initialize(activity)
             activity.theme.applyStyle(R.style.ListDividerNull, true)
+            XposedBridge.invokeOriginalMethod(superOnCreate, param.thisObject, param.args)
             param.result = Unit
         }
     }

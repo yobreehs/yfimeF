@@ -204,19 +204,30 @@ abstract class CopyResourcesTask @Inject constructor() : DefaultTask() {
     fun action() {
         val baseDir = inputDirectory.get().asFile
         val outputDir = outputDirectory.get().asFile
+        outputDir.deleteRecursively()
 
-        val drawables = listOf(
-            "qualitybutton/drawable",
-            "settings/drawable",
-            "sponsorblock/drawable",
-            "swipecontrols/drawable",
-            "copyvideourl/drawable",
-            "downloads/drawable",
-            "speedbutton/drawable",
+        val resourcePaths = mapOf(
+            "qualitybutton/drawable" to null,
+            "settings/drawable" to null,
+            "settings/menu" to null,
+            "settings/layout" to listOf("revanced_settings_with_toolbar.xml"),
+            "sponsorblock/drawable" to null,
+            "sponsorblock/layout" to listOf("revanced_sb_skip_sponsor_button.xml"),
+            "swipecontrols/drawable" to null,
+            "copyvideourl/drawable" to null,
+            "downloads/drawable" to null,
+            "speedbutton/drawable" to null,
         )
 
-        for (drawable in drawables) {
-            File(baseDir, drawable).copyRecursively(File(outputDir, "drawable"), overwrite = true)
+        for ((resourcePath, excludes) in resourcePaths) {
+            val dir = resourcePath.substringAfter('/')
+            val sourceDir = File(baseDir, resourcePath)
+            val targetDir = File(outputDir, dir)
+            sourceDir.listFiles()?.forEach { file ->
+                if (excludes == null || !excludes.contains(file.name)) {
+                    file.copyTo(File(targetDir, file.name), overwrite = true)
+                }
+            }
         }
     }
 }
