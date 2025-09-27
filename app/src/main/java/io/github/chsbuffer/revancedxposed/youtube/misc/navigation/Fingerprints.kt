@@ -118,23 +118,14 @@ val pivotBarConstructorFingerprint = fingerprint {
     strings("com.google.android.apps.youtube.app.endpoint.flags")
 }
 
-//val imageEnumConstructorFingerprint = fingerprint {
-//    accessFlags(AccessFlags.STATIC, AccessFlags.CONSTRUCTOR)
-//    strings("TAB_ACTIVITY_CAIRO")
-//}
-
-@get:RequireAppVersion("0.0.0", "20.38.99")
-val setEnumMapFingerprint = findMethodListDirect {
+val getNavIconResIdFingerprint = findMethodListDirect {
+    // two matches in versions 20.24.xx-20.26.xx,
+    // one match in versions <=v20.20.xx and >=v20.28.xx
+    val navigationEnumClass = navigationEnumClass()
     findMethod {
         matcher {
-//            accessFlags(AccessFlags.PUBLIC, AccessFlags.CONSTRUCTOR)
-            returns("V")
-            literal {
-                ytFillBellId
-            }
+            paramTypes(navigationEnumClass.name, "boolean")
+            returnType = "int"
         }
-    }.filter { it.isConstructor || it.isStaticInitializer }
+    }
 }
-
-@get:RequireAppVersion("0.0.0", "20.38.99")
-val ytFillBellId get() = resourceMappings["drawable", "yt_fill_bell_black_24"]

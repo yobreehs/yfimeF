@@ -7,13 +7,12 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import app.revanced.extension.shared.Utils
 import app.revanced.extension.youtube.shared.NavigationBar
+import io.github.chsbuffer.revancedxposed.R
 import io.github.chsbuffer.revancedxposed.enumValueOf
-import io.github.chsbuffer.revancedxposed.isStatic
 import io.github.chsbuffer.revancedxposed.scopedHook
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import io.github.chsbuffer.revancedxposed.youtube.shared.mainActivityOnBackPressedFingerprint
 import org.luckypray.dexkit.wrap.DexMethod
-import java.util.EnumMap
 
 fun onNavigationTabCreated(button: NavigationBar.NavigationButton, tabView: View) {
     hookNavigationButtonCreated.forEach { it(button, tabView) }
@@ -103,29 +102,14 @@ fun YoutubeHook.NavigationBarHook() {
 
     // Fix YT bug of notification tab missing the filled icon.
     val tabActivityCairo = ::navigationEnumClass.clazz.enumValueOf("TAB_ACTIVITY_CAIRO")
-    if (tabActivityCairo != null && runCatching { ytFillBellId != 0 }.isSuccess) {
-        ::setEnumMapFingerprint.dexMethodList.forEach { setEnumMapFingerprint ->
-            fun processFields(obj: Any?, clazz: Class<*>) {
-                clazz.declaredFields.forEach { field ->
-                    field.isAccessible = true
-                    if (obj == null && !field.isStatic) return@forEach
-                    val enumMap = field.get(obj) as? EnumMap<*, *> ?: return@forEach
-                    // check is valueType int (resource id)
-                    val valueType = enumMap.values.firstOrNull()?.javaClass ?: return@forEach
-                    if (valueType != Int::class.javaObjectType) return@forEach
-                    if (!enumMap.containsKey(tabActivityCairo)) NavigationBar.setCairoNotificationFilledIcon(
-                        enumMap, tabActivityCairo
-                    )
-                }
-            }
-
-            if (setEnumMapFingerprint.isStaticInitializer) {
-                processFields(null, classLoader.loadClass(setEnumMapFingerprint.declaredClassName))
-            } else {
-                setEnumMapFingerprint.hookMethod {
-                    after { param ->
-                        processFields(param.thisObject, param.thisObject.javaClass)
-                    }
+    if (tabActivityCairo != null) {
+        ::getNavIconResIdFingerprint.dexMethodList.forEach {
+            it.hookMethod {
+                after {
+                    val navEnum = it.args[0] as Enum<*>
+                    val selected = it.args[1] as Boolean
+                    if (navEnum == tabActivityCairo && selected)
+                        it.result = R.drawable.yt_fill_bell_black_24
                 }
             }
         }
