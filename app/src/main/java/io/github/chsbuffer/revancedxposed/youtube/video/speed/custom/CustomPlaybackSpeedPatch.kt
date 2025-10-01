@@ -15,7 +15,6 @@ import io.github.chsbuffer.revancedxposed.youtube.misc.litho.filter.addLithoFilt
 import io.github.chsbuffer.revancedxposed.youtube.misc.recyclerviewtree.hook.addRecyclerViewTreeHook
 import io.github.chsbuffer.revancedxposed.youtube.misc.recyclerviewtree.hook.recyclerViewTreeHook
 import io.github.chsbuffer.revancedxposed.youtube.video.information.doOverridePlaybackSpeed
-import io.github.chsbuffer.revancedxposed.youtube.video.information.setPlaybackSpeedMethodReference
 import io.github.chsbuffer.revancedxposed.youtube.video.speed.settingsMenuVideoSpeedGroup
 import java.lang.reflect.Method
 
@@ -99,10 +98,9 @@ fun YoutubeHook.CustomPlaybackSpeed() {
             }
         }
         ::onSpeedTapAndHoldFingerprint.hookMethod(
-            scopedHook(::setPlaybackSpeedMethodReference.member) {
+            scopedHook(::getPlaybackSpeedMethodReference.member) {
                 before {
                     tapAndHoldPath.set(true)
-                    it.result = Unit
                 }
             }
         )
