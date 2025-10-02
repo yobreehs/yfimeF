@@ -131,6 +131,9 @@ fun YoutubeHook.PlayerControls() {
                 // put this button to the left
                 leftButton.x = rightButton.x - leftButton.width
                 leftButton.y = rightButton.y
+                leftButton.layoutParams = rightButton.layoutParams.apply {
+                    width = leftButton.width
+                }
                 rightButton = leftButton
             }
         }
