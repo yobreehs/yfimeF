@@ -10,9 +10,7 @@
 
         <com.google.android.libraries.youtube.common.ui.TouchImageView
             android:id="@+id/revanced_playback_speed_dialog_button"
-            android:background="@null"
-            android:clickable="true"
-            android:focusable="true"
+            style="@style/YouTubePlayerButton"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:longClickable="false"

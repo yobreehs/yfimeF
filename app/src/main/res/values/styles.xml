@@ -18,4 +18,10 @@
 <resources>
     <style name="Theme.ReVanced.YouTubeMusic.Settings" parent="android:ThemeOverlay.Material.Dark">
     </style>
+
+    <style name="YouTubePlayerButton" parent="">
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+        <item name="android:background">@drawable/player_button_background</item>
+    </style>
 </resources>
