@@ -123,16 +123,18 @@ fun YoutubeHook.PlayerControls() {
             val controlsView = it.thisObject as ViewGroup
             if (controlsView.id != youtube_controls_bottom_ui_container) return@after
 
-            var rightButton =
+            val fullscreenButton =
                 Utils.getChildViewByResourceName<View>(controlsView, "fullscreen_button")
+            var rightButton = fullscreenButton
 
             for (bottomControl in bottomControls) {
                 val leftButton = controlsView.findViewById<View>(bottomControl.id)
+                if (leftButton.visibility == View.GONE) continue
                 // put this button to the left
                 leftButton.x = rightButton.x - leftButton.width
                 leftButton.y = rightButton.y
-                leftButton.layoutParams = rightButton.layoutParams.apply {
-                    width = leftButton.width
+                leftButton.layoutParams = leftButton.layoutParams.apply {
+                    height = fullscreenButton.height
                 }
                 rightButton = leftButton
             }
