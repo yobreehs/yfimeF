@@ -1,6 +1,7 @@
 package io.github.chsbuffer.revancedxposed.youtube.video.audio
 
-import app.revanced.extension.youtube.patches.ForceOriginalAudioPatch
+import app.revanced.extension.shared.patches.ForceOriginalAudioPatch
+import app.revanced.extension.shared.settings.preference.ForceOriginalAudioSwitchPreference
 import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.SwitchPreference
 import io.github.chsbuffer.revancedxposed.youtube.YoutubeHook
 import io.github.chsbuffer.revancedxposed.youtube.misc.debugging.experimentalBooleanFeatureFlagFingerprint
@@ -11,13 +12,13 @@ fun YoutubeHook.ForceOriginalAudio() {
     PreferenceScreen.VIDEO.addPreferences(
         SwitchPreference(
             key = "revanced_force_original_audio",
-            tag = app.revanced.extension.youtube.settings.preference.ForceOriginalAudioSwitchPreference::class.java
+            tag = ForceOriginalAudioSwitchPreference::class.java
         )
     )
 
     ::mainActivityOnCreateFingerprint.hookMethod {
         before {
-            ForceOriginalAudioPatch.setPreferredLanguage()
+            app.revanced.extension.youtube.patches.ForceOriginalAudioPatch.setEnabled()
         }
     }
 

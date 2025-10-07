@@ -19,14 +19,14 @@ fun SpotifyHook.SanitizeSharingLinks() {
         ) {
             before { param ->
                 val url = param.args[1] as String
-                param.args[1] = SanitizeSharingLinksPatch.sanitizeUrl(url)
+                param.args[1] = SanitizeSharingLinksPatch.sanitizeSharingLink(url)
             }
         })
 
     ::formatAndroidShareSheetUrlFingerprint.hookMethod {
         before { param ->
             val url = param.args[1] as String
-            param.args[1] = SanitizeSharingLinksPatch.sanitizeUrl(url)
+            param.args[1] = SanitizeSharingLinksPatch.sanitizeSharingLink(url)
         }
     }
 }
