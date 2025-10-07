@@ -92,7 +92,8 @@ fun inContext(lpparam: LoadPackageParam, f: (Application) -> Unit) {
             val app = param.thisObject as Application
             Utils.setContext(app)
             f(app)
-            UpdateChecker(app).hookNewActivity()
+            if (XposedInit.modulePath.startsWith("/data/app/"))
+                UpdateChecker(app).hookNewActivity()
         }
     })
 }
