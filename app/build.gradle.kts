@@ -37,7 +37,7 @@ android {
     androidResources {
         additionalParameters += arrayOf("--allow-reserved-package-id", "--package-id", "0x4b")
     }
-    packagingOptions.resources {
+    packaging.resources {
         excludes.addAll(
             arrayOf(
                 "META-INF/**", "**.bin"
@@ -63,7 +63,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
-            isShrinkResources = true
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
@@ -78,16 +78,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlin {
-        compilerOptions {
-            freeCompilerArgs.addAll(
-                "-Xno-param-assertions",
-                "-Xno-receiver-assertions",
-                "-Xno-call-assertions"
-            )
-            jvmTarget = JvmTarget.JVM_17
-        }
-    }
     sourceSets {
         getByName("main") {
             java {
@@ -101,7 +91,16 @@ android {
         }
     }
 }
-
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll(
+            "-Xno-param-assertions",
+            "-Xno-receiver-assertions",
+            "-Xno-call-assertions"
+        )
+        jvmTarget = JvmTarget.JVM_17
+    }
+}
 tasks.withType<Test> {
     useJUnitPlatform()
 }

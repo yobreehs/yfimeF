@@ -13,7 +13,7 @@
 #   public *;
 #}
 
--keep class io.github.chsbuffer.revancedxposed.MainHook
+-keep class io.github.chsbuffer.revancedxposed.MainHook { <init>(); }
 -keepclassmembers class **.* {
     public <init>(android.content.Context, android.util.AttributeSet);
 }
