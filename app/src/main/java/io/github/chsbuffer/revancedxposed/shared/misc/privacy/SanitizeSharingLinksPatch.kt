@@ -38,7 +38,7 @@ fun BaseHook.SanitizeSharingLinks(
     val sanitizeArg1 = object : XC_MethodHook() {
         override fun beforeHookedMethod(param: MethodHookParam) {
             val url = param.args[1] as? String ?: return
-            if (!url.contains("://")) return
+            if (!url.startsWith("https://")) return
             param.args[1] = SanitizeSharingLinksPatch.sanitize(url)
         }
     }
