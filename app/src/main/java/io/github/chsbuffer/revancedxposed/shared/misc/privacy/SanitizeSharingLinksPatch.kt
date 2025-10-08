@@ -14,7 +14,8 @@ import io.github.chsbuffer.revancedxposed.shared.misc.settings.preference.Switch
 
 fun BaseHook.SanitizeSharingLinks(
     preferenceScreen: BasePreferenceScreen.Screen,
-    replaceMusicLinksWithYouTube: Boolean = false) {
+    replaceMusicLinksWithYouTube: Boolean = false
+) {
 
     val sanitizePreference = SwitchPreference("revanced_sanitize_sharing_links")
 
@@ -37,6 +38,7 @@ fun BaseHook.SanitizeSharingLinks(
     val sanitizeArg1 = object : XC_MethodHook() {
         override fun beforeHookedMethod(param: MethodHookParam) {
             val url = param.args[1] as? String ?: return
+            if (!url.contains("://")) return
             param.args[1] = SanitizeSharingLinksPatch.sanitize(url)
         }
     }
