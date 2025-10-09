@@ -12,9 +12,10 @@ fun YoutubeHook.DisableResumingShortsOnStartup() {
     )
 
     ::userWasInShortsFingerprint.hookMethod(scopedHook(::userWasInShortsBuilderFingerprint.member) {
+        val arg = ::userWasInShortsBuilderFingerprint.dexMethod.paramTypeNames.indexOf("boolean")
         before {
-            it.args[0] =
-                DisableResumingStartupShortsPlayerPatch.disableResumingStartupShortsPlayer(it.args[0] as Boolean)
+            it.args[arg] =
+                DisableResumingStartupShortsPlayerPatch.disableResumingStartupShortsPlayer(it.args[arg] as Boolean)
         }
     })
 

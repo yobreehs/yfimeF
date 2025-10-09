@@ -12,9 +12,10 @@ val userWasInShortsFingerprint = fingerprint {
 }
 
 val userWasInShortsBuilderFingerprint = findMethodDirect {
-    userWasInShortsFingerprint().invokes.findMethod {
-        matcher { paramTypes("boolean", "int") }
-    }.single()
+    val paramTypes = listOf("boolean", "int")
+    userWasInShortsFingerprint().invokes.single {
+        it.paramTypeNames.takeLast(2) == paramTypes
+    }
 }
 
 /**

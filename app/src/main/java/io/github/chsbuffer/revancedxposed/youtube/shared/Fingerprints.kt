@@ -11,14 +11,7 @@ internal const val YOUTUBE_MAIN_ACTIVITY_CLASS_TYPE = "Lcom/google/android/apps/
 
 val conversionContextFingerprintToString = fingerprint {
     parameters()
-    strings(
-        "ConversionContext{containerInternal=",
-        ", widthConstraint=",
-        ", heightConstraint=",
-        ", templateLoggerFactory=",
-        ", rootDisposableContainer=",
-        ", identifierProperty="
-    )
+    strings("ConversionContext{")
 }
 
 val mainActivityConstructorFingerprint = fingerprint {
