@@ -5,6 +5,7 @@ import android.app.Application
 import app.revanced.extension.shared.Utils
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.BaseHook
+import io.github.chsbuffer.revancedxposed.addModuleAssets
 import io.github.chsbuffer.revancedxposed.injectHostClassLoaderToSelf
 import io.github.chsbuffer.revancedxposed.shared.misc.CheckRecycleBitmapMediaSession
 import io.github.chsbuffer.revancedxposed.youtube.ad.general.HideAds
@@ -62,6 +63,7 @@ class YoutubeHook(
         DexMethod("$YOUTUBE_MAIN_ACTIVITY_CLASS_TYPE->onCreate(Landroid/os/Bundle;)V").hookMethod {
             before {
                 val mainActivity = it.thisObject as Activity
+                mainActivity.addModuleAssets()
                 Utils.setContext(mainActivity)
             }
         }
