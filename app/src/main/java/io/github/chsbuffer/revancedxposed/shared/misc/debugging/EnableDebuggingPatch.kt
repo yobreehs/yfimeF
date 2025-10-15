@@ -61,8 +61,8 @@ fun BaseHook.EnableDebugging(
         after {
             it.result = EnableDebuggingPatch.isDoubleFeatureFlagEnabled(
                 it.result as Double,
-                it.args[0] as Long,
-                it.args[1] as Double
+                it.args[1] as Long,
+                it.args[2] as Double
             )
         }
     }
@@ -71,8 +71,8 @@ fun BaseHook.EnableDebugging(
         after {
             it.result = EnableDebuggingPatch.isLongFeatureFlagEnabled(
                 it.result as Long,
-                it.args[0] as Long,
-                it.args[1] as Long
+                it.args[1] as Long,
+                it.args[2] as Long
             )
         }
     }
@@ -81,8 +81,8 @@ fun BaseHook.EnableDebugging(
         after {
             it.result = EnableDebuggingPatch.isStringFeatureFlagEnabled(
                 it.result as String,
-                it.args[0] as Long,
-                it.args[1] as String
+                it.args[1] as Long,
+                it.args[2] as String
             )
         }
     }
