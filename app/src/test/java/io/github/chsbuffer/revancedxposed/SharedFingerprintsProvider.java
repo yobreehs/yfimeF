@@ -1,5 +1,6 @@
 package io.github.chsbuffer.revancedxposed;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -8,7 +9,7 @@ public class SharedFingerprintsProvider {
         return switch (app) {
             case "youtube", "music" ->
                     Arrays.asList(io.github.chsbuffer.revancedxposed.shared.misc.debugging.FingerprintsKt.class.getName());
-            default -> null;
+            default -> new ArrayList<>();
         };
     }
 }

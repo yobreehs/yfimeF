@@ -1,7 +1,8 @@
 package io.github.chsbuffer.revancedxposed.spotify.misc
 
-import io.github.chsbuffer.revancedxposed.FindClassFunc
+import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.Opcode
+import io.github.chsbuffer.revancedxposed.RequireAppVersion
 import io.github.chsbuffer.revancedxposed.SkipTest
 import io.github.chsbuffer.revancedxposed.findClassDirect
 import io.github.chsbuffer.revancedxposed.findFieldDirect
@@ -41,12 +42,33 @@ val contextFromJsonFingerprint = fingerprint {
         )
     }
 }
-val contextMenuViewModelClass: FindClassFunc = findClassDirect {
-    fingerprint {
-        strings("ContextMenuViewModel(header=")
+
+val contextMenuViewModelClass = findClassDirect {
+    return@findClassDirect runCatching {
+        fingerprint {
+            strings("ContextMenuViewModel(header=")
+        }
+    }.getOrElse {
+        fingerprint {
+            accessFlags(AccessFlags.CONSTRUCTOR)
+            strings("ContextMenuViewModel cannot contain items with duplicate itemResId. id=")
+            parameters("L", "Ljava/util/List;", "Z")
+        }
     }.declaredClass!!
 }
 
+val viewModelClazz = findClassDirect {
+    findMethod {
+        findFirst = true
+        matcher { name("getViewModel") }
+    }.single().returnType!!
+}
+
+val isPremiumUpsellField = findFieldDirect {
+    viewModelClazz().fields.filter { it.typeName == "boolean" }[1]
+}
+
+@get:RequireAppVersion("0.0.0.0", "9.0.60.127")
 val oldContextMenuViewModelAddItemFingerprint = fingerprint {
     classMatcher { className(contextMenuViewModelClass(dexkit).name) }
     parameters("L")

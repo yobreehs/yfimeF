@@ -78,6 +78,8 @@ fun SpotifyHook.UnlockPremium() {
         Logger.printDebug { "Patch for newest versions. $it" }
         XposedBridge.hookAllConstructors(
             contextMenuViewModelClazz, object : XC_MethodHook() {
+                val isPremiumUpsell = ::isPremiumUpsellField.field
+
                 override fun beforeHookedMethod(param: MethodHookParam) {
                     val parameterTypes =
                         (param.method as Constructor<*>).parameterTypes
@@ -85,7 +87,11 @@ fun SpotifyHook.UnlockPremium() {
                     for (i in 0 until param.args.size) {
                         if (parameterTypes[i].name != "java.util.List") continue
                         val original = param.args[i] as? List<*> ?: continue
-                        val filtered = UnlockPremiumPatch.filterContextMenuItems(original)
+                        Logger.printDebug { "List value type: ${original.firstOrNull()?.javaClass}" }
+                        val filtered = original.filter {
+                            it!!.callMethod("getViewModel").let { isPremiumUpsell.get(it) } != true
+                        }
+//                        val filtered = UnlockPremiumPatch.filterContextMenuItems(original)
                         param.args[i] = filtered
                         Logger.printDebug { "Filtered ${original.size - filtered.size} context menu items." }
                     }

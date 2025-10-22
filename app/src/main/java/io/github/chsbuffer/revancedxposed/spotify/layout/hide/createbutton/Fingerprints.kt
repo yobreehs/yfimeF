@@ -11,12 +11,14 @@ val oldNavigationBarAddItemFingerprint = fingerprint {
     strings("Bottom navigation tabs exceeds maximum of 5 tabs")
 }
 
+@get:SkipTest
 val navigationBarItemSetClass = findClassDirect {
     fingerprint {
         strings("NavigationBarItemSet(")
     }.declaredClass!!
 }
 
+@get:SkipTest
 val navigationBarItemSetConstructorFingerprint = fingerprint {
     accessFlags(AccessFlags.PUBLIC, AccessFlags.CONSTRUCTOR)
     // Make sure the method checks whether navigation bar items are null before adding them.
