@@ -27,7 +27,6 @@ jobs:
       run: chmod +x gradlew
 
     - name: Get random number
-      if: github.event_name == 'schedule'
       id: random
       run: echo "NUMBER=$(shuf -i 1-10000 -n 1)" >> $GITHUB_OUTPUT
 
