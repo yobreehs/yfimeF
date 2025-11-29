@@ -3,6 +3,8 @@ name: Android CI
 on:
   push:
     branches: [ "main" ]
+  schedule:
+    - cron: '0 0 * * *'
 
 jobs:
   build:
@@ -24,19 +26,16 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Write key
-      run: |
-        echo KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} > signing.properties
-        echo KEYSTORE_ALIAS=${{ secrets.KEYSTORE_ALIAS }} >> signing.properties
-        echo KEYSTORE_ALIAS_PASSWORD='${{ secrets.KEYSTORE_ALIAS_PASSWORD }}' >> signing.properties
-        echo KEYSTORE_FILE=../key.jks >> signing.properties
-        echo ${{ secrets.KEYSTORE }} | base64 --decode > key.jks
+    - name: Get random number
+      if: github.event_name == 'schedule'
+      id: random
+      run: echo "NUMBER=$(shuf -i 1-10000 -n 1)" >> $GITHUB_OUTPUT
 
     - name: Build Debug
-      run: ./gradlew assembleUniversalDebug
+      run: ./gradlew assembleUniversalDebug -PPACKAGE_NAME_SEED=${{ steps.random.outputs.NUMBER }}
 
     - name: Build Release
-      run: ./gradlew assembleUniversalRelease
+      run: ./gradlew assembleUniversalRelease -PPACKAGE_NAME_SEED=${{ steps.random.outputs.NUMBER }}
 
     - name: Upload a Debug Artifact
       uses: actions/upload-artifact@v4
@@ -56,8 +55,8 @@ jobs:
       run: |
         GIT_DESCRIBE=$(git rev-parse --short HEAD)
         cd app/build/outputs/apk/universal/release/
-        mv app-universal-release.apk ReVancedXposed-${GIT_DESCRIBE}.apk
+        mv app-universal-release.apk ReVancedXposedSpotify-${GIT_DESCRIBE}.apk
         gh release delete autobuild --yes || true
-        gh release create autobuild ReVancedXposed-${GIT_DESCRIBE}.apk --prerelease --title "AutoBuild ${GIT_DESCRIBE}"
+        gh release create autobuild ReVancedXposedSpotify-${GIT_DESCRIBE}.apk --prerelease --title "AutoBuild ${GIT_DESCRIBE}" --notes "The package name and signature of this build are different every day."
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

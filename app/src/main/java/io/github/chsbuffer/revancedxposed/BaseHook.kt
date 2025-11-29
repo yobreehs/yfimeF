@@ -3,7 +3,6 @@ package io.github.chsbuffer.revancedxposed
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
-import android.content.Context.MODE_PRIVATE
 import android.os.Build
 import android.os.Bundle
 import android.webkit.WebView
@@ -76,11 +75,7 @@ interface IHook {
 
 @Suppress("UNCHECKED_CAST")
 class SharedPrefCache(app: Application) : DexKitCacheBridge.Cache {
-    val pref = app.getSharedPreferences("xprevanced", MODE_PRIVATE)!!
-    private val map = mutableMapOf<String, String>().apply {
-        putAll(pref.all as Map<String, String>)
-    }
-
+    private val map = mutableMapOf<String, String>()
     override fun clearAll() {
         map.clear()
     }
@@ -103,14 +98,6 @@ class SharedPrefCache(app: Application) : DexKitCacheBridge.Cache {
 
     override fun remove(key: String) {
         map.remove(key)
-    }
-
-    fun saveCache() {
-        val edit = pref.edit()
-        map.forEach { k, v ->
-            edit.putString(k, v)
-        }
-        edit.commit()
     }
 }
 
@@ -138,7 +125,6 @@ abstract class BaseHook(private val app: Application, val lpparam: LoadPackagePa
 
     override fun Hook() {
         val t = measureTimeMillis {
-            tryLoadCache()
             try {
                 applyHooks()
                 handleResult()
@@ -184,7 +170,6 @@ abstract class BaseHook(private val app: Application, val lpparam: LoadPackagePa
     }
 
     private fun handleResult() {
-        cache.saveCache()
         val success = failedHooks.isEmpty()
         if (!success) {
             XposedBridge.log("${lpparam.appInfo.packageName} version: ${getAppVersion()}")

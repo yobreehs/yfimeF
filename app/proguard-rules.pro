@@ -13,7 +13,8 @@
 #   public *;
 #}
 
--keep class io.github.chsbuffer.revancedxposed.MainHook { <init>(); }
+-keep,allowobfuscation class io.github.chsbuffer.revancedxposed.MainHook { <init>(); }
+-applymapping mapping.txt
 -keepclassmembers class **.* {
     public <init>(android.content.Context, android.util.AttributeSet);
 }

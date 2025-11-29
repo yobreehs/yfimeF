@@ -75,12 +75,7 @@ class FingerprintsKtTest(val apkPath: Path) {
     @TestFactory
     fun fingerprintTest(): Iterator<DynamicTest> = sequence {
         val app = when {
-            apkPath.name.startsWith("com.google.android.youtube") -> "youtube"
-            apkPath.name.startsWith("com.google.android.apps.youtube.music") -> "music"
             apkPath.name.startsWith("com.spotify.music") -> "spotify"
-            apkPath.name.startsWith("com.reddit.frontpage") -> "reddit"
-            apkPath.name.startsWith("com.instagram.android") -> "meta"
-            apkPath.name.startsWith("com.instagram.barcelona") -> "meta"
             else -> return@sequence
         }
 
