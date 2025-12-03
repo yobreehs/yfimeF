@@ -11,6 +11,11 @@ val gitCommitHashProvider = providers.exec {
     workingDir = rootProject.rootDir
 }.standardOutput.asText!!
 
+val gitCommitDateProvider = providers.exec {
+    commandLine("git log -1 --format=%cd --date=format:%y%m%d".split(' '))
+    workingDir = rootProject.rootDir
+}.standardOutput.asText!!
+
 private val seed = (project.properties["PACKAGE_NAME_SEED"] as? String ?: "0").toLong().also { println("Seed for package name: $it") }
 private val myPackageName = genPackageName(seed).also { println("Package name: $it") }
 
@@ -46,7 +51,7 @@ android {
     defaultConfig {
         applicationId = myPackageName
         versionCode = 33
-        versionName = "1.0.$versionCode"
+        versionName = gitCommitDateProvider.get().trim()
         buildConfigField("String", "COMMIT_HASH", "\"${gitCommitHashProvider.get().trim()}\"")
     }
     flavorDimensions += "abi"
