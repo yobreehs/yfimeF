@@ -2,7 +2,6 @@ package io.github.chsbuffer.revancedxposed.spotify.misc
 
 import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.Opcode
-import io.github.chsbuffer.revancedxposed.RequireAppVersion
 import io.github.chsbuffer.revancedxposed.SkipTest
 import io.github.chsbuffer.revancedxposed.findClassDirect
 import io.github.chsbuffer.revancedxposed.findFieldDirect
@@ -66,14 +65,6 @@ val viewModelClazz = findClassDirect {
 
 val isPremiumUpsellField = findFieldDirect {
     viewModelClazz().fields.filter { it.typeName == "boolean" }[1]
-}
-
-@get:RequireAppVersion("0.0.0.0", "9.0.60.127")
-val oldContextMenuViewModelAddItemFingerprint = fingerprint {
-    classMatcher { className(contextMenuViewModelClass(dexkit).name) }
-    parameters("L")
-    returns("V")
-    methodMatcher { addInvoke { name = "add" } }
 }
 
 @SkipTest

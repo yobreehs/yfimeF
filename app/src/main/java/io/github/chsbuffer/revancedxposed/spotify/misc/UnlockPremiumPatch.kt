@@ -65,39 +65,25 @@ fun SpotifyHook.UnlockPremium() {
 
     // Hook the method which adds context menu items and return before adding if the item is a Premium ad.
     val contextMenuViewModelClazz = ::contextMenuViewModelClass.clazz
-    runCatching {
-        ::oldContextMenuViewModelAddItemFingerprint.hookMethod {
-            before { param ->
-                if (UnlockPremiumPatch.isFilteredContextMenuItem(param.args[0].callMethod("getViewModel"))) {
-                    param.result = null
+    XposedBridge.hookAllConstructors(
+        contextMenuViewModelClazz, object : XC_MethodHook() {
+            val isPremiumUpsell = ::isPremiumUpsellField.field
+
+            override fun beforeHookedMethod(param: MethodHookParam) {
+                val parameterTypes = (param.method as Constructor<*>).parameterTypes
+                Logger.printDebug { "ContextMenuViewModel(${parameterTypes.joinToString(",") { it.name }})" }
+                for (i in 0 until param.args.size) {
+                    if (parameterTypes[i].name != "java.util.List") continue
+                    val original = param.args[i] as? List<*> ?: continue
+                    Logger.printDebug { "List value type: ${original.firstOrNull()?.javaClass}" }
+                    val filtered = original.filter {
+                        it!!.callMethod("getViewModel").let { isPremiumUpsell.get(it) } != true
+                    }
+                    param.args[i] = filtered
+                    Logger.printDebug { "Filtered ${original.size - filtered.size} context menu items." }
                 }
             }
-        }
-        Logger.printDebug { "Patch used in versions older than \"9.0.60.128\"." }
-    }.onFailure {
-        Logger.printDebug { "Patch for newest versions. $it" }
-        XposedBridge.hookAllConstructors(
-            contextMenuViewModelClazz, object : XC_MethodHook() {
-                val isPremiumUpsell = ::isPremiumUpsellField.field
-
-                override fun beforeHookedMethod(param: MethodHookParam) {
-                    val parameterTypes =
-                        (param.method as Constructor<*>).parameterTypes
-                    Logger.printDebug { "ContextMenuViewModel(${parameterTypes.joinToString(",") { it.name }})" }
-                    for (i in 0 until param.args.size) {
-                        if (parameterTypes[i].name != "java.util.List") continue
-                        val original = param.args[i] as? List<*> ?: continue
-                        Logger.printDebug { "List value type: ${original.firstOrNull()?.javaClass}" }
-                        val filtered = original.filter {
-                            it!!.callMethod("getViewModel").let { isPremiumUpsell.get(it) } != true
-                        }
-//                        val filtered = UnlockPremiumPatch.filterContextMenuItems(original)
-                        param.args[i] = filtered
-                        Logger.printDebug { "Filtered ${original.size - filtered.size} context menu items." }
-                    }
-                }
-            })
-    }
+        })
 
     // Remove ads sections from home.
     ::homeStructureGetSectionsFingerprint.hookMethod {

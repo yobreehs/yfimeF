@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.util.Properties
 import java.util.Random
 
 plugins {
@@ -48,10 +47,6 @@ android {
         applicationId = myPackageName
         versionCode = 33
         versionName = "1.0.$versionCode"
-        val patchVersion = Properties().apply {
-            rootProject.file("revanced-patches/gradle.properties").inputStream().use { load(it) }
-        }["version"]
-        buildConfigField("String", "PATCH_VERSION", "\"$patchVersion\"")
         buildConfigField("String", "COMMIT_HASH", "\"${gitCommitHashProvider.get().trim()}\"")
     }
     flavorDimensions += "abi"
@@ -85,16 +80,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    sourceSets {
-        getByName("main") {
-            java {
-                srcDirs(
-                    "../revanced-patches/extensions/shared/library/src/main/java",
-                    "../revanced-patches/extensions/spotify/src/main/java",
-                )
-            }
-        }
-    }
 }
 kotlin {
     compilerOptions {
@@ -115,7 +100,6 @@ dependencies {
     implementation(group = "", name = "dexkit-android", ext = "aar")
     implementation("com.google.flatbuffers:flatbuffers-java:23.5.26") // dexkit dependency
     implementation(libs.annotation)
-    implementation(libs.fuel)
     testImplementation(kotlin("test-junit5"))
     testImplementation(libs.junit.jupiter.params)
     testImplementation(libs.jadx.core)

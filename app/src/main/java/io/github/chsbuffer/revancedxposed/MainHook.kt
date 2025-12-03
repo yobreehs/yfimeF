@@ -38,14 +38,6 @@ class MainHook : IXposedHookLoadPackage, IXposedHookZygoteInit {
                 return@inContext
             }
 
-            resourceMappings = object : ResourceFinder {
-                override operator fun get(type: String, name: String): Int {
-                    val id = Utils.getResourceIdentifier(name, type)
-                    if (id == 0) throw Exception("Could not find resource type: $type name: $name")
-                    return id
-                }
-            }
-
             hooksByPackage[lpparam.packageName]?.invoke()?.Hook()
         }
     }
