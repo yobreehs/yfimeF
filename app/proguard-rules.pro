@@ -13,8 +13,9 @@
 #   public *;
 #}
 
--keep,allowobfuscation class io.github.chsbuffer.revancedxposed.MainHook { <init>(); }
--applymapping mapping.txt
+# LSPosed loads the hook class by the name listed in assets/xposed_init,
+# so the class and its members must keep their names in release builds too.
+-keep class io.github.chsbuffer.revancedxposed.MainHook { *; }
 -keepclassmembers class **.* {
     public <init>(android.content.Context, android.util.AttributeSet);
 }
