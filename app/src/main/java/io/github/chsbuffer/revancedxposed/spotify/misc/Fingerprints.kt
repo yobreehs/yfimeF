@@ -26,19 +26,43 @@ val buildQueryParametersFingerprint = findMethodDirect {
         }
     }.single()
 }
-val contextFromJsonFingerprint = fingerprint {
-    opcodes(
-        Opcode.INVOKE_STATIC,
-        Opcode.MOVE_RESULT_OBJECT,
-        Opcode.INVOKE_VIRTUAL,
-        Opcode.MOVE_RESULT_OBJECT,
-        Opcode.INVOKE_STATIC
-    )
-    methodMatcher {
-        name("fromJson")
-        declaredClass(
-            "voiceassistants.playermodels.ContextJsonAdapter", StringMatchType.EndsWith
-        )
+
+/**
+ * The Google Assistant player-Context deserializer.
+ *
+ * Up to ~9.1.86 this was `…playermodels.ContextJsonAdapter.fromJson(JsonReader):Context`.
+ * Since ~9.1.90 the class was renamed to `…playermodels.ContextSerializer` and the method to
+ * `deserialize`; both still return `com.spotify.player.model.Context`, which the hook
+ * post-processes to strip `spotify:station:` URIs. The old opcode-based matcher is kept as a
+ * fallback so the patch survives on older app versions too.
+ */
+val contextFromJsonFingerprint = findMethodDirect {
+    runCatching {
+        fingerprint {
+            returns("Lcom/spotify/player/model/Context;")
+            methodMatcher {
+                name("deserialize")
+                declaredClass(
+                    "voiceassistants.playermodels.ContextSerializer", StringMatchType.EndsWith
+                )
+            }
+        }
+    }.getOrElse {
+        fingerprint {
+            opcodes(
+                Opcode.INVOKE_STATIC,
+                Opcode.MOVE_RESULT_OBJECT,
+                Opcode.INVOKE_VIRTUAL,
+                Opcode.MOVE_RESULT_OBJECT,
+                Opcode.INVOKE_STATIC
+            )
+            methodMatcher {
+                name("fromJson")
+                declaredClass(
+                    "voiceassistants.playermodels.ContextJsonAdapter", StringMatchType.EndsWith
+                )
+            }
+        }
     }
 }
 
@@ -90,6 +114,27 @@ val homeStructureGetSectionsFingerprint =
 val browseStructureGetSectionsFingerprint =
     structureGetSectionsFingerprint("browsita.v1.resolved.BrowseStructure")
 
+/**
+ * Sections of the Now Playing View scroll feed. Each section maps to a card (lyrics, merch, …);
+ * a section carrying `IMAGE_BRAND_AD_FIELD_NUMBER` is the embedded ad banner (the row shown
+ * under the lyrics card).
+ *
+ * Unlike Home/Browse, `NpvScrollStructure` also has an `addSection(Section)` method that reads
+ * the backing `sections_` field, so the getter is pinned by its return type.
+ */
+val npvScrollStructureGetSectionsFingerprint = findMethodDirect {
+    findMethod {
+        matcher {
+            declaredClass("scrollsita.v1.NpvScrollStructure", StringMatchType.EndsWith)
+            addUsingField {
+                usingType = UsingType.Read
+                name = "sections_"
+            }
+            paramTypes(emptyList())
+        }
+    }.first { it.returnTypeName != "void" }
+}
+
 val pendragonJsonFetchMessageRequestFingerprint = findMethodDirect {
     findMethod {
         matcher {
@@ -112,4 +157,38 @@ val pendragonJsonFetchMessageListRequestFingerprint = findMethodDirect {
             }
         }
     }.single()
+}
+
+/**
+ * The boolean field backing Spotify's own "Show unplayable songs" setting.
+ *
+ * The setting lives in the (server-synced) reactive settings state
+ * `com.spotify.settings.rxsettings.SettingsState` under the key `show_unavailable_tracks`, but
+ * that class is obfuscated and its consumers read the field directly. We therefore locate the
+ * field through the generated `…showUnavailableTracks` property reference: the property
+ * reference class is the one that both mentions the literal `showUnavailableTracks()Z` and has
+ * the `get(Object):Object` accessor that reads the field (`cd31.o` on 9.1.90).
+ */
+val showUnavailableTracksField = findFieldDirect {
+    val propertyReferenceCandidates = findMethod {
+        matcher { strings("showUnavailableTracks()Z") }
+    }.mapNotNull { it.declaredClass }
+
+    val propertyReferenceClass = propertyReferenceCandidates.first { candidate ->
+        runCatching {
+            fingerprint {
+                definingClass(candidate.descriptor)
+                returns("Ljava/lang/Object;")
+                parameters("Ljava/lang/Object;")
+                methodMatcher { name("get") }
+            }
+        }.isSuccess
+    }
+
+    fingerprint {
+        definingClass(propertyReferenceClass.descriptor)
+        returns("Ljava/lang/Object;")
+        parameters("Ljava/lang/Object;")
+        methodMatcher { name("get") }
+    }.usingFields.single().field
 }

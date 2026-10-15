@@ -6,7 +6,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import io.github.chsbuffer.revancedxposed.callMethod
-import io.github.chsbuffer.revancedxposed.findField
+import io.github.chsbuffer.revancedxposed.findFieldOrNull
 import io.github.chsbuffer.revancedxposed.findFirstFieldByExactTypeOrNull
 import io.github.chsbuffer.revancedxposed.spotify.SpotifyHook
 import org.luckypray.dexkit.wrap.DexField
@@ -29,7 +29,6 @@ fun SpotifyHook.UnlockPremium() {
         ::productStateProtoFingerprint.hookMethod {
             val field = ::attributesMapField.field
             before { param ->
-                Logger.printDebug { field.get(param.thisObject)!!.toString() }
                 UnlockPremiumPatch.overrideAttributes(field.get(param.thisObject) as Map<String, *>)
             }
         }
@@ -53,15 +52,17 @@ fun SpotifyHook.UnlockPremium() {
     // Enable choosing a specific song/artist via Google Assistant.
     guarded("contextFromJsonFingerprint") {
         ::contextFromJsonFingerprint.hookMethod {
-            fun removeStationString(field: Field, obj: Any) {
-                field.set(obj, UnlockPremiumPatch.removeStationString(field.get(obj) as String))
+            fun removeStationString(clazz: Class<*>, obj: Any, name: String) {
+                val field = clazz.findFieldOrNull(name) ?: return
+                val value = runCatching { field.get(obj) as? String }.getOrNull() ?: return
+                runCatching { field.set(obj, UnlockPremiumPatch.removeStationString(value)) }
             }
 
             after { param ->
-                val thiz = param.result
-                val clazz = param.result.javaClass
-                removeStationString(clazz.findField("uri"), thiz)
-                removeStationString(clazz.findField("url"), thiz)
+                val result = param.result ?: return@after
+                val clazz = result.javaClass
+                removeStationString(clazz, result, "uri")
+                removeStationString(clazz, result, "url")
             }
         }
     }
@@ -126,6 +127,18 @@ fun SpotifyHook.UnlockPremium() {
                 val sections = param.result
                 sections.makeSectionsMutable()
                 UnlockPremiumPatch.removeBrowseSections(param.result as MutableList<*>)
+            }
+        }
+    }
+
+    // Remove the embedded brand-ad card from the Now Playing View scroll feed (the banner shown
+    // below the lyrics card).
+    guarded("npvScrollStructureGetSectionsFingerprint") {
+        ::npvScrollStructureGetSectionsFingerprint.hookMethod {
+            after { param ->
+                val sections = param.result
+                sections.makeSectionsMutable()
+                UnlockPremiumPatch.removeNpvBrandAdSections(param.result as MutableList<*>)
             }
         }
     }

@@ -51,7 +51,9 @@ public final class UnlockPremiumPatch {
             new OverrideAttribute("ads", FALSE),
             // Works along on-demand, allows playing any song without restriction.
             new OverrideAttribute("player-license", "premium"),
-            new OverrideAttribute("player-license-v2", "premium"),
+            // Alternative key used by some app versions; not present on all accounts,
+            // so its absence must not be reported as an error.
+            new OverrideAttribute("player-license-v2", "premium", false),
             // Disables shuffle being initially enabled when first playing a playlist.
             new OverrideAttribute("shuffle", FALSE),
             // Allows playing any song on-demand, without a shuffled order.
@@ -187,6 +189,24 @@ public final class UnlockPremiumPatch {
         Class<?> sectionClass = sections.get(0).getClass();
         List<Integer> idsToRemove = List.of(
                 getFieldNumber(sectionClass, "BRAND_ADS_FIELD_NUMBER")
+        );
+        removeSections(
+                sections,
+                section -> XposedHelpers.getIntField(section, "sectionTypeCase_"),
+                idsToRemove
+        );
+    }
+
+    /**
+     * Remove the embedded brand-ad card(s) from the Now Playing View scroll feed, i.e. the ad
+     * banner shown below the lyrics card.
+     */
+    public static void removeNpvBrandAdSections(List<?> sections) {
+        Logger.printInfo(() -> "Removing brand ad section from now playing feed");
+        if (sections.isEmpty()) return;
+        Class<?> sectionClass = sections.get(0).getClass();
+        List<Integer> idsToRemove = List.of(
+                getFieldNumber(sectionClass, "IMAGE_BRAND_AD_FIELD_NUMBER")
         );
         removeSections(
                 sections,
