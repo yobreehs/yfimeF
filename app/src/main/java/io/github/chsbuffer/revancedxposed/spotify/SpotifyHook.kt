@@ -5,6 +5,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam
 import io.github.chsbuffer.revancedxposed.BaseHook
 import io.github.chsbuffer.revancedxposed.injectHostClassLoaderToSelf
 import io.github.chsbuffer.revancedxposed.spotify.misc.UnlockPremium
+import io.github.chsbuffer.revancedxposed.spotify.misc.ShowUnavailableTracks
 import io.github.chsbuffer.revancedxposed.spotify.misc.privacy.SanitizeSharingLinks
 import io.github.chsbuffer.revancedxposed.spotify.misc.widgets.FixThirdPartyLaunchersWidgets
 
@@ -14,7 +15,8 @@ class SpotifyHook(app: Application, lpparam: LoadPackageParam) : BaseHook(app, l
         ::Extension,
         ::SanitizeSharingLinks,
         ::UnlockPremium,
-        ::FixThirdPartyLaunchersWidgets
+        ::FixThirdPartyLaunchersWidgets,
+        ::ShowUnavailableTracks
     )
 
     fun Extension() {

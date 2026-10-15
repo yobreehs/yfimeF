@@ -4,29 +4,43 @@ import io.github.chsbuffer.revancedxposed.findMethodDirect
 import io.github.chsbuffer.revancedxposed.fingerprint
 
 /**
- * The method that checks whether the calling package holds the BIND_APPWIDGET permission.
+ * The permission/caller check that decides whether a media-provider caller (e.g. a launcher
+ * host) may read Spotify's widget artwork.
  *
- * Only system app launchers are granted that permission, so Spotify uses this check to deny
- * its media provider to third party launchers (breaking the widgets with launchers like Nova).
- * The method has a stable shape across recent app versions:
- * `com.spotify.externalintegration.service.provider.MediaProvider.a(Context):Z`.
+ * Spotify's own logic is (as of 9.1.90, inlined into `MediaProvider.openFile`):
+ * `trustedCaller(context) || (widgetProvidersFlag && callerHoldsBIND_APPWIDGET)`, where
+ * `trustedCaller` validates the caller's signing certificate against
+ * `res/xml/allowed_media_browser_callers*.xml` (internally logged as `MBS:`). Only system
+ * components pass, so third-party launchers are denied.
  *
- * The primary fingerprint pins the class (a manifest-declared ContentProvider, so its name is
- * not obfuscated) plus the signature. If a future version renames the method, we fall back to
- * matching the permission string on any boolean method.
+ * Up to ~9.1.86 this was a standalone helper `MediaProvider.a(Context):Z`; the patch replaced
+ * it with `true`. Since ~9.1.90 that helper is inlined, so the reusable gate is the
+ * media-browser caller validator itself. Fingerprinted by its unique log messages, so it
+ * survives class/method obfuscation, with the legacy `MediaProvider.a(Context):Z` matcher as a
+ * fallback for older builds.
  */
-val canBindAppWidgetPermissionFingerprint = findMethodDirect {
+val mbsCallerValidationFingerprint = findMethodDirect {
     runCatching {
         fingerprint {
-            classMatcher { descriptor = "Lcom/spotify/externalintegration/service/provider/MediaProvider;" }
             returns("Z")
-            parameters("Landroid/content/Context;")
-            strings("android.permission.BIND_APPWIDGET")
+            strings(
+                "MBS: Caller has more than one signature certificate!",
+                "MBS: Package manager can't find package: %s"
+            )
         }
     }.getOrElse {
-        fingerprint {
-            returns("Z")
-            strings("android.permission.BIND_APPWIDGET")
+        runCatching {
+            fingerprint {
+                classMatcher { descriptor = "Lcom/spotify/externalintegration/service/provider/MediaProvider;" }
+                returns("Z")
+                parameters("Landroid/content/Context;")
+                strings("android.permission.BIND_APPWIDGET")
+            }
+        }.getOrElse {
+            fingerprint {
+                returns("Z")
+                strings("android.permission.BIND_APPWIDGET")
+            }
         }
     }
 }
