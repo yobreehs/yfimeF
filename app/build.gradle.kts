@@ -50,7 +50,7 @@ android {
 
     defaultConfig {
         applicationId = myPackageName
-        versionCode = 35
+        versionCode = 36
         versionName = gitCommitDateProvider.get().trim()
         buildConfigField("String", "COMMIT_HASH", "\"${gitCommitHashProvider.get().trim()}\"")
     }

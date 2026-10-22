@@ -21,10 +21,20 @@ import io.github.chsbuffer.revancedxposed.spotify.SpotifyHook
 fun SpotifyHook.ShowUnavailableTracks() {
     runCatching {
         val field = ::showUnavailableTracksField.field
+        var writeFailureReported = false
         XposedBridge.hookAllConstructors(field.declaringClass, object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 runCatching {
                     XposedHelpers.setBooleanField(param.thisObject, field.name, true)
+                }.onFailure { err ->
+                    // Report once: this runs on every settings state construction.
+                    if (!writeFailureReported) {
+                        writeFailureReported = true
+                        Logger.printException(
+                            { "ShowUnavailableTracks: cannot set ${field.declaringClass.simpleName}.${field.name}" },
+                            err
+                        )
+                    }
                 }
             }
         })
