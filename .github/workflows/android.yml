@@ -6,6 +6,10 @@ on:
   schedule:
     - cron: '0 0 * * *'
 
+# The release step below creates/updates the "autobuild" release with GITHUB_TOKEN.
+permissions:
+  contents: write
+
 jobs:
   build:
 
