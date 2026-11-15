@@ -14,7 +14,7 @@
 - **Release build**: [Download](https://github.com/sheerboy/Femify/releases/latest)
 
 > [!NOTE]
-> The package name and signature of builds are randomized.
+> The package name is fixed (`sul.j`). The release APK is signed with the local debug key, so keep using the same signing key to install updates without uninstalling.
 
 ## Patches
 

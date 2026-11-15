@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.util.Random
 
 plugins {
     alias(libs.plugins.android.application)
@@ -16,40 +15,13 @@ val gitCommitDateProvider = providers.exec {
     workingDir = rootProject.rootDir
 }.standardOutput.asText!!
 
-private val seed = (project.properties["PACKAGE_NAME_SEED"] as? String ?: "0").toLong().also { println("Seed for package name: $it") }
-private val myPackageName = genPackageName(seed).also { println("Package name: $it") }
-
-private fun genPackageName(seed: Long): String {
-    val ALPHA = "abcdefghijklmnopqrstuvwxyz"
-    val ALPHADOTS = "$ALPHA....."
-
-    val random = Random(seed)
-    val len = 5 + random.nextInt(15)
-    val builder = StringBuilder(len)
-    var next: Char
-    var prev = 0.toChar()
-    for (i in 0 until len) {
-        next = if (prev == '.' || i == 0 || i == len - 1) {
-            ALPHA[random.nextInt(ALPHA.length)]
-        } else {
-            ALPHADOTS[random.nextInt(ALPHADOTS.length)]
-        }
-        builder.append(next)
-        prev = next
-    }
-    if (!builder.contains('.')) {
-        // Pick a random index and set it as dot
-        val idx = random.nextInt(len - 2)
-        builder[idx + 1] = '.'
-    }
-    return builder.toString()
-}
+private val fixedPackageName = "sul.j"
 
 android {
     namespace = "io.github.chsbuffer.revancedxposed"
 
     defaultConfig {
-        applicationId = myPackageName
+        applicationId = fixedPackageName
         versionCode = 41
         versionName = gitCommitDateProvider.get().trim()
         buildConfigField("String", "COMMIT_HASH", "\"${gitCommitHashProvider.get().trim()}\"")
