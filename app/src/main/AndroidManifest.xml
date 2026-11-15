@@ -2,7 +2,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <queries>
+        <package android:name="com.spotify.music" />
+    </queries>
+
+    <!--
+        forceQueryable: the settings provider is resolved from inside the Spotify process, i.e. with
+        Spotify's UID. Since Android 11 package visibility filters that lookup against Spotify's own
+        <queries> (it does not list this module), so the provider was reported as
+        "Failed to find provider info for <applicationId>.settings" and the hooks silently ran with
+        defaults. Declaring the module visible to all apps fixes the lookup; access is still
+        restricted by caller UID inside the provider.
+    -->
     <application
+        android:forceQueryable="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
@@ -17,10 +30,37 @@
             android:value="@string/app_description" />
         <meta-data
             android:name="xposedminversion"
-            android:value="93" />
+            android:value="82" />
         <meta-data
             android:name="xposedscope"
             android:resource="@array/scope" />
+
+        <!-- Exported for the Spotify process; access is restricted by caller UID in the provider. -->
+        <provider
+            android:name=".settings.FemifySettingsProvider"
+            android:authorities="${applicationId}.settings"
+            android:exported="true"
+            tools:ignore="ExportedContentProvider" />
+
+        <receiver
+            android:name=".settings.FemifySettingsReceiver"
+            android:exported="true"
+            tools:ignore="ExportedReceiver">
+            <intent-filter>
+                <action android:name="io.github.chsbuffer.revancedxposed.action.GET_SETTINGS" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name=".settings.SettingsActivity"
+            android:exported="true"
+            android:label="@string/app_launcher_name"
+            android:theme="@style/FemifySettingsTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
     </application>
 </manifest>

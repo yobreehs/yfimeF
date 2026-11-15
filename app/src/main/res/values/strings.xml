@@ -1,0 +1,23 @@
+<resources>
+    <string name="settings_title">Femify</string>
+    <string name="settings_subtitle">Xposed module for Spotify</string>
+
+    <string name="section_playback">Playback</string>
+    <string name="section_library">Library</string>
+    <string name="section_privacy">Privacy</string>
+
+    <string name="setting_premium_title">Unlock Premium</string>
+    <string name="setting_premium_summary">On-demand playback, seeking and unlimited skips.</string>
+
+    <string name="setting_ads_title">Block ads</string>
+    <string name="setting_ads_summary">Ad sections in Home, Search and Now Playing.</string>
+
+    <string name="setting_unavailable_title">Show unavailable tracks</string>
+    <string name="setting_unavailable_summary">Keeps unplayable tracks in lists, greyed out.</string>
+
+    <string name="setting_links_title">Clean sharing links</string>
+    <string name="setting_links_summary">Removes tracking parameters from shared links.</string>
+
+    <string name="settings_restart_hint">Restart Spotify to apply changes.</string>
+    <string name="settings_about">Femify %1$s (%2$s)</string>
+</resources>

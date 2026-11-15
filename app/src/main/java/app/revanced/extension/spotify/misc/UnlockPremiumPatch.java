@@ -63,8 +63,10 @@ public final class UnlockPremiumPatch {
             // Allows adding songs to queue and removes the smart shuffle mode restriction,
             // allowing to pick any of the other modes. Flag is not present in legacy app target.
             new OverrideAttribute("pick-and-shuffle", FALSE),
-            // Disables shuffle-mode streaming-rule, which forces songs to be played shuffled
-            // and breaks the player when other patches are applied.
+            // Legacy hack: the old module blanked this value to disable the shuffle-mode rule.
+            // It is an opaque server token validated by a checksum (CRC32 == 0x72FBEE40) and parsed
+            // by the native player (liborbit-jni-spotify.so, streaming_rule.proto), so an empty
+            // string fails validation — this is exactly what "Free-account playback mode" turns off.
             new OverrideAttribute("streaming-rules", ""),
             // Enables premium UI in settings and removes the premium button in the nav-bar.
             new OverrideAttribute("nft-disabled", "1"),
@@ -79,8 +81,57 @@ public final class UnlockPremiumPatch {
             new OverrideAttribute("tablet-free", FALSE, false)
     );
 
+    private static volatile boolean attributesDumped = false;
+
+    /**
+     * Log the full product state once per process. The previous builds only logged the attributes
+     * that were overridden, which hid the real account type and every unknown key.
+     */
+    private static void dumpAttributes(Map<String, ?> attributes) {
+        if (attributesDumped) return;
+        attributesDumped = true;
+
+        StringBuilder dump = new StringBuilder();
+        for (Map.Entry<String, ?> entry : attributes.entrySet()) {
+            Object value = entry.getValue();
+            try {
+                value = XposedHelpers.getObjectField(value, "value_");
+            } catch (Throwable ignored) {
+                // Not an attribute wrapper, log the raw map value.
+            }
+
+            String text;
+            if (value instanceof String || value instanceof Boolean || value instanceof Number) {
+                text = String.valueOf(value);
+            } else {
+                text = value == null ? "null" : value.getClass().getSimpleName();
+            }
+            if (text.length() > 80) {
+                text = text.substring(0, 80) + "…";
+            }
+
+            dump.append(entry.getKey()).append('=').append(text).append("; ");
+        }
+
+        String text = dump.toString();
+        Logger.printInfo(() -> "Product state attributes (" + attributes.size() + "): " + text);
+    }
+
+    /**
+     * Read-only dump of the product state (used when premium spoofing is disabled, so we can still
+     * see what the client believes about the account in bug reports). Logs once per process.
+     */
+    public static void logProductState(Map<String, ?> attributes) {
+        try {
+            dumpAttributes(attributes);
+        } catch (Exception ex) {
+            Logger.printException(() -> "logProductState failure", ex);
+        }
+    }
+
     public static void overrideAttributes(Map<String, ?> attributes) {
         try {
+            dumpAttributes(attributes);
             for (OverrideAttribute override : PREMIUM_OVERRIDES) {
                 var attribute = attributes.get(override.key);
 

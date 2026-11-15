@@ -2,6 +2,7 @@ package io.github.chsbuffer.revancedxposed.spotify.misc
 
 import io.github.chsbuffer.revancedxposed.AccessFlags
 import io.github.chsbuffer.revancedxposed.Opcode
+import io.github.chsbuffer.revancedxposed.RequireAppVersion
 import io.github.chsbuffer.revancedxposed.SkipTest
 import io.github.chsbuffer.revancedxposed.findClassDirect
 import io.github.chsbuffer.revancedxposed.findFieldDirect
@@ -250,8 +251,40 @@ private fun DexKitBridge.settingsStateFieldByPropertyReference(propertyName: Str
  * `com.spotify.settings.rxsettings.SettingsState` under the key `show_unavailable_tracks`, but
  * that class is obfuscated and its consumers read the field directly.
  */
+@get:RequireAppVersion(maxVersion = "9.1.93.9999")
 val showUnavailableTracksField = findFieldDirect {
     runCatching { settingsStateFieldBySerializer("show_unavailable_tracks") }
         .recoverCatching { settingsStateFieldByPropertyReference("showUnavailableTracks") }
         .getOrThrow()
+}
+
+private const val SETTINGS_STATE_PROTO_CLASS =
+    "com.spotify.settings.esperanto.proto.SettingsOuterClass\$SettingsState"
+
+/**
+ * The settings state getter for "Show unplayable songs" in Spotify 9.1.94+.
+ *
+ * The reactive settings state was replaced by the protobuf message
+ * `com.spotify.settings.esperanto.proto.SettingsOuterClass$SettingsState`, which keeps the
+ * original proto field name `showUnavailableTracks_` (the `show_unavailable_tracks` string is gone
+ * from the dex). The app-level settings adapter reads the generated getter — a no-argument method
+ * that reads that field and returns a boolean (boxed `Boolean` on 9.1.94, primitive `Z` on 9.2.0).
+ *
+ * Hooking the getter is safer than writing the field from a constructor: the protobuf parser sets
+ * fields directly after construction, so a constructor hook would be overwritten during parsing.
+ */
+@get:RequireAppVersion(minVersion = "9.1.94.0")
+val showUnavailableTracksProtoGetter = findMethodDirect {
+    findMethod {
+        matcher {
+            declaredClass(SETTINGS_STATE_PROTO_CLASS, StringMatchType.EndsWith)
+            addUsingField {
+                usingType = UsingType.Read
+                name = "showUnavailableTracks_"
+            }
+            paramTypes(emptyList())
+        }
+    }.single {
+        it.returnTypeName == "boolean" || it.returnTypeName == "java.lang.Boolean"
+    }
 }
