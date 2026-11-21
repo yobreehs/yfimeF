@@ -30,21 +30,29 @@ class FemifySettingsProvider : ContentProvider() {
     override fun onCreate(): Boolean = true
 
     override fun call(method: String, arg: String?, extras: Bundle?): Bundle? {
-        if (method != METHOD_GET) return null
+        if (method != METHOD_GET && method != METHOD_APPLIED) return null
 
         val callingUid = Binder.getCallingUid()
         // `arg` carries the shared token, which survives package-visibility filtering when a
         // package-hiding module (HMA) hides this module from the Spotify process.
         if (arg != ModuleSettings.CALL_TOKEN && !isTrustedCaller(callingUid)) {
-            Log.w(TAG, "Rejected settings read from uid $callingUid")
+            Log.w(TAG, "Rejected settings $method from uid $callingUid")
             return null
         }
 
         val context = context ?: return null
         val prefs = context.getSharedPreferences(ModuleSettings.PREFS_NAME, Context.MODE_PRIVATE)
+        if (method == METHOD_APPLIED) {
+            AppliedSnapshot.store(context, extras)
+            return null
+        }
+
         return Bundle().apply {
-            ModuleSettings.defaults.forEach { (key, default) ->
+            ModuleSettings.booleanDefaults.forEach { (key, default) ->
                 putBoolean(key, prefs.getBoolean(key, default))
+            }
+            ModuleSettings.stringDefaults.forEach { (key, default) ->
+                putString(key, prefs.getString(key, default) ?: default)
             }
         }
     }
@@ -89,6 +97,7 @@ class FemifySettingsProvider : ContentProvider() {
         const val AUTHORITY_SUFFIX = ".settings"
 
         const val METHOD_GET = "get"
+        const val METHOD_APPLIED = "applied"
         const val SPOTIFY_PACKAGE = "com.spotify.music"
 
         private const val TAG = "FemifySettings"

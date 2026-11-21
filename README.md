@@ -20,7 +20,17 @@
 
 ### Spotify
 - Unlock Spotify Premium
+- Block ads on Home, Browse and Now Playing, and auto-hide the “listening abroad” restriction dialog
+- Show unavailable tracks (greyed out instead of hidden)
 - Sanitize sharing links
+
+### Experimental (hidden by default)
+Tap the `Femify <version> (<commit>)` footer **8 times** to reveal the Experimental section:
+- Region proxy (HTTP/SOCKS, or automatic public proxies) that routes all Spotify traffic, including
+  playback, through the selected country
+- Force the “listening abroad” dialog to stay visible even while Block ads is on
+
+See `project.md` in the repository root for the architecture, defaults and limitations.
 
 ## Supports
 [![Telegram Channel](https://img.shields.io/badge/Join-Telegram-2CA5E0.svg?logo=telegram&logoColor=white)](https://t.me/+2JPYcamt8ow0MTEy)

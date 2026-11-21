@@ -48,6 +48,7 @@
             tools:ignore="ExportedReceiver">
             <intent-filter>
                 <action android:name="io.github.chsbuffer.revancedxposed.action.GET_SETTINGS" />
+                <action android:name="io.github.chsbuffer.revancedxposed.action.SET_APPLIED" />
             </intent-filter>
         </receiver>
 

@@ -7,13 +7,13 @@ import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import io.github.chsbuffer.revancedxposed.callMethod
 import io.github.chsbuffer.revancedxposed.findFieldOrNull
-import io.github.chsbuffer.revancedxposed.findFirstFieldByExactTypeOrNull
 import io.github.chsbuffer.revancedxposed.settings.ModuleSettings
 import io.github.chsbuffer.revancedxposed.spotify.SpotifyHook
 import org.luckypray.dexkit.wrap.DexField
 import org.luckypray.dexkit.wrap.DexMethod
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
+import java.lang.reflect.Modifier
 
 /**
  * Unlocks Spotify Premium and removes ad surfaces.
@@ -247,6 +247,49 @@ fun SpotifyHook.PlaybackDiagnostics() {
     }
 }
 
+/**
+ * Hides the exact "You can only use Spotify abroad for 14 days" dialog.
+ *
+ * The dialog is built in the login/adaptive-auth screen (`p.a61.a`) and installed through
+ * `a61.b(idf0)`. `idf0.a` is the title; comparing it with the app's own localized string means the
+ * other login dialogs (network error, email already taken, passkey errors) are untouched.
+ * The setting is read once at process start, like every other Femify switch.
+ */
+fun SpotifyHook.AutoHideRegionDialog() {
+    // This is part of the ad-blocking patch: when Block ads is on, the region dialog is hidden
+    // unless the experimental "force show" switch overrides it.
+    if (!ModuleSettings.isEnabled(ModuleSettings.BLOCK_ADS)) return
+    if (ModuleSettings.isEnabled(ModuleSettings.FORCE_SHOW_REGION_DIALOG)) {
+        Logger.printInfo { "Region dialog: forced visible by experimental setting" }
+        return
+    }
+
+    guarded("loginAbroadDialogAutoHide") {
+        val titleId = runCatching {
+            XposedHelpers.getStaticIntField(
+                classLoader.loadClass("com.spotify.music.R\$string"),
+                "legacy_error_dialog_login_abroad_restriction",
+            )
+        }.getOrElse { 0x7f1315ec }
+        val abroadTitle = appContext.getString(titleId)
+
+        ::loginAbroadDialogShowFingerprint.hookMethod {
+            before { param ->
+                val dialog = param.args.getOrNull(0) ?: return@before
+                val title = runCatching {
+                    XposedHelpers.getObjectField(dialog, "a") as? String
+                }.getOrNull()
+                if (title == abroadTitle) {
+                    Logger.printInfo { "Hiding Spotify abroad restriction dialog" }
+                    // Setting a result in `before` skips the original method; for a void method
+                    // this means the ComposeView never gets the dialog.
+                    param.result = null
+                }
+            }
+        }
+    }
+}
+
 private var lastStateKey: String? = null
 private var lastStateAt: Long = 0L
 
@@ -303,13 +346,24 @@ private inline fun guarded(name: String, block: () -> Unit) {
 }
 
 /**
- * Protobuf repeated-field lists guard their mutability with a boolean flag, either as a boxed
- * [Boolean] or as a primitive [Boolean.TYPE] field, depending on the app build.
+ * Protobuf repeated-field lists guard their mutability with a boolean flag on their base class
+ * (`p.i9` in 9.2.0, field `a`). The flag can be primitive or boxed and, importantly, it lives on a
+ * superclass: checking only `javaClass.declaredFields` misses it and every `remove()` throws
+ * `UnsupportedOperationException`, which is exactly why ad sections stopped disappearing in 9.2.0.
+ *
+ * Walk the whole hierarchy and prefer the conventional `a` field. Setting every boolean we find
+ * would be dangerous (some list implementations have unrelated flags), so only one is written.
  */
 private fun Any.makeSectionsMutable() {
-    val field = javaClass.findFirstFieldByExactTypeOrNull(Boolean::class.java)
-        ?: javaClass.declaredFields.firstOrNull { it.type == Boolean::class.javaPrimitiveType }
-        ?: return
+    val candidates = generateSequence(javaClass) { it.superclass }
+        .takeWhile { it != Any::class.java }
+        .flatMap { clazz -> clazz.declaredFields.asSequence() }
+        .filter { !Modifier.isStatic(it.modifiers) }
+        .filter { it.type == Boolean::class.javaPrimitiveType || it.type == Boolean::class.javaObjectType }
+        .toList()
+    if (candidates.isEmpty()) return
+
+    val field = candidates.firstOrNull { it.name == "a" } ?: candidates.first()
     field.isAccessible = true
     field.set(this, true)
 }

@@ -59,8 +59,9 @@ jobs:
         DRAFT_FLAG=""
         if [ "${{ vars.DRAFT_RELEASE }}" = "1" ]; then DRAFT_FLAG="--draft"; fi
         cd app/build/outputs/apk/universal/release/
-        mv app-universal-release.apk ReVancedXposedSpotify-${GIT_COMMIT_DATE}.apk
+        APK_NAME="Femify-${GIT_COMMIT_DATE}-${GIT_DESCRIBE}.apk"
+        mv app-universal-release.apk "${APK_NAME}"
         gh release delete autobuild --yes || true
-        gh release create autobuild ReVancedXposedSpotify-${GIT_COMMIT_DATE}.apk ${DRAFT_FLAG} --latest --title "Build ${GIT_COMMIT_DATE}" --notes "Commit ${GIT_DESCRIBE}. Package name: sul.j. Update the app manually if the CI signing key changed."
+        gh release create autobuild "${APK_NAME}" ${DRAFT_FLAG} --latest --title "Build ${GIT_COMMIT_DATE}" --notes "Commit ${GIT_DESCRIBE}. Package name: sul.j. Update the app manually if the CI signing key changed."
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -23,6 +23,37 @@ val productStateProtoFingerprint = fingerprint {
 val attributesMapField =
     findFieldDirect { productStateProtoFingerprint().usingFields.single().field }
 
+/**
+ * The login screen's dialog host. In 9.2.0 this is `p.a61`; the method referencing the
+ * `legacy_error_dialog_login_abroad_restriction` resource is its `a(trp1)` render method.
+ * The resource id is the stable anchor, the class name is not.
+ */
+@get:RequireAppVersion(minVersion = "9.2.0.0")
+val loginAbroadDialogFingerprint = findMethodDirect {
+    findMethod {
+        matcher {
+            usingNumbers(0x7f1315ec)
+        }
+    }.single()
+}
+
+/**
+ * `a61.b(idf0)` receives the fully built dialog (title/body/buttons) and sets it on the Compose
+ * view. Hooking this method lets us recognize the abroad dialog by its localized title and drop
+ * only that one, instead of suppressing every error shown by the login screen.
+ */
+@get:RequireAppVersion(minVersion = "9.2.0.0")
+val loginAbroadDialogShowFingerprint = findMethodDirect {
+    val host = loginAbroadDialogFingerprint().declaredClass
+        ?: error("Login abroad dialog host class not found")
+    findMethod {
+        matcher {
+            declaredClass(host.name)
+            name("b")
+        }
+    }.single()
+}
+
 val buildQueryParametersFingerprint = findMethodDirect {
     findMethod {
         matcher {

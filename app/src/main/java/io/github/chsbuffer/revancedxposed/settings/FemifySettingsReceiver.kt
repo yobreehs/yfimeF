@@ -19,22 +19,36 @@ import android.util.Log
 class FemifySettingsReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action != ACTION_GET_SETTINGS) return
+        when (intent.action) {
+            ACTION_GET_SETTINGS -> {
+                val prefs = context.getSharedPreferences(
+                    ModuleSettings.PREFS_NAME, Context.MODE_PRIVATE
+                )
+                val bundle = Bundle().apply {
+                    ModuleSettings.booleanDefaults.forEach { (key, default) ->
+                        putBoolean(key, prefs.getBoolean(key, default))
+                    }
+                    ModuleSettings.stringDefaults.forEach { (key, default) ->
+                        putString(key, prefs.getString(key, default) ?: default)
+                    }
+                }
 
-        val prefs = context.getSharedPreferences(ModuleSettings.PREFS_NAME, Context.MODE_PRIVATE)
-        val bundle = Bundle().apply {
-            ModuleSettings.defaults.forEach { (key, default) ->
-                putBoolean(key, prefs.getBoolean(key, default))
+                Log.d(TAG, "Serving ${bundle.size()} settings over broadcast")
+                resultCode = Activity.RESULT_OK
+                setResultExtras(bundle)
+            }
+
+            ACTION_SET_APPLIED -> {
+                if (intent.getStringExtra(EXTRA_TOKEN) != ModuleSettings.CALL_TOKEN) return
+                AppliedSnapshot.store(context, intent.extras)
             }
         }
-
-        Log.d(TAG, "Serving ${bundle.size()} settings over broadcast")
-        resultCode = Activity.RESULT_OK
-        setResultExtras(bundle)
     }
 
     companion object {
         const val ACTION_GET_SETTINGS = "io.github.chsbuffer.revancedxposed.action.GET_SETTINGS"
+        const val ACTION_SET_APPLIED = "io.github.chsbuffer.revancedxposed.action.SET_APPLIED"
+        const val EXTRA_TOKEN = "token"
 
         private const val TAG = "FemifySettings"
     }

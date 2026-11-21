@@ -31,6 +31,27 @@ object ModuleSettings {
     const val SHOW_UNAVAILABLE_TRACKS = "show_unavailable_tracks"
     const val SANITIZE_SHARING_LINKS = "sanitize_sharing_links"
 
+    /**
+     * Experimental override for the ad-blocking region dialog patch. When off (default), the
+     * "listening abroad" dialog is hidden together with the ads. Turn it on to see the dialog
+     * again without disabling the whole ad blocker.
+     */
+    const val FORCE_SHOW_REGION_DIALOG = "force_show_region_dialog"
+
+    /** Experimental features, hidden until the version footer is tapped eight times. */
+    const val EXPERIMENTAL_UNLOCKED = "experimental_unlocked"
+    const val EXPERIMENTAL_INITIALIZED = "experimental_initialized"
+    const val REGION_PROXY_ENABLED = "region_proxy_enabled"
+    const val REGION_PROXY_COUNTRY = "region_proxy_country"
+    const val REGION_PROXY_CUSTOM = "region_proxy_custom"
+
+    /**
+     * Snapshot of the values Spotify actually loaded at process start, written by
+     * [FemifySettingsProvider]. The settings screen compares the live preferences with it to tell
+     * the user whether a restart is still needed.
+     */
+    const val APPLIED_SNAPSHOT = "applied_snapshot"
+
     const val TAG = "FemifySettings"
 
     /**
@@ -45,19 +66,30 @@ object ModuleSettings {
     private val settingsUri: Uri =
         Uri.parse("content://${BuildConfig.APPLICATION_ID}${FemifySettingsProvider.AUTHORITY_SUFFIX}")
 
-    /** Order is also the order of the switches in [SettingsActivity]. */
-    val defaults: Map<String, Boolean> = linkedMapOf(
+    /** Boolean switches. Order is also the order of the switches in [SettingsActivity]. */
+    val booleanDefaults: Map<String, Boolean> = linkedMapOf(
         PREMIUM_UNLOCK to true,
         BLOCK_ADS to true,
         SHOW_UNAVAILABLE_TRACKS to true,
         SANITIZE_SHARING_LINKS to true,
+        FORCE_SHOW_REGION_DIALOG to false,
+        REGION_PROXY_ENABLED to false,
     )
+
+    /** String settings (currently the experimental region proxy). */
+    val stringDefaults: Map<String, String> = linkedMapOf(
+        REGION_PROXY_COUNTRY to "NL",
+        REGION_PROXY_CUSTOM to "",
+    )
+
+    /** Combined defaults used when neither settings transport answers. */
+    val defaults: Map<String, Any> = booleanDefaults + stringDefaults
 
     @Volatile
     private var appContext: Context? = null
 
     @Volatile
-    private var cached: Map<String, Boolean>? = null
+    private var cached: Map<String, Any>? = null
 
     @Volatile
     private var failureLogged = false
@@ -68,23 +100,31 @@ object ModuleSettings {
      */
     fun attach(context: Context) {
         appContext = context.applicationContext
-        reload()
+        val loaded = load()
+        cached = loaded
+        // Tell the settings screen which values this Spotify process is really using. It is the
+        // basis for the "all patches applied" / "restart required" status line.
+        loaded?.let(::reportApplied)
     }
 
-    fun isEnabled(key: String): Boolean = snapshot()[key] ?: defaults[key] ?: false
+    fun isEnabled(key: String): Boolean =
+        (snapshot()[key] as? Boolean) ?: booleanDefaults[key] ?: false
+
+    fun getString(key: String): String =
+        (snapshot()[key] as? String) ?: stringDefaults[key] ?: ""
 
     fun reload() {
         cached = load()
     }
 
-    private fun snapshot(): Map<String, Boolean> {
+    private fun snapshot(): Map<String, Any> {
         cached?.let { return it }
         val loaded = load() ?: return defaults
         cached = loaded
         return loaded
     }
 
-    private fun load(): Map<String, Boolean>? =
+    private fun load(): Map<String, Any>? =
         loadFromBroadcast() ?: loadFromProvider() ?: run {
             if (!failureLogged) {
                 failureLogged = true
@@ -92,6 +132,43 @@ object ModuleSettings {
             }
             null
         }
+
+    /**
+     * Persist the values this process started with in the module app. Best effort: the provider can
+     * be unreachable when the module is hidden from Spotify, in which case the settings screen
+     * simply assumes the current preferences are the applied ones.
+     */
+    private fun reportApplied(settings: Map<String, Any>) {
+        val context = appContext ?: return
+        val extras = Bundle().apply {
+            booleanDefaults.keys.forEach { key ->
+                (settings[key] as? Boolean)?.let { putBoolean(key, it) }
+            }
+            stringDefaults.keys.forEach { key ->
+                (settings[key] as? String)?.let { putString(key, it) }
+            }
+        }
+        val providerOk = runCatching {
+            context.contentResolver.call(
+                settingsUri, FemifySettingsProvider.METHOD_APPLIED, CALL_TOKEN, extras
+            )
+        }.isSuccess
+
+        if (!providerOk) {
+            // The same package-visibility problem that forces the settings read onto the broadcast
+            // path also hides the provider from Spotify. The receiver can always be reached.
+            runCatching {
+                context.sendBroadcast(
+                    Intent(FemifySettingsReceiver.ACTION_SET_APPLIED)
+                        .setPackage(BuildConfig.APPLICATION_ID)
+                        .putExtras(extras)
+                        .putExtra(FemifySettingsReceiver.EXTRA_TOKEN, CALL_TOKEN)
+                )
+            }.onFailure {
+                Log.d(TAG, "Could not report the applied settings snapshot", it)
+            }
+        }
+    }
 
     /**
      * Preferred transport: an ordered broadcast answered by [FemifySettingsReceiver] in the module
@@ -102,7 +179,7 @@ object ModuleSettings {
      * [HandlerThread]: without it the answer would be posted to the main looper, which is exactly
      * the thread that is blocked here waiting for it.
      */
-    private fun loadFromBroadcast(): Map<String, Boolean>? {
+    private fun loadFromBroadcast(): Map<String, Any>? {
         val context = appContext ?: return null
 
         val scheduler = HandlerThread("femify-settings").apply { start() }
@@ -144,7 +221,7 @@ object ModuleSettings {
         }
     }
 
-    private fun loadFromProvider(): Map<String, Boolean>? {
+    private fun loadFromProvider(): Map<String, Any>? {
         val context = appContext ?: return null
         val bundle = runCatching {
             // The token is the second authentication factor: the caller UID check inside the
@@ -177,7 +254,12 @@ object ModuleSettings {
         return toMap(bundle)
     }
 
-    private fun toMap(bundle: Bundle): Map<String, Boolean> = defaults.mapValues { (key, default) ->
-        if (bundle.containsKey(key)) bundle.getBoolean(key, default) else default
+    private fun toMap(bundle: Bundle): Map<String, Any> = buildMap {
+        booleanDefaults.forEach { (key, default) ->
+            put(key, bundle.getBoolean(key, default))
+        }
+        stringDefaults.forEach { (key, default) ->
+            put(key, bundle.getString(key) ?: default)
+        }
     }
 }
